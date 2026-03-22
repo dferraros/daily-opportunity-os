@@ -13,9 +13,9 @@ Requirements for the Playbook deliverable (the document/system design).
 
 - [x] **FOUND-01**: Diseño del Preference Center — arquitectura de canales, categorías de consentimiento, modelo de datos
 - [x] **FOUND-02**: Política de frequency caps — caps diarios/semanales/mensuales por canal y familia de trigger
-- [ ] **FOUND-03**: Sistema de supresión — compliance suppressions (C8), quiet hours, opt-out handling
-- [ ] **FOUND-04**: Arquitectura de datos y tracking — event schema mínimo requerido para activar triggers
-- [ ] **FOUND-05**: Integración BigQuery → CleverTap via Hightouch Reverse ETL — diseño técnico
+- [x] **FOUND-03**: Sistema de supresión — compliance suppressions (C8), quiet hours, opt-out handling
+- [x] **FOUND-04**: Arquitectura de datos y tracking — event schema mínimo requerido para activar triggers
+- [x] **FOUND-05**: Integración BigQuery → CleverTap via Hightouch Reverse ETL — diseño técnico
 
 ### Trigger Taxonomy
 
@@ -124,9 +124,9 @@ Deferred — not in current playbook scope but documented for V3 planning.
 |-------------|-------|--------|
 | FOUND-01 | Phase 1: Foundation + Safety Architecture | Complete |
 | FOUND-02 | Phase 1: Foundation + Safety Architecture | Complete |
-| FOUND-03 | Phase 1: Foundation + Safety Architecture | Pending |
-| FOUND-04 | Phase 1: Foundation + Safety Architecture | Pending |
-| FOUND-05 | Phase 1: Foundation + Safety Architecture | Pending |
+| FOUND-03 | Phase 1: Foundation + Safety Architecture | Complete |
+| FOUND-04 | Phase 1: Foundation + Safety Architecture | Complete |
+| FOUND-05 | Phase 1: Foundation + Safety Architecture | Complete |
 | TAX-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
