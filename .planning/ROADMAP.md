@@ -26,7 +26,7 @@ This roadmap delivers a complete strategic playbook for Bit2Me's trigger-based n
 **Plans**: 2 plans (Wave 1, parallel)
 
 Plans:
-- [ ] 01-01-PLAN.md — Preference Center Architecture + Frequency Cap Policy (FOUND-01, FOUND-02)
+- [x] 01-01-PLAN.md — Preference Center Architecture + Frequency Cap Policy (FOUND-01, FOUND-02)
 - [ ] 01-02-PLAN.md — Suppression System + Event Schema + Hightouch Reverse ETL Design (FOUND-03, FOUND-04, FOUND-05)
 
 ### Phase 2: Taxonomy + Competitive Benchmark
@@ -84,7 +84,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Safety Architecture | 0/2 | Not started | - |
+| 1. Foundation + Safety Architecture | 1/2 | In Progress | - |
 | 2. Taxonomy + Competitive Benchmark | 0/2 | Not started | - |
 | 3. Scoring System + Master Trigger Table | 0/3 | Not started | - |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |
