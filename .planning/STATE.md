@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 03-03-PLAN.md (Phase 3 COMPLETE)
-last_updated: "2026-03-22T20:07:57.428Z"
-last_activity: 2026-03-22 -- Completed 03-03-PLAN.md (MVP Selection + Channel Policy)
+status: in_progress
+stopped_at: Completed 04-01-PLAN.md (Measurement Framework)
+last_updated: "2026-03-22T21:03:00Z"
+last_activity: 2026-03-22 -- Completed 04-01-PLAN.md (Measurement Framework)
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_plans: 11
+  completed_plans: 10
+  percent: 91
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Un sistema de notificaciones que aumenta reactivacion, retencion y revenue sin destruir deliverability, push permissions ni confianza del usuario.
-**Current focus:** Phase 3 COMPLETE -- Ready for Phase 4 (Measurement + Final Recommendations)
+**Current focus:** Phase 4 in progress -- Measurement Framework done, Final Recommendations next
 
 ## Current Position
 
-Phase: 3 of 4 (Scoring System + Master Trigger Table) -- COMPLETE
-Plan: 3 of 3 in current phase (03-01, 03-02, 03-03 complete)
-Status: Phase 3 Complete
-Last activity: 2026-03-22 -- Completed 03-03-PLAN.md (MVP Selection + Channel Policy)
+Phase: 4 of 4 (Measurement + Final Recommendations)
+Plan: 1 of 2 in current phase (04-01 complete, 04-02 pending)
+Status: In Progress
+Last activity: 2026-03-22 -- Completed 04-01-PLAN.md (Measurement Framework)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 | Phase 03 P01 | 9min | 2 tasks | 2 files |
 | Phase 03 P02 | 11min | 1 tasks | 1 files |
 | Phase 03 P03 | 18min | 2 tasks | 2 files |
+| Phase 04 P01 | 17min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,10 @@ Recent decisions affecting current work:
 - [Phase 03-03]: Family B simultaneous send (MiCA Art. 89) overrides conflict logic but NOT quiet hours (P3 tier, DND applies)
 - [Phase 03-03]: Deep link web fallback URLs mapped for all 11 products for email/no-app scenarios
 - [Phase 03-03]: Journey exit resets active_journey to NULL on next Hightouch sync (30-min), no additional cooldown
+- [Phase 04-01]: NNV uses EUR 2.50 annual push revenue per user as opt-out cost constant (calibrate after 30 days)
+- [Phase 04-01]: Global holdout is 2,300 users (10% of 23k MMU) via deterministic FARM_FINGERPRINT, permanent
+- [Phase 04-01]: Family A and F have NO holdout (user-requested and safety-critical respectively)
+- [Phase 04-01]: Per-family holdouts use salted hash for independence from global holdout
 
 ### Pending Todos
 
@@ -107,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:54:32Z
-Stopped at: Completed 03-03-PLAN.md (Phase 3 COMPLETE)
+Last session: 2026-03-22T21:03:00Z
+Stopped at: Completed 04-01-PLAN.md (Measurement Framework)
 Resume file: None
