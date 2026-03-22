@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-22T16:24:17.733Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-22T18:20:35.172Z"
 last_activity: 2026-03-22 -- Completed 01-01-PLAN.md (Preference Center + Frequency Caps)
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 6
+  completed_plans: 4
   percent: 50
 ---
 
@@ -50,6 +50,8 @@ Progress: [█████░░░░░] 50%
 - Trend: -
 | Phase 01 P01 | 6min | 2 tasks | 2 files |
 | Phase 01 P02 | 6min | 3 tasks | 3 files |
+| Phase 02 P02 | 5min | 1 tasks | 1 files |
+| Phase 02 P04 | 7min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -65,6 +67,12 @@ Recent decisions affecting current work:
 - [Phase 01]: Push cap at 2/day, 8/week, 20/month; P0-P1 exempt from global caps via CleverTap Exclude checkbox
 - [Phase 01]: Fatigue risk formula: send volume (0.4) + dismissal rate (0.3) + engagement recency (0.3) with GREEN/AMBER/RED/CRITICAL thresholds
 - [Phase 01]: Suppression is additive (4 layers in sequence); Charged event mandatory for purchases; Hightouch sync every 30min with upsert; Escalating cooldowns L0-L4 computed daily in BigQuery
+- [Phase 02]: ADVISORY_RISK class reserved for V3; V1 uses TRANSACTIONAL/INFORMATIONAL/MARKETING only
+- [Phase 02]: Family E cross-sell must use product awareness framing only in V1; return comparisons deferred
+- [Phase 02]: A/B testing on Family B triggers PROHIBITED to prevent market abuse risk
+- [Phase 02]: Asset tiers use trailing 30-day median daily volume on [external], not external market cap
+- [Phase 02]: All asset scope references must be dynamic BigQuery views, never hard-coded lists
+- [Phase 02]: Stablecoin de-peg alerts classified as CAT-SEC P0 (no consent required)
 
 ### Pending Todos
 
@@ -78,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T16:19:56.733Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-03-22T18:20:35.165Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
