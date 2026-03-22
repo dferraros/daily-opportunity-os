@@ -173,7 +173,7 @@ Alert thresholds:
 
 **Owner:** Katy pulls weekly from CleverTap > Users > Push Reachability (filter by iOS platform).
 
-#### 14.2.3 Token Hygiene Protocol
+#### 14.2.3 Push Token Health and Hygiene Protocol
 
 Stale push tokens waste delivery capacity and inflate delivery failure rates.
 
