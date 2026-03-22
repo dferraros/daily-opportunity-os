@@ -11,8 +11,8 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Foundation & Safety
 
-- [ ] **FOUND-01**: Diseño del Preference Center — arquitectura de canales, categorías de consentimiento, modelo de datos
-- [ ] **FOUND-02**: Política de frequency caps — caps diarios/semanales/mensuales por canal y familia de trigger
+- [x] **FOUND-01**: Diseño del Preference Center — arquitectura de canales, categorías de consentimiento, modelo de datos
+- [x] **FOUND-02**: Política de frequency caps — caps diarios/semanales/mensuales por canal y familia de trigger
 - [ ] **FOUND-03**: Sistema de supresión — compliance suppressions (C8), quiet hours, opt-out handling
 - [ ] **FOUND-04**: Arquitectura de datos y tracking — event schema mínimo requerido para activar triggers
 - [ ] **FOUND-05**: Integración BigQuery → CleverTap via Hightouch Reverse ETL — diseño técnico
@@ -122,8 +122,8 @@ Deferred — not in current playbook scope but documented for V3 planning.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1: Foundation + Safety Architecture | Pending |
-| FOUND-02 | Phase 1: Foundation + Safety Architecture | Pending |
+| FOUND-01 | Phase 1: Foundation + Safety Architecture | Complete |
+| FOUND-02 | Phase 1: Foundation + Safety Architecture | Complete |
 | FOUND-03 | Phase 1: Foundation + Safety Architecture | Pending |
 | FOUND-04 | Phase 1: Foundation + Safety Architecture | Pending |
 | FOUND-05 | Phase 1: Foundation + Safety Architecture | Pending |
