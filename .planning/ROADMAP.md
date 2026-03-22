@@ -23,11 +23,11 @@ This roadmap delivers a complete strategic playbook for [external]'s trigger-bas
   3. Suppression system is documented covering C8 whale list, quiet hours by timezone, opt-out handling, and escalating dismissal cooldowns
   4. Event schema is defined with minimum required events and properties for trigger activation (CleverTap SDK + Backend Upload Events API)
   5. Hightouch Reverse ETL integration design is documented (BigQuery source tables, CleverTap destination fields, sync cadence, error handling)
-**Plans**: TBD
+**Plans**: 2 plans (Wave 1, parallel)
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Preference Center Architecture + Frequency Cap Policy (FOUND-01, FOUND-02)
+- [ ] 01-02-PLAN.md — Suppression System + Event Schema + Hightouch Reverse ETL Design (FOUND-03, FOUND-04, FOUND-05)
 
 ### Phase 2: Taxonomy + Competitive Benchmark
 **Goal**: Every trigger family is defined with eligibility criteria, the asset universe is mapped to products, competitors are benchmarked, and compliance constraints are codified per trigger type -- so Phase 3 can score and tabulate triggers against a complete framework.
