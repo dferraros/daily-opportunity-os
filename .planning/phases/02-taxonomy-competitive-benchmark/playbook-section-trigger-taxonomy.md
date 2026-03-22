@@ -797,4 +797,769 @@ COMPLIANCE
 - keyword_blocklist_applies: true
 ```
 
-<!-- CONTINUATION POINT: Families D-F and Cross-Reference Matrix appended by Task 2b -->
+
+### 6.5 Family D: Lifecycle
+
+> **Definition:** Triggers driven by lifecycle stage transitions from Bit2Me's 13-stage lifecycle model (EXCLUDED, REGISTERED, KYC, DEPOSITED, FM, ACTIVE, POWER, AT_RISK, PRE_DORMANCY, DORMANT_BAL, DORMANT_ZERO, REACTIVATED, CHURNED). These fire when a user moves between stages or meets time-based conditions within a stage. Because they promote engagement and retention actions, they are classified as MARKETING.
+
+**Family Properties:**
+
+| Property | Value |
+|----------|-------|
+| consent_category | CAT-MKT (stage transition awareness) or CAT-PRO (product re-engagement) |
+| priority_tier | P2 (critical transitions like ACTIVE to AT_RISK) or P5 (reactivation campaigns for dormant users) |
+| compliance_class | MARKETING (encourages re-engagement or continued use) |
+| channel | Email (primary -- richer context for lifecycle messages), Push (secondary), In-App (tertiary) |
+| cooldown | 1/week per journey |
+| quiet_hours_exempt | No |
+| diego_approval | REQUIRED per template (Tier 1) |
+| data_source | BigQuery `lifecycle_stage` field (via Hightouch sync to CleverTap) |
+
+**Entry Criteria:** Lifecycle stage transition detected in BigQuery: user moves from one stage to another, or meets a time-based condition within their current stage (e.g., 30 days inactive in ACTIVE stage triggers AT_RISK transition).
+
+**Exit Criteria:** User transitions to a different stage OR completes the suggested re-engagement action.
+
+**Eligibility Rules:**
+
+| Rule | Value |
+|------|-------|
+| who_receives | Users who transitioned stages with `consent_marketing_email = true` or `consent_marketing_push = true` |
+| who_never_receives | `C8_Whale_Suppression`, `Excluded_Users`, users in an active CleverTap journey (J1-J6 -- check `active_journey` property is NOT NULL), `notification_fatigue_score > 0.7` (CRITICAL for lifecycle: sending to fatigued users accelerates churn) |
+| asset_scope | Not asset-specific (lifecycle stage-based triggers target the user's overall engagement state, not a specific asset) |
+
+**IMPORTANT -- Active Journey Conflict Avoidance:**
+
+Every Family D trigger must check whether the user is currently in an active CleverTap journey (J1 Brokerage, J2 Pro, J3 Earn, J4 Card, J5 B2B, J6 Multi, or J-Post-FM). If `active_journey IS NOT NULL`, suppress all Family D triggers for that user. This prevents conflicting lifecycle messages (e.g., a "you are becoming inactive" trigger firing while the user is in the middle of an onboarding journey).
+
+**Implementation:** Add `active_journey` as a Hightouch-synced user property from BigQuery. BigQuery tracks journey entry/exit events from CleverTap webhook exports. When a user enters a journey, `active_journey` is set to the journey name. When they exit (completion or timeout), it is set to NULL.
+
+---
+
+#### Trigger D-01: Active to At-Risk Transition
+
+```
+TRIGGER DEFINITION: D-01 Active to At-Risk Transition
+=======================================================
+trigger_id: D-01
+family: D (Lifecycle)
+trigger_name: Active to At-Risk Transition
+business_objective: Retention, churn prevention
+description: Fires when a user's lifecycle stage transitions from ACTIVE to AT_RISK
+             (triggered by 30+ days without a value action). This is the highest-value
+             retention intervention point -- the user is still reachable but disengaging.
+
+ELIGIBILITY CRITERIA
+- who_receives: Users whose lifecycle_stage changed from ACTIVE to AT_RISK AND
+                consent_marketing_email = true OR consent_marketing_push = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      active_journey IS NOT NULL,
+                      notification_fatigue_score > 0.7
+- consent_category: CAT-MKT (Art. 6(1)(a))
+- consent_required: true
+- asset_scope: Not asset-specific
+
+DELIVERY RULES
+- priority_tier: P2 (lifecycle critical -- highest marketing priority)
+- channel: Email (primary -- longer format for re-engagement), Push (secondary)
+- cooldown: 1/week per journey; this trigger fires ONCE per stage transition
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (lifecycle_stage transition detected in daily scheduled query)
+- required_events: None (state transition, not event-based)
+- required_user_properties: lifecycle_stage, days_since_last_activity, health_score,
+                            total_balance_eur, active_journey, consent_marketing_email,
+                            consent_marketing_push, notification_fatigue_score
+- evaluation_frequency: Daily (BigQuery lifecycle stage computation runs daily)
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: LOW (re-engagement, not asset-specific)
+- risk_warning_required: false (no asset or investment mentioned)
+- keyword_blocklist_applies: true
+```
+
+---
+
+#### Trigger D-02: Dormant With Balance
+
+```
+TRIGGER DEFINITION: D-02 Dormant With Balance
+===============================================
+trigger_id: D-02
+family: D (Lifecycle)
+trigger_name: Dormant With Balance Reminder
+business_objective: Reactivation, AUC mobilization
+description: Fires when a user is in DORMANT_BAL stage (inactive 90+ days) with a
+             balance above EUR 50. These 72.4K users hold EUR 19.5M in AUC -- gentle
+             reminders can reactivate dormant capital without aggressive tactics.
+
+ELIGIBILITY CRITERIA
+- who_receives: lifecycle_stage = DORMANT_BAL AND total_balance_eur > 50 AND
+                consent_marketing_email = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      active_journey IS NOT NULL,
+                      notification_fatigue_score > 0.7
+- consent_category: CAT-PRO (promotional re-engagement)
+- consent_required: true
+- asset_scope: Not asset-specific
+
+DELIVERY RULES
+- priority_tier: P5 (reactivation -- lowest marketing priority)
+- channel: Email (primary -- non-intrusive for dormant users)
+- cooldown: 1/month (very low frequency for dormant users -- over-messaging drives permanent opt-out)
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (lifecycle_stage + total_balance_eur)
+- required_events: None
+- required_user_properties: lifecycle_stage, total_balance_eur, days_since_last_activity,
+                            active_journey, consent_marketing_email,
+                            notification_fatigue_score
+- evaluation_frequency: Weekly (dormant users do not need daily evaluation)
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: LOW
+- risk_warning_required: false
+- keyword_blocklist_applies: true
+
+COPY CONSTRAINTS:
+  SAFE: "Your Bit2Me account still holds EUR 342. Log in to check your portfolio."
+  UNSAFE: "Your crypto might be growing! Log in before you miss out." (implied opportunity + urgency)
+```
+
+---
+
+#### Trigger D-03: First Trade Celebration
+
+```
+TRIGGER DEFINITION: D-03 First Trade Celebration
+==================================================
+trigger_id: D-03
+family: D (Lifecycle)
+trigger_name: First Trade Celebration
+business_objective: Activation reinforcement, habit formation
+description: Fires when a user completes their first trade (lifecycle transition from
+             DEPOSITED to FM -- First Monetization). Celebrates the milestone and
+             suggests next steps to build trading habit.
+
+ELIGIBILITY CRITERIA
+- who_receives: Users whose lifecycle_stage just changed from DEPOSITED to FM AND
+                consent_marketing_push = true OR consent_marketing_email = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users
+                      (no fatigue filter -- celebration messages have high positive reception)
+- consent_category: CAT-MKT
+- consent_required: true
+- asset_scope: The asset the user traded (personalization)
+
+DELIVERY RULES
+- priority_tier: P2 (lifecycle critical -- first trade is highest-value moment)
+- channel: Push (primary -- immediate positive reinforcement), Email (secondary -- persistent)
+- cooldown: Once (fires only on first trade ever)
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (lifecycle_stage transition DEPOSITED -> FM)
+- required_events: Purchase_Completed (Backend -- first ever)
+- required_user_properties: lifecycle_stage, first_trade_asset, first_trade_amount_eur,
+                            consent_marketing_push, consent_marketing_email
+- evaluation_frequency: Daily
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: NONE (celebration, no suggestion)
+- risk_warning_required: false
+- keyword_blocklist_applies: true
+```
+
+---
+
+#### Trigger D-04: Recurring Purchase Lapsed
+
+```
+TRIGGER DEFINITION: D-04 Recurring Purchase Lapsed
+====================================================
+trigger_id: D-04
+family: D (Lifecycle)
+trigger_name: Recurring Purchase Lapsed
+business_objective: Retention, recurring revenue protection
+description: Fires when a user with an active recurring buy (DCA -- Dollar Cost Averaging)
+             has not had a successful execution in 30+ days. Could indicate: failed payment
+             method, insufficient funds, or user cancelled without awareness.
+
+ELIGIBILITY CRITERIA
+- who_receives: Users with recurring_buy_active = true AND
+                days_since_last_recurring_execution > 30 AND
+                consent_marketing_push = true OR consent_marketing_email = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      active_journey IS NOT NULL,
+                      notification_fatigue_score > 0.7
+- consent_category: CAT-MKT
+- consent_required: true
+- asset_scope: The asset(s) in the lapsed recurring buy
+
+DELIVERY RULES
+- priority_tier: P2 (lifecycle critical -- recurring revenue at risk)
+- channel: Email (primary -- needs explanation of what happened), Push (secondary)
+- cooldown: 1/week until resolved or user cancels recurring buy
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (recurring_buy_active + last_recurring_execution_date)
+- required_events: Recurring_Buy_Executed (Backend), Recurring_Buy_Failed (Backend)
+- required_user_properties: recurring_buy_active, days_since_last_recurring_execution,
+                            recurring_buy_assets, active_journey,
+                            consent_marketing_push, consent_marketing_email,
+                            notification_fatigue_score
+- evaluation_frequency: Daily
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: NONE (service status, not investment suggestion)
+- risk_warning_required: false
+- keyword_blocklist_applies: true
+```
+
+---
+
+### 6.6 Family E: Product Cross-sell
+
+> **Definition:** Triggers that encourage adoption of Bit2Me products the user does not currently use. These fire when a product eligibility gap is detected -- the user meets the criteria for a product but has not activated it. Because they promote specific commercial products, they are classified as MARKETING and require explicit consent. Some cross-sell copy risks crossing into ADVISORY_RISK territory -- strict copy guidelines apply.
+
+**Family Properties:**
+
+| Property | Value |
+|----------|-------|
+| consent_category | CAT-PRO (promotional -- Art. 6(1)(a) explicit consent) |
+| priority_tier | P4 (cross-sell -- subject to global caps + campaign limit) |
+| compliance_class | MARKETING (must be carefully classified -- some cross-sell copy risks ADVISORY_RISK) |
+| channel | Email (primary -- richer context for product description), In-App (secondary) |
+| cooldown | 1/week, 2/month maximum |
+| quiet_hours_exempt | No |
+| diego_approval | REQUIRED per template (Tier 1) |
+| data_source | BigQuery (`products_active` field + asset holdings via Hightouch sync) |
+
+**Entry Criteria:** Product eligibility gap detected: user holds stablecoins but has no Earn subscription, user is eligible for Loan based on collateral, Space Center mission is available, user is eligible for Pro based on trading volume.
+
+**Exit Criteria:** User adopts the suggested product OR 90 days pass from trigger activation.
+
+**Eligibility Rules:**
+
+| Rule | Value |
+|------|-------|
+| who_receives | `lifecycle_stage IN (ACTIVE, POWER)` AND `consent_marketing_email = true` or `consent_marketing_push = true` AND product gap exists |
+| who_never_receives | `C8_Whale_Suppression`, `Excluded_Users`, `notification_fatigue_score > 0.7`, users who dismissed an E-family notification in last 7 days, `lifecycle_stage IN (AT_RISK, PRE_DORMANCY, DORMANT_BAL, DORMANT_ZERO, CHURNED)` -- do NOT cross-sell to disengaged users |
+| asset_scope | Product-specific subsets from Layer 2 of asset universe: Earn-eligible assets, Loan collateral-eligible assets, Pro-eligible trading pairs |
+
+**CRITICAL -- MiCA Investment Advice Boundary:**
+
+Cross-sell triggers sit at the boundary between MARKETING and ADVISORY_RISK. The classification depends entirely on the copy:
+
+| Copy Example | Classification | Safe? |
+|-------------|---------------|-------|
+| "Your USDT could be earning rewards in Bit2Me Earn. Current APY: 3.2%. Variable rate. Capital at risk." | MARKETING | YES |
+| "Earn 3.2% on your USDT -- more than most savings accounts!" | ADVISORY_RISK | NO -- compares crypto yield to non-crypto alternative |
+| "Did you know Bit2Me offers a Loan product? Use your BTC as collateral." | MARKETING | YES |
+| "Don't miss this opportunity to earn passive income on your stablecoins." | ADVISORY_RISK | NO -- urgency language + "passive income" framing |
+| "You are eligible for Bit2Me Pro based on your trading volume. Try advanced order types." | MARKETING | YES |
+| "Pro traders are making more with limit orders -- upgrade now!" | ADVISORY_RISK | NO -- implies financial advantage + urgency |
+
+**Copy rule:** Describe the product factually. State current terms (APY, features). Include risk warnings. Never compare crypto yields to non-crypto alternatives. Never use urgency language.
+
+---
+
+#### Trigger E-01: Stablecoins Not in Earn
+
+```
+TRIGGER DEFINITION: E-01 Stablecoins Not in Earn
+==================================================
+trigger_id: E-01
+family: E (Product Cross-sell)
+trigger_name: Stablecoin Earn Opportunity
+business_objective: Product adoption (Earn), revenue expansion
+description: User holds stablecoins (USDT, USDC, DAI) in Wallet but has not
+             subscribed to Earn for any of them.
+
+ELIGIBILITY CRITERIA
+- who_receives: lifecycle_stage IN (ACTIVE, POWER) AND
+                holds_stablecoins = true AND
+                'earn' NOT IN products_active AND
+                consent_marketing_push = true OR consent_marketing_email = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      notification_fatigue_score > 0.7,
+                      users who dismissed E-family notification in last 7 days
+- consent_category: CAT-PRO (promotional -- requires explicit consent)
+- consent_required: true
+- asset_scope: Earn-eligible stablecoins only (USDT, USDC, DAI -- from Layer 2)
+
+DELIVERY RULES
+- priority_tier: P4 (cross-sell)
+- channel: Email (primary -- richer context), In-App (secondary)
+- cooldown: 1/week, 2/month maximum
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (Hightouch sync -- products_active, asset holdings)
+- required_events: None (state-based, not event-based)
+- required_user_properties: products_active, total_balance_eur,
+                            lifecycle_stage, holds_stablecoins (computed),
+                            notification_fatigue_score
+- evaluation_frequency: Daily (Hightouch sync)
+
+COMPLIANCE
+- compliance_class: MARKETING (promotes Earn product)
+- diego_approval: REQUIRED (Tier 1 -- template pre-approval)
+- mica_risk_level: MEDIUM (mentions yield -- must not compare to savings accounts)
+- risk_warning_required: true ("APY is variable. Capital at risk.")
+- keyword_blocklist_applies: true
+
+COPY CONSTRAINTS:
+  SAFE: "Your USDT could be earning rewards in Bit2Me Earn. Current APY: 3.2%.
+         Variable rate. Capital at risk."
+  UNSAFE: "Earn more than your bank with Bit2Me Earn!" (comparative = advisory risk)
+  UNSAFE: "Don't miss this opportunity to earn passive income" (urgency + advisory)
+```
+
+---
+
+#### Trigger E-02: Loan Eligible (Collateral Sufficient)
+
+```
+TRIGGER DEFINITION: E-02 Loan Eligible
+========================================
+trigger_id: E-02
+family: E (Product Cross-sell)
+trigger_name: Loan Eligible (Collateral Sufficient)
+business_objective: Product adoption (Loan), revenue expansion
+description: User holds sufficient crypto assets (BTC, ETH, or stablecoins) to qualify
+             as collateral for a Bit2Me Loan but has not used the Loan product.
+
+ELIGIBILITY CRITERIA
+- who_receives: lifecycle_stage IN (ACTIVE, POWER) AND
+                collateral_eligible_balance_eur > minimum_collateral_threshold AND
+                'loan' NOT IN products_active AND
+                consent_marketing_email = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      notification_fatigue_score > 0.7,
+                      dismissed E-family in last 7 days
+- consent_category: CAT-PRO
+- consent_required: true
+- asset_scope: Collateral-eligible assets (BTC, ETH, stablecoins -- from Loan product Layer 2)
+
+DELIVERY RULES
+- priority_tier: P4
+- channel: Email (primary), In-App (secondary)
+- cooldown: 1/week, 2/month maximum
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (asset holdings + collateral eligibility rules)
+- required_events: None (state-based)
+- required_user_properties: products_active, collateral_eligible_balance_eur,
+                            lifecycle_stage, notification_fatigue_score
+- evaluation_frequency: Daily
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: MEDIUM (loan product -- must explain risks clearly)
+- risk_warning_required: true ("Loan terms apply. Collateral may be liquidated if LTV exceeds threshold.")
+- keyword_blocklist_applies: true
+
+COPY CONSTRAINTS:
+  SAFE: "Your BTC holding qualifies you for a Bit2Me Loan. Borrow EUR against your crypto.
+         LTV and liquidation terms apply."
+  UNSAFE: "Unlock the value of your BTC -- borrow cash without selling!" (implies guaranteed benefit)
+```
+
+---
+
+#### Trigger E-03: Space Center Mission Available
+
+```
+TRIGGER DEFINITION: E-03 Space Center Mission Available
+=========================================================
+trigger_id: E-03
+family: E (Product Cross-sell)
+trigger_name: Space Center Mission Available
+business_objective: Gamification engagement, B2M token utility, retention
+description: User has an uncompleted Space Center mission available that would advance
+             their tier. Encourages engagement with the gamification layer. B2M holders
+             advance 100x faster -- this trigger also implicitly promotes B2M holding.
+
+ELIGIBILITY CRITERIA
+- who_receives: lifecycle_stage IN (ACTIVE, POWER) AND
+                space_center_missions_available > 0 AND
+                consent_marketing_inapp = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      notification_fatigue_score > 0.7,
+                      dismissed E-family in last 7 days
+- consent_category: CAT-PRO
+- consent_required: true
+- asset_scope: B2M token primarily (Space Center progression tied to B2M holding)
+
+DELIVERY RULES
+- priority_tier: P4
+- channel: In-App (primary -- gamification is in-app native), Push (secondary)
+- cooldown: 1/week, 2/month maximum
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (Space Center data -- TBD, may require backend API if not in BigQuery)
+- required_events: Mission_Completed (Backend), Tier_Advanced (Backend)
+- required_user_properties: space_center_tier, space_center_missions_available,
+                            b2m_holdings, lifecycle_stage, notification_fatigue_score
+- evaluation_frequency: Daily (if BigQuery) or Real-time (if backend push)
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: LOW (gamification, not direct investment suggestion)
+- risk_warning_required: false (gamification missions, not financial product)
+- keyword_blocklist_applies: true
+
+NOTE: Space Center data availability in BigQuery is an open question (see 02-RESEARCH.md
+Open Questions #3). If data is not in BigQuery, this trigger moves to V2.
+```
+
+---
+
+#### Trigger E-04: Pro Eligible (Volume Threshold Met)
+
+```
+TRIGGER DEFINITION: E-04 Pro Eligible
+=======================================
+trigger_id: E-04
+family: E (Product Cross-sell)
+trigger_name: Pro Eligible (Volume Threshold Met)
+business_objective: Product adoption (Pro), power user conversion
+description: User's 30-day trading volume exceeds the threshold where Pro features
+             (limit orders, order book, lower fees) become beneficial. Nudge toward
+             trying Pro trading interface.
+
+ELIGIBILITY CRITERIA
+- who_receives: lifecycle_stage IN (ACTIVE, POWER) AND
+                trading_volume_30d_eur > pro_volume_threshold AND
+                'pro' NOT IN products_active AND
+                consent_marketing_email = true OR consent_marketing_push = true
+- who_never_receives: C8_Whale_Suppression, Excluded_Users,
+                      notification_fatigue_score > 0.7,
+                      dismissed E-family in last 7 days
+- consent_category: CAT-PRO
+- consent_required: true
+- asset_scope: Pro-eligible trading pairs (subset with sufficient liquidity)
+
+DELIVERY RULES
+- priority_tier: P4
+- channel: Email (primary), In-App (secondary)
+- cooldown: 1/week, 2/month maximum
+- quiet_hours_exempt: false
+
+DATA REQUIREMENTS
+- data_source: BigQuery (trading_volume_30d_eur computed from trade events)
+- required_events: Trade_Executed (Backend -- for volume computation)
+- required_user_properties: products_active, trading_volume_30d_eur,
+                            lifecycle_stage, notification_fatigue_score
+- evaluation_frequency: Daily
+
+COMPLIANCE
+- compliance_class: MARKETING
+- diego_approval: REQUIRED (Tier 1)
+- mica_risk_level: LOW (feature awareness, not investment suggestion)
+- risk_warning_required: false (Pro is a trading interface upgrade, not a financial product per se)
+- keyword_blocklist_applies: true
+
+COPY CONSTRAINTS:
+  SAFE: "Based on your trading volume, you qualify for Bit2Me Pro. Access limit orders,
+         order book view, and reduced fees."
+  UNSAFE: "Pro traders are making smarter trades -- upgrade now!" (implies financial advantage)
+```
+
+---
+
+### 6.7 Family F: Risk and Protective
+
+> **Definition:** Alerts that protect the user from financial risk or inform them of account risk conditions. These are the highest-priority notifications in the system. Because they protect user interests rather than promote Bit2Me products, they are classified as TRANSACTIONAL and do NOT require marketing consent. Some (P0 security alerts) are exempt from ALL delivery restrictions including quiet hours and frequency caps.
+
+**Family Properties:**
+
+| Property | Value |
+|----------|-------|
+| consent_category | CAT-SEC (security/protective alerts) or CAT-TXN (LTV alerts for Loan product) |
+| priority_tier | P0 (security -- always delivers, no restrictions) or P1 (risk awareness -- exempt from global caps but respects quiet hours) |
+| compliance_class | TRANSACTIONAL (contractual necessity -- Art. 6(1)(b)) |
+| channel | Push (immediate -- time-critical), Email (persistent record for audit) |
+| cooldown | F-01: progressive escalation (no cooldown between tiers); F-02: 1/30 days; F-03/F-04: immediate |
+| quiet_hours_exempt | P0 = YES (security alerts send at any hour); P1 = NO |
+| diego_approval | NOT_REQUIRED (transactional -- contractual necessity) |
+| data_source | Backend events (real-time for security), BigQuery (for balance/LTV monitoring) |
+
+**Entry Criteria:** Risk condition detected: LTV approaching liquidation threshold, large balance with 60+ days inactivity, failed recurring buy, failed withdrawal, unusual login activity.
+
+**Exit Criteria:** Risk condition resolved: LTV decreases below threshold, user takes action, failed action succeeds on retry, security concern investigated.
+
+**Eligibility Rules:**
+
+| Rule | Value |
+|------|-------|
+| who_receives | ALL users meeting the risk condition -- NO marketing consent required for protective alerts (Art. 6(1)(b) contractual necessity) |
+| who_never_receives | **None for P0 security alerts** -- security ALWAYS sends, even to C8 whale accounts. For P1 risk awareness: `Excluded_Users` only. |
+| asset_scope | Assets the user currently holds or has collateralized |
+
+**Frequency cap exemption:** P0 and P1 are exempt from global caps via "Exclude from Global campaign limits" checkbox in CleverTap (see Section 2.3).
+
+**Quiet hours exemption:** P0 security alerts (F-04 Unusual Login Activity, certain F-01 tiers) are NOT subject to quiet hours -- they send at any time. P1 risk awareness alerts respect quiet hours.
+
+---
+
+#### Trigger F-01: LTV Warning (3-Tier Graduated)
+
+```
+TRIGGER DEFINITION: F-01 LTV Warning (Graduated)
+==================================================
+trigger_id: F-01
+family: F (Risk and Protective)
+trigger_name: LTV Warning (3-Tier Graduated Alert)
+business_objective: Risk management, liquidation prevention, user trust
+description: For Loan users, monitors LTV (Loan-to-Value) ratio and sends graduated
+             warnings as LTV approaches the liquidation threshold. Modeled on Nexo's
+             proven 3-tier system. Each tier escalates in urgency and channel.
+
+TIER 1 -- CAUTION (LTV >= 71.4%):
+  Copy: "Your loan LTV has reached 71.4%. Consider adding collateral to reduce risk."
+  Channel: Push + In-App
+  Priority: P1
+
+TIER 2 -- WARNING (LTV >= 74.1%):
+  Copy: "Your loan LTV is at 74.1%. Liquidation risk is increasing. Add collateral now."
+  Channel: Push + Email + In-App
+  Priority: P1
+
+TIER 3 -- CRITICAL (LTV >= 76.9%):
+  Copy: "URGENT: Your loan LTV is at 76.9%. Liquidation will occur at 80%. Add collateral immediately."
+  Channel: Push (P0 -- sends at any hour) + Email + In-App + SMS (if available)
+  Priority: P0 (quiet hours exempt)
+
+ELIGIBILITY CRITERIA
+- who_receives: ALL users with active loans whose LTV reaches any tier threshold
+- who_never_receives: NONE (P0 security/risk -- always delivers)
+- consent_category: CAT-TXN (loan monitoring is contractual -- Art. 6(1)(b))
+- consent_required: false (contractual necessity)
+- asset_scope: Collateral-eligible assets (BTC, ETH, stablecoins)
+
+DELIVERY RULES
+- priority_tier: P1 (Tiers 1-2), P0 (Tier 3 -- CRITICAL)
+- channel: Progressive escalation per tier (see above)
+- cooldown: No cooldown between tiers (each tier is a separate notification).
+            Within same tier: 1 per 4 hours (LTV can fluctuate).
+            Reset when LTV drops below tier threshold.
+- quiet_hours_exempt: Tier 3 = YES (P0); Tiers 1-2 = NO (P1)
+
+DATA REQUIREMENTS
+- data_source: BigQuery (loan_ltv_current computed from collateral price + loan balance)
+- required_events: None (state-based -- LTV computed from price feed)
+- required_user_properties: active_loan_id, loan_ltv_current, loan_balance_eur,
+                            collateral_asset, collateral_amount
+- evaluation_frequency: Every 15 minutes (critical -- price moves can trigger liquidation)
+
+COMPLIANCE
+- compliance_class: TRANSACTIONAL (contractual risk notification)
+- diego_approval: NOT_REQUIRED (transactional)
+- mica_risk_level: NONE (protective, not promotional)
+- risk_warning_required: false (the notification IS the risk warning)
+- keyword_blocklist_applies: false
+```
+
+---
+
+#### Trigger F-02: Large Balance Inactivity (60d)
+
+```
+TRIGGER DEFINITION: F-02 Large Balance Inactivity
+===================================================
+trigger_id: F-02
+family: F (Risk and Protective)
+trigger_name: Large Balance Inactivity Warning
+business_objective: User protection, dormant account security awareness
+description: Fires when a user with a balance exceeding EUR 1,000 has been inactive
+             for 60+ days. Serves as a security check ("is this still you?") and a
+             gentle reminder that they hold significant value on the platform.
+
+ELIGIBILITY CRITERIA
+- who_receives: ALL users with total_balance_eur > 1000 AND
+                days_since_last_activity > 60
+- who_never_receives: Excluded_Users (C8 whale accounts RECEIVE this -- protective alert)
+- consent_category: CAT-SEC (account security awareness -- Art. 6(1)(b))
+- consent_required: false (contractual -- protecting user's assets)
+- asset_scope: All assets the user holds (aggregate balance check)
+
+DELIVERY RULES
+- priority_tier: P1 (risk awareness -- exempt from global caps)
+- channel: Email (primary -- persistent record), Push (secondary)
+- cooldown: 1 per 30 days (do not repeat frequently for dormant users)
+- quiet_hours_exempt: false (P1 -- not urgent enough for night delivery)
+
+DATA REQUIREMENTS
+- data_source: BigQuery (total_balance_eur + days_since_last_activity)
+- required_events: None (state-based)
+- required_user_properties: total_balance_eur, days_since_last_activity, lifecycle_stage
+- evaluation_frequency: Weekly (dormant user check does not need daily frequency)
+
+COMPLIANCE
+- compliance_class: TRANSACTIONAL (account security awareness)
+- diego_approval: NOT_REQUIRED
+- mica_risk_level: NONE
+- risk_warning_required: false
+- keyword_blocklist_applies: false
+
+COPY CONSTRAINTS:
+  SAFE: "Your Bit2Me account holds EUR 5,420 and has been inactive for 67 days.
+         For your security, please verify your account is secure."
+  UNSAFE: "Your crypto is sitting idle! Put it to work in Earn." (cross-sell disguised as security)
+```
+
+---
+
+#### Trigger F-03: Failed Recurring Buy
+
+```
+TRIGGER DEFINITION: F-03 Failed Recurring Buy
+===============================================
+trigger_id: F-03
+family: F (Risk and Protective)
+trigger_name: Failed Recurring Buy Alert
+business_objective: Service continuity, user awareness
+description: Fires when a user's scheduled recurring buy (DCA) fails to execute.
+             Failure reasons: insufficient balance, expired payment method, payment
+             processor error. The user needs to know their DCA strategy was interrupted.
+
+ELIGIBILITY CRITERIA
+- who_receives: ALL users whose Recurring_Buy_Failed event fired
+- who_never_receives: Excluded_Users only
+- consent_category: CAT-TXN (transaction failure -- Art. 6(1)(b))
+- consent_required: false (contractual -- service the user set up failed)
+- asset_scope: The specific asset in the failed recurring buy
+
+DELIVERY RULES
+- priority_tier: P1 (user-configured service failure)
+- channel: Push (immediate awareness), Email (persistent record with failure details)
+- cooldown: Immediate (one notification per failure event)
+- quiet_hours_exempt: false (P1 -- failure is important but not security-critical)
+
+DATA REQUIREMENTS
+- data_source: Backend event (Recurring_Buy_Failed -- real-time)
+- required_events: Recurring_Buy_Failed (Backend -- with failure_reason property)
+- required_user_properties: recurring_buy_active, recurring_buy_assets
+- evaluation_frequency: Real-time (event-driven)
+
+COMPLIANCE
+- compliance_class: TRANSACTIONAL
+- diego_approval: NOT_REQUIRED
+- mica_risk_level: NONE
+- risk_warning_required: false
+- keyword_blocklist_applies: false
+```
+
+---
+
+#### Trigger F-04: Unusual Login Activity
+
+```
+TRIGGER DEFINITION: F-04 Unusual Login Activity
+=================================================
+trigger_id: F-04
+family: F (Risk and Protective)
+trigger_name: Unusual Login Activity Alert
+business_objective: Account security, fraud prevention
+description: Fires when a login is detected from a new device, new location (country/city),
+             or at an unusual time (outside user's typical login hours). This is the
+             highest-priority notification in the entire system -- P0, no restrictions.
+
+ELIGIBILITY CRITERIA
+- who_receives: ALL users when unusual login is detected
+- who_never_receives: NONE (P0 security -- ALWAYS delivers to everyone, including C8 whales)
+- consent_category: CAT-SEC (account security -- Art. 6(1)(b))
+- consent_required: false (contractual necessity -- account protection)
+- asset_scope: Not asset-specific (account-level security)
+
+DELIVERY RULES
+- priority_tier: P0 (security -- highest priority, no restrictions whatsoever)
+- channel: Push (immediate) + Email (persistent record)
+- cooldown: Immediate (one per suspicious event, no cooldown)
+- quiet_hours_exempt: YES (P0 -- security alerts send at 3 AM if needed)
+
+DATA REQUIREMENTS
+- data_source: Backend event (Login_New_Device or Login_New_Location -- real-time)
+- required_events: Login_New_Device (Backend), Login_New_Location (Backend)
+- required_user_properties: known_devices (array), known_locations (array),
+                            typical_login_hours (computed)
+- evaluation_frequency: Real-time (event-driven, zero delay)
+
+COMPLIANCE
+- compliance_class: TRANSACTIONAL
+- diego_approval: NOT_REQUIRED
+- mica_risk_level: NONE
+- risk_warning_required: false
+- keyword_blocklist_applies: false
+
+NOT SUBJECT TO:
+- Frequency caps (P0 exempt via CleverTap "Exclude from Global campaign limits")
+- Quiet hours (P0 security sends at any hour)
+- Fatigue risk filtering (security always sends regardless of fatigue score)
+- Suppression layers (only segment-level exclusion for Excluded_Users; C8 whales RECEIVE security alerts)
+```
+
+---
+
+### 6.8 Cross-Reference Matrix
+
+This matrix maps each trigger family to the Phase 1 constructs that govern its delivery. Use this as a quick reference when designing new triggers or auditing existing ones.
+
+#### Family-to-Phase 1 Mapping
+
+| Family | consent_category | priority_tier | compliance_class | diego_approval | typical_channel | typical_cooldown | asset_scope_type |
+|--------|-----------------|---------------|-----------------|----------------|----------------|-----------------|-----------------|
+| A (User Configured) | CAT-USR | P1 | TRANSACTIONAL | NOT_REQUIRED | Push, Email fallback | 1 per asset per 4h | All listed (Layer 1) |
+| B (Market Triggered) | CAT-MKT | P3 | INFORMATIONAL | TEMPLATE_PRE_APPROVED | Push, In-App | 1/day, 3/week | Top 50-100 by volume |
+| C (Behavioral) | CAT-MKT / CAT-PRO | P3-P4 | MARKETING | REQUIRED (Tier 1) | In-App, Push | 1/week per pattern | User-interacted assets (Layer 3) |
+| D (Lifecycle) | CAT-MKT / CAT-PRO | P2 / P5 | MARKETING | REQUIRED (Tier 1) | Email, Push | 1/week per journey | Not asset-specific |
+| E (Product Cross-sell) | CAT-PRO | P4 | MARKETING | REQUIRED (Tier 1) | Email, In-App | 1/week, 2/month | Product-specific (Layer 2) |
+| F (Risk/Protective) | CAT-SEC / CAT-TXN | P0-P1 | TRANSACTIONAL | NOT_REQUIRED | Push, Email | Varies (progressive/immediate) | User-held assets |
+
+#### Consent and Cap Rules by Family
+
+| Family | Marketing Consent Required? | Subject to Global Frequency Caps? | Subject to Quiet Hours? | Subject to Fatigue Risk Suppression? | C8 Whale Suppressed? |
+|--------|---------------------------|----------------------------------|------------------------|--------------------------------------|---------------------|
+| A | No (contractual -- CAT-USR) | No (P1 exempt) | Yes (unless user opts 24/7) | No | Yes |
+| B | Yes (CAT-MKT) | Yes (P3) | Yes | Yes (suppressed at > 0.7) | Yes |
+| C | Yes (CAT-MKT / CAT-PRO) | Yes (P3-P4) | Yes | Yes (suppressed at > 0.7) | Yes |
+| D | Yes (CAT-MKT / CAT-PRO) | Yes (P2) or Yes (P5) | Yes | Yes (suppressed at > 0.7) | Yes |
+| E | Yes (CAT-PRO) | Yes (P4) | Yes | Yes (suppressed at > 0.7) | Yes |
+| F | No (contractual -- CAT-SEC/CAT-TXN) | No (P0-P1 exempt) | P0: No, P1: Yes | No (security always sends) | P0: No (always sends), P1: No |
+
+#### Suppression Layer Application by Family
+
+| Family | Layer 1: Segment Exclusion | Layer 2: Quiet Hours (DND) | Layer 3: Opt-Out Handling | Layer 4: Escalating Cooldowns |
+|--------|---------------------------|---------------------------|--------------------------|------------------------------|
+| A | C8 + Excluded | Applied (22:00-08:00) | MSG-push/MSG-email DND checked | Dismissal cooldown applies |
+| B | C8 + Excluded + Fatigue > 0.7 | Applied | Marketing consent checked | Dismissal cooldown applies; 7d family cooldown after 3 dismissals |
+| C | C8 + Excluded + Fatigue > 0.7 + Active Journey | Applied | Marketing consent checked | Dismissal cooldown applies |
+| D | C8 + Excluded + Fatigue > 0.7 + Active Journey | Applied | Marketing consent checked | Dismissal cooldown applies |
+| E | C8 + Excluded + Fatigue > 0.7 + Dismissed E-family 7d | Applied | Marketing consent checked | Dismissal cooldown applies |
+| F (P0) | None (always sends) | NOT applied (sends any hour) | MSG-push DND NOT checked for P0 | No cooldown (progressive escalation) |
+| F (P1) | Excluded only | Applied | MSG-push/MSG-email DND checked | Cooldown varies per trigger |
+
+---
+
+### Cross-References
+
+- **Section 1 (Preference Center Architecture):** Consent categories (CAT-SEC through CAT-PRO) determine which triggers require marketing consent and which CleverTap Subscription Groups users must be subscribed to.
+- **Section 2 (Frequency Cap Policy):** Priority tiers (P0-P5) determine cap exemption, campaign-level limits, and fatigue risk thresholds per trigger.
+- **Section 3 (Suppression System):** Suppression layers (segment exclusion, quiet hours, opt-out, cooldowns) apply differentially by family as documented in the Cross-Reference Matrix above.
+- **Section 4 (Event Schema):** Required events listed in each trigger definition (e.g., Price_Alert_Set, Purchase_Completed, Deposit_Completed) must be tracked per the Phase 1 event schema.
+- **Section 5 (Hightouch Reverse ETL):** User properties listed in each trigger definition (e.g., lifecycle_stage, products_active, notification_fatigue_score) must be included in the Hightouch sync configuration from BigQuery to CleverTap.
