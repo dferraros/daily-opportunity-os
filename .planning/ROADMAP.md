@@ -43,7 +43,7 @@ Plans:
 **Plans**: 4 plans (Wave 1, all parallel)
 
 Plans:
-- [ ] 02-01-PLAN.md -- Trigger Taxonomy: 6 families with eligibility, example triggers, compliance classification (TAX-01 through TAX-07)
+- [x] 02-01-PLAN.md -- Trigger Taxonomy: 6 families with eligibility, example triggers, compliance classification (TAX-01 through TAX-07)
 - [x] 02-02-PLAN.md -- Asset Universe Mapping: product-asset eligibility matrix, trigger-family scope rules (TAX-08)
 - [ ] 02-03-PLAN.md -- Competitive Benchmark: 6-competitor matrix, copy/avoid/innovate recommendations (BENCH-01, BENCH-02, BENCH-03)
 - [ ] 02-04-PLAN.md -- Compliance Framework: per-trigger checklist, Diego workflow, bright-line test, market abuse protocol (COMP-01 through COMP-04)
@@ -88,6 +88,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
-| 2. Taxonomy + Competitive Benchmark | 3/4 | In Progress|  |
+| 2. Taxonomy + Competitive Benchmark | 4/4 | Complete   | 2026-03-22 |
 | 3. Scoring System + Master Trigger Table | 0/3 | Not started | - |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-22T18:23:48.315Z"
-last_activity: 2026-03-22 -- Completed 01-01-PLAN.md (Preference Center + Frequency Caps)
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-22T18:28:00.000Z"
+last_activity: 2026-03-22 -- Completed 02-01-PLAN.md (Trigger Taxonomy: 6 families with 24 triggers)
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 50
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Un sistema de notificaciones que aumenta reactivacion, retencion y revenue sin destruir deliverability, push permissions ni confianza del usuario.
-**Current focus:** Phase 1 - Foundation + Safety Architecture
+**Current focus:** Phase 2 - Taxonomy + Competitive Benchmark
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation + Safety Architecture)
-Plan: 1 of 2 in current phase
+Phase: 2 of 4 (Taxonomy + Competitive Benchmark)
+Plan: 1 of 4 in current phase (02-01 complete)
 Status: Executing
-Last activity: 2026-03-22 -- Completed 01-01-PLAN.md (Preference Center + Frequency Caps)
+Last activity: 2026-03-22 -- Completed 02-01-PLAN.md (Trigger Taxonomy: 6 families with 24 triggers)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P02 | 5min | 1 tasks | 1 files |
 | Phase 02 P04 | 7min | 1 tasks | 1 files |
 | Phase 02 P03 | 9min | 1 tasks | 1 files |
+| Phase 02 P01 | 9min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Stablecoin de-peg alerts classified as CAT-SEC P0 (no consent required)
 - [Phase 02]: Alert-to-action deep links elevated to MVP architectural decision (no competitor does this)
 - [Phase 02]: No artificial alert limits -- avoiding Binance 50/10/90d anti-pattern
+- [Phase 02-01]: Combined all 6 families in single taxonomy file for cohesion
+- [Phase 02-01]: Family D triggers must check active_journey IS NULL to avoid CleverTap journey conflicts
+- [Phase 02-01]: Family F-01 LTV alerts use Nexo 3-tier graduated model (71.4%, 74.1%, 76.9%)
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T18:23:48.305Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-22T18:28:00.000Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None

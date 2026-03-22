@@ -19,13 +19,13 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Trigger Taxonomy
 
-- [ ] **TAX-01**: Taxonomía completa de 6 familias de triggers con criterios de elegibilidad
-- [ ] **TAX-02**: Familia A — User Configured (price above/below, % move, target reached, LTV threshold)
-- [ ] **TAX-03**: Familia B — Market Triggered (volatility spike, volume spike, trending asset, breakout)
-- [ ] **TAX-04**: Familia C — Behavioral (watched not bought, deposit no trade, abandoned order, repeated views)
-- [ ] **TAX-05**: Familia D — Lifecycle (active→at-risk, dormant with balance, first trade, recurring lapsed)
-- [ ] **TAX-06**: Familia E — Product Cross-sell (stablecoins not in Earn, eligible for Loan, Space Center missions)
-- [ ] **TAX-07**: Familia F — Risk & Protective (LTV approaching threshold, large balance inactivity, failed actions)
+- [x] **TAX-01**: Taxonomía completa de 6 familias de triggers con criterios de elegibilidad
+- [x] **TAX-02**: Familia A — User Configured (price above/below, % move, target reached, LTV threshold)
+- [x] **TAX-03**: Familia B — Market Triggered (volatility spike, volume spike, trending asset, breakout)
+- [x] **TAX-04**: Familia C — Behavioral (watched not bought, deposit no trade, abandoned order, repeated views)
+- [x] **TAX-05**: Familia D — Lifecycle (active→at-risk, dormant with balance, first trade, recurring lapsed)
+- [x] **TAX-06**: Familia E — Product Cross-sell (stablecoins not in Earn, eligible for Loan, Space Center missions)
+- [x] **TAX-07**: Familia F — Risk & Protective (LTV approaching threshold, large balance inactivity, failed actions)
 - [x] **TAX-08**: Asset universe mapping — qué activos son elegibles para cada familia de trigger
 
 ### Scoring & Formulas
@@ -127,13 +127,13 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | FOUND-03 | Phase 1: Foundation + Safety Architecture | Complete |
 | FOUND-04 | Phase 1: Foundation + Safety Architecture | Complete |
 | FOUND-05 | Phase 1: Foundation + Safety Architecture | Complete |
-| TAX-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-04 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-05 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-06 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-07 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
+| TAX-01 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-03 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-04 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-05 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-06 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| TAX-07 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | TAX-08 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | BENCH-01 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | BENCH-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
