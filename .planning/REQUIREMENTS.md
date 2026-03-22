@@ -69,10 +69,10 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Compliance & Risk
 
-- [ ] **COMP-01**: Compliance checklist por trigger — MiCA Art. 66, GDPR, ePrivacy, CNMV
-- [ ] **COMP-02**: Diego review workflow — qué copy necesita aprobación y cuándo
-- [ ] **COMP-03**: Investment advice vs informational — regla clara y ejemplos concretos
-- [ ] **COMP-04**: Market abuse risk en price/volume triggers — protocolo de datos públicos y simultaneidad
+- [x] **COMP-01**: Compliance checklist por trigger — MiCA Art. 66, GDPR, ePrivacy, CNMV
+- [x] **COMP-02**: Diego review workflow — qué copy necesita aprobación y cuándo
+- [x] **COMP-03**: Investment advice vs informational — regla clara y ejemplos concretos
+- [x] **COMP-04**: Market abuse risk en price/volume triggers — protocolo de datos públicos y simultaneidad
 
 ### Final Recommendations
 
@@ -138,10 +138,10 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | BENCH-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | BENCH-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | BENCH-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| COMP-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| COMP-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| COMP-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| COMP-04 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
+| COMP-01 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| COMP-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| COMP-03 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| COMP-04 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | SCORE-01 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | SCORE-02 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | SCORE-03 | Phase 3: Scoring System + Master Trigger Table | Pending |

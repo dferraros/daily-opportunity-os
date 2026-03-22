@@ -44,7 +44,7 @@ Plans:
 
 Plans:
 - [ ] 02-01-PLAN.md -- Trigger Taxonomy: 6 families with eligibility, example triggers, compliance classification (TAX-01 through TAX-07)
-- [ ] 02-02-PLAN.md -- Asset Universe Mapping: product-asset eligibility matrix, trigger-family scope rules (TAX-08)
+- [x] 02-02-PLAN.md -- Asset Universe Mapping: product-asset eligibility matrix, trigger-family scope rules (TAX-08)
 - [ ] 02-03-PLAN.md -- Competitive Benchmark: 6-competitor matrix, copy/avoid/innovate recommendations (BENCH-01, BENCH-02, BENCH-03)
 - [ ] 02-04-PLAN.md -- Compliance Framework: per-trigger checklist, Diego workflow, bright-line test, market abuse protocol (COMP-01 through COMP-04)
 
