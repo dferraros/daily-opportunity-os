@@ -82,8 +82,9 @@ else:
             break
 
         if section_start is not None:
-            # Find next heading at same or higher level
-            rest = scoring_content[section_start + 1:]
+            # Find end of the heading line first, then search for next heading
+            heading_end = scoring_content.index("\n", section_start) + 1
+            rest = scoring_content[heading_end:]
             next_heading = re.search(r"^#{2," + str(heading_level) + r"}\s+", rest, re.MULTILINE)
             if next_heading:
                 section_content = rest[:next_heading.start()]
