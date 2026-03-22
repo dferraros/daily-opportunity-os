@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-22T19:25:23Z"
-last_activity: "2026-03-22 -- Completed 03-02-PLAN.md (Master Trigger Table: 33 triggers x 14 columns, top 10 MVP)"
+stopped_at: Completed 03-03-PLAN.md (Phase 3 COMPLETE)
+last_updated: "2026-03-22T19:54:32Z"
+last_activity: "2026-03-22 -- Completed 03-03-PLAN.md (MVP Selection + Channel Policy: top 10 NOT-to-launch, channel decision tree, deep links, quiet hours, conflict resolution)"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
   completed_plans: 9
   percent: 100
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Un sistema de notificaciones que aumenta reactivacion, retencion y revenue sin destruir deliverability, push permissions ni confianza del usuario.
-**Current focus:** Phase 3 - Scoring System + Master Trigger Table
+**Current focus:** Phase 3 COMPLETE -- Ready for Phase 4 (Measurement + Final Recommendations)
 
 ## Current Position
 
-Phase: 3 of 4 (Scoring System + Master Trigger Table)
-Plan: 2 of 3 in current phase (03-01, 03-02 complete)
-Status: Executing
-Last activity: 2026-03-22 -- Completed 03-02-PLAN.md (Master Trigger Table: 33 triggers x 14 columns, top 10 MVP)
+Phase: 3 of 4 (Scoring System + Master Trigger Table) -- COMPLETE
+Plan: 3 of 3 in current phase (03-01, 03-02, 03-03 complete)
+Status: Phase 3 Complete
+Last activity: 2026-03-22 -- Completed 03-03-PLAN.md (MVP Selection + Channel Policy)
 
 Progress: [██████████] 100%
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 02 P01 | 9min | 3 tasks | 2 files |
 | Phase 03 P01 | 9min | 2 tasks | 2 files |
 | Phase 03 P02 | 11min | 1 tasks | 1 files |
+| Phase 03 P03 | 18min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,10 @@ Recent decisions affecting current work:
 - [Phase 03-02]: MVP top 10 by score: A-01(20), A-02(20), A-03(19), F-01(19), D-02(17), F-04(17), B-01(16.5), D-01(16), C-01(14), B-04(13.5)
 - [Phase 03-02]: F-04 "Unusual Login" from taxonomy renamed to F-05 in master table to avoid collision with F-04 "Stablecoin De-Peg"
 - [Phase 03-02]: MVP implementation in 4 waves: Family A first (zero compliance), then F (protective), then D/B (Diego), then C (SDK)
+- [Phase 03-03]: Editorial commentary in Family B market triggers is a PERMANENT prohibition (MiCA Art. 87-92), not timeline-dependent
+- [Phase 03-03]: Family B simultaneous send (MiCA Art. 89) overrides conflict logic but NOT quiet hours (P3 tier, DND applies)
+- [Phase 03-03]: Deep link web fallback URLs mapped for all 11 products for email/no-app scenarios
+- [Phase 03-03]: Journey exit resets active_journey to NULL on next Hightouch sync (30-min), no additional cooldown
 
 ### Pending Todos
 
@@ -102,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:25:23Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-22T19:54:32Z
+Stopped at: Completed 03-03-PLAN.md (Phase 3 COMPLETE)
 Resume file: None

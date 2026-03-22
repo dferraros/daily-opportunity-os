@@ -41,17 +41,17 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Master Trigger Table
 
-- [ ] **TRIG-01**: Tabla maestra con ≥30 triggers documentados (todas las columnas del brief)
-- [ ] **TRIG-02**: Por cada trigger: trigger_id, family, business objective, who receives, who never receives, asset scope, formula, threshold, cooldown, channel, deep link, priority, estimated value, estimated risk
-- [ ] **TRIG-03**: Top 10 triggers MVP (30 días) claramente identificados
-- [ ] **TRIG-04**: Top 10 triggers NOT to launch (con razonamiento)
+- [x] **TRIG-01**: Tabla maestra con ≥30 triggers documentados (todas las columnas del brief)
+- [x] **TRIG-02**: Por cada trigger: trigger_id, family, business objective, who receives, who never receives, asset scope, formula, threshold, cooldown, channel, deep link, priority, estimated value, estimated risk
+- [x] **TRIG-03**: Top 10 triggers MVP (30 días) claramente identificados
+- [x] **TRIG-04**: Top 10 triggers NOT to launch (con razonamiento)
 
 ### Channel Policy
 
-- [ ] **CHAN-01**: Cuándo push vs in-app vs email vs no enviar — matriz de decisión
-- [ ] **CHAN-02**: Deep links por producto y superficie (Brokerage, Pro, Earn, Card, Space Center)
-- [ ] **CHAN-03**: Quiet hours por timezone (España, LatAm, EU)
-- [ ] **CHAN-04**: Reglas de conflicto entre lifecycle journeys y market alerts en el mismo usuario
+- [x] **CHAN-01**: Cuándo push vs in-app vs email vs no enviar — matriz de decisión
+- [x] **CHAN-02**: Deep links por producto y superficie (Brokerage, Pro, Earn, Card, Space Center)
+- [x] **CHAN-03**: Quiet hours por timezone (España, LatAm, EU)
+- [x] **CHAN-04**: Reglas de conflicto entre lifecycle journeys y market alerts en el mismo usuario
 
 ### Competitor Benchmark
 
