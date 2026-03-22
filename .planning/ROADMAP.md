@@ -6,7 +6,8 @@ This roadmap delivers a complete strategic playbook for [external]'s trigger-bas
 
 ## Phases
 
-- [x] **Phase 1: Foundation + Safety Architecture** - Preference center design, frequency caps, suppression system, data architecture, Reverse ETL design (completed 2026-03-22)
+- [x] **Phase 1: Foundation + Safety Architecture** - Preference center design, frequency caps, suppression system, data architecture, Reverse ETL design
+ (completed 2026-03-22)
 - [ ] **Phase 2: Taxonomy + Competitive Benchmark** - 6 trigger families with eligibility, asset universe mapping, competitor matrix, compliance checklist
 - [ ] **Phase 3: Scoring System + Master Trigger Table** - 8 scoring formulas, 30+ trigger table, channel policy matrix, Top 10 MVP and Top 10 NOT to launch
 - [ ] **Phase 4: Measurement + Final Recommendations** - KPIs, incremental lift framework, Net Notification Value, MVP/V2/V3 roadmap, executive summary
@@ -39,11 +40,13 @@ Plans:
   3. Competitor matrix covers 6 competitors (Coinbase, Binance, Kraken, Bitpanda, Revolut, Nexo) with per-competitor analysis of alert types, preference center, channels, gaps
   4. Actionable competitive recommendations are documented: what to copy, what to avoid, what to innovate
   5. Compliance checklist exists per trigger type with MiCA Art. 66, GDPR, ePrivacy, CNMV references, Diego review workflow, investment advice bright-line test, and market abuse protocol
-**Plans**: TBD
+**Plans**: 4 plans (Wave 1, all parallel)
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Trigger Taxonomy: 6 families with eligibility, example triggers, compliance classification (TAX-01 through TAX-07)
+- [ ] 02-02-PLAN.md -- Asset Universe Mapping: product-asset eligibility matrix, trigger-family scope rules (TAX-08)
+- [ ] 02-03-PLAN.md -- Competitive Benchmark: 6-competitor matrix, copy/avoid/innovate recommendations (BENCH-01, BENCH-02, BENCH-03)
+- [ ] 02-04-PLAN.md -- Compliance Framework: per-trigger checklist, Diego workflow, bright-line test, market abuse protocol (COMP-01 through COMP-04)
 
 ### Phase 3: Scoring System + Master Trigger Table
 **Goal**: The playbook contains concrete, implementable scoring formulas and a complete trigger table that an engineering/CRM team could execute from -- every trigger has a score, a channel, a threshold, a cooldown, and a priority.
@@ -85,6 +88,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
-| 2. Taxonomy + Competitive Benchmark | 0/2 | Not started | - |
+| 2. Taxonomy + Competitive Benchmark | 0/4 | Not started | - |
 | 3. Scoring System + Master Trigger Table | 0/3 | Not started | - |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |
