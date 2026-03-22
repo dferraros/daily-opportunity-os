@@ -77,11 +77,11 @@ Plans:
   4. Net Notification Value formula is defined (incremental revenue minus opt-out cost minus complaint cost) with example calculations
   5. Executive summary states estimated business impact on reactivation, retention, and revenue with supporting logic
   6. MVP (30d), V2 (90d), V3 (180d) roadmap specifies triggers, channels, required resources, and dependencies per team (Katy, Alvaro, Diego, Engineering)
-**Plans**: TBD
+**Plans**: 2 plans (Wave 1, parallel)
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- Measurement Framework: KPIs per family, deliverability health, holdout design, NNV formula, BigQuery dashboard spec (MEAS-01 to MEAS-05)
+- [ ] 04-02-PLAN.md -- Final Recommendations: Executive summary, MVP/V2/V3 roadmap, critical path, risks, start-here checklist (REC-01 to REC-05)
 
 ## Progress
 
