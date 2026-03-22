@@ -8,7 +8,7 @@ This roadmap delivers a complete strategic playbook for [external]'s trigger-bas
 
 - [x] **Phase 1: Foundation + Safety Architecture** - Preference center design, frequency caps, suppression system, data architecture, Reverse ETL design
  (completed 2026-03-22)
-- [ ] **Phase 2: Taxonomy + Competitive Benchmark** - 6 trigger families with eligibility, asset universe mapping, competitor matrix, compliance checklist
+- [x] **Phase 2: Taxonomy + Competitive Benchmark** - 6 trigger families with eligibility, asset universe mapping, competitor matrix, compliance checklist (completed 2026-03-22)
 - [ ] **Phase 3: Scoring System + Master Trigger Table** - 8 scoring formulas, 30+ trigger table, channel policy matrix, Top 10 MVP and Top 10 NOT to launch
 - [ ] **Phase 4: Measurement + Final Recommendations** - KPIs, incremental lift framework, Net Notification Value, MVP/V2/V3 roadmap, executive summary
 
@@ -88,6 +88,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
-| 2. Taxonomy + Competitive Benchmark | 4/4 | Complete   | 2026-03-22 |
+| 2. Taxonomy + Competitive Benchmark | 4/4 | Complete    | 2026-03-22 |
 | 3. Scoring System + Master Trigger Table | 0/3 | Not started | - |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |
