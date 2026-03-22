@@ -80,7 +80,7 @@ Plans:
 **Plans**: 2 plans (Wave 1, parallel)
 
 Plans:
-- [ ] 04-01-PLAN.md -- Measurement Framework: KPIs per family, deliverability health, holdout design, NNV formula, BigQuery dashboard spec (MEAS-01 to MEAS-05)
+- [x] 04-01-PLAN.md -- Measurement Framework: KPIs per family, deliverability health, holdout design, NNV formula, BigQuery dashboard spec (MEAS-01 to MEAS-05)
 - [ ] 04-02-PLAN.md -- Final Recommendations: Executive summary, MVP/V2/V3 roadmap, critical path, risks, start-here checklist (REC-01 to REC-05)
 
 ## Progress
@@ -90,4 +90,4 @@ Plans:
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
 | 2. Taxonomy + Competitive Benchmark | 4/4 | Complete    | 2026-03-22 |
 | 3. Scoring System + Master Trigger Table | 3/3 | Complete    | 2026-03-22 |
-| 4. Measurement + Final Recommendations | 0/2 | Not started | - |
+| 4. Measurement + Final Recommendations | 1/2 | In progress | - |

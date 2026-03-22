@@ -61,11 +61,11 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Measurement System
 
-- [ ] **MEAS-01**: KPIs por trigger y por familia — CTR, session rate, trade rate, deposit rate
-- [ ] **MEAS-02**: Métricas de presión y fatiga — notification pressure score, push disable lift, negative action rate
-- [ ] **MEAS-03**: Métricas de deliverability — push token health, email reputation, opt-in rate trend
-- [ ] **MEAS-04**: Incremental lift framework — holdout design (10% control), A/B test design por trigger
-- [ ] **MEAS-05**: Net Notification Value formula — incremental revenue minus opt-out cost minus complaint cost
+- [x] **MEAS-01**: KPIs por trigger y por familia — CTR, session rate, trade rate, deposit rate
+- [x] **MEAS-02**: Métricas de presión y fatiga — notification pressure score, push disable lift, negative action rate
+- [x] **MEAS-03**: Métricas de deliverability — push token health, email reputation, opt-in rate trend
+- [x] **MEAS-04**: Incremental lift framework — holdout design (10% control), A/B test design por trigger
+- [x] **MEAS-05**: Net Notification Value formula — incremental revenue minus opt-out cost minus complaint cost
 
 ### Compliance & Risk
 
@@ -158,11 +158,11 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | CHAN-02 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | CHAN-03 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | CHAN-04 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| MEAS-01 | Phase 4: Measurement + Final Recommendations | Pending |
-| MEAS-02 | Phase 4: Measurement + Final Recommendations | Pending |
-| MEAS-03 | Phase 4: Measurement + Final Recommendations | Pending |
-| MEAS-04 | Phase 4: Measurement + Final Recommendations | Pending |
-| MEAS-05 | Phase 4: Measurement + Final Recommendations | Pending |
+| MEAS-01 | Phase 4: Measurement + Final Recommendations | Complete |
+| MEAS-02 | Phase 4: Measurement + Final Recommendations | Complete |
+| MEAS-03 | Phase 4: Measurement + Final Recommendations | Complete |
+| MEAS-04 | Phase 4: Measurement + Final Recommendations | Complete |
+| MEAS-05 | Phase 4: Measurement + Final Recommendations | Complete |
 | REC-01 | Phase 4: Measurement + Final Recommendations | Pending |
 | REC-02 | Phase 4: Measurement + Final Recommendations | Pending |
 | REC-03 | Phase 4: Measurement + Final Recommendations | Pending |
