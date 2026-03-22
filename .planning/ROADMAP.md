@@ -9,7 +9,7 @@ This roadmap delivers a complete strategic playbook for [external]'s trigger-bas
 - [x] **Phase 1: Foundation + Safety Architecture** - Preference center design, frequency caps, suppression system, data architecture, Reverse ETL design
  (completed 2026-03-22)
 - [x] **Phase 2: Taxonomy + Competitive Benchmark** - 6 trigger families with eligibility, asset universe mapping, competitor matrix, compliance checklist (completed 2026-03-22)
-- [ ] **Phase 3: Scoring System + Master Trigger Table** - 8 scoring formulas, 30+ trigger table, channel policy matrix, Top 10 MVP and Top 10 NOT to launch
+- [x] **Phase 3: Scoring System + Master Trigger Table** - 8 scoring formulas, 30+ trigger table, channel policy matrix, Top 10 MVP and Top 10 NOT to launch (completed 2026-03-22)
 - [ ] **Phase 4: Measurement + Final Recommendations** - KPIs, incremental lift framework, Net Notification Value, MVP/V2/V3 roadmap, executive summary
 
 ## Phase Details
@@ -62,9 +62,9 @@ Plans:
 **Plans**: 3 plans (Wave 1: 03-01, 03-02 parallel; Wave 2: 03-03)
 
 Plans:
-- [ ] 03-01-PLAN.md -- Scoring Formulas: 8 formulas (SCORE-01 to SCORE-08) with BigQuery pseudocode + validation script
+- [x] 03-01-PLAN.md -- Scoring Formulas: 8 formulas (SCORE-01 to SCORE-08) with BigQuery pseudocode + validation script
 - [x] 03-02-PLAN.md -- Master Trigger Table: 30+ triggers x 14 columns, top 10 MVP marked
-- [ ] 03-03-PLAN.md -- MVP Selection (top 10 NOT to launch) + Channel Policy (decision tree, deep links, quiet hours, conflict resolution)
+- [x] 03-03-PLAN.md -- MVP Selection (top 10 NOT to launch) + Channel Policy (decision tree, deep links, quiet hours, conflict resolution)
 
 ### Phase 4: Measurement + Final Recommendations
 **Goal**: The playbook closes with a measurement framework that proves trigger value, a phased implementation roadmap (MVP/V2/V3), and an executive summary that a non-technical stakeholder can act on.
@@ -89,5 +89,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
 | 2. Taxonomy + Competitive Benchmark | 4/4 | Complete    | 2026-03-22 |
-| 3. Scoring System + Master Trigger Table | 2/3 | In Progress|  |
+| 3. Scoring System + Master Trigger Table | 3/3 | Complete    | 2026-03-22 |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |
