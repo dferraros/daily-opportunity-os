@@ -76,11 +76,11 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Final Recommendations
 
-- [ ] **REC-01**: Executive summary con impacto de negocio estimado (reactivación, retención, revenue)
-- [ ] **REC-02**: MVP 30 días — triggers, canales, recursos necesarios, dependencias
-- [ ] **REC-03**: V2 90 días — triggers, nuevas capacidades, dependencias técnicas
-- [ ] **REC-04**: V3 180 días — sistema completo, ML scoring, portfolio alerts
-- [ ] **REC-05**: Dependencias exactas por equipo (Katy CRM, Álvaro data, Diego legal, Engineering)
+- [x] **REC-01**: Executive summary con impacto de negocio estimado (reactivación, retención, revenue)
+- [x] **REC-02**: MVP 30 días — triggers, canales, recursos necesarios, dependencias
+- [x] **REC-03**: V2 90 días — triggers, nuevas capacidades, dependencias técnicas
+- [x] **REC-04**: V3 180 días — sistema completo, ML scoring, portfolio alerts
+- [x] **REC-05**: Dependencias exactas por equipo (Katy CRM, Álvaro data, Diego legal, Engineering)
 
 ---
 
@@ -163,11 +163,11 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | MEAS-03 | Phase 4: Measurement + Final Recommendations | Complete |
 | MEAS-04 | Phase 4: Measurement + Final Recommendations | Complete |
 | MEAS-05 | Phase 4: Measurement + Final Recommendations | Complete |
-| REC-01 | Phase 4: Measurement + Final Recommendations | Pending |
-| REC-02 | Phase 4: Measurement + Final Recommendations | Pending |
-| REC-03 | Phase 4: Measurement + Final Recommendations | Pending |
-| REC-04 | Phase 4: Measurement + Final Recommendations | Pending |
-| REC-05 | Phase 4: Measurement + Final Recommendations | Pending |
+| REC-01 | Phase 4: Measurement + Final Recommendations | Complete |
+| REC-02 | Phase 4: Measurement + Final Recommendations | Complete |
+| REC-03 | Phase 4: Measurement + Final Recommendations | Complete |
+| REC-04 | Phase 4: Measurement + Final Recommendations | Complete |
+| REC-05 | Phase 4: Measurement + Final Recommendations | Complete |
 
 **Coverage:**
 - v1 requirements: 46 total
