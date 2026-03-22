@@ -26,7 +26,7 @@ Requirements for the Playbook deliverable (the document/system design).
 - [ ] **TAX-05**: Familia D — Lifecycle (active→at-risk, dormant with balance, first trade, recurring lapsed)
 - [ ] **TAX-06**: Familia E — Product Cross-sell (stablecoins not in Earn, eligible for Loan, Space Center missions)
 - [ ] **TAX-07**: Familia F — Risk & Protective (LTV approaching threshold, large balance inactivity, failed actions)
-- [ ] **TAX-08**: Asset universe mapping — qué activos son elegibles para cada familia de trigger
+- [x] **TAX-08**: Asset universe mapping — qué activos son elegibles para cada familia de trigger
 
 ### Scoring & Formulas
 
@@ -134,7 +134,7 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | TAX-05 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-06 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-07 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| TAX-08 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
+| TAX-08 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | BENCH-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | BENCH-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | BENCH-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
