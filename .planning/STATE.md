@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-22T18:33:09.504Z"
-last_activity: "2026-03-22 -- Completed 02-01-PLAN.md (Trigger Taxonomy: 6 families with 24 triggers)"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-22T19:25:23Z"
+last_activity: "2026-03-22 -- Completed 03-02-PLAN.md (Master Trigger Table: 33 triggers x 14 columns, top 10 MVP)"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Un sistema de notificaciones que aumenta reactivacion, retencion y revenue sin destruir deliverability, push permissions ni confianza del usuario.
-**Current focus:** Phase 2 - Taxonomy + Competitive Benchmark
+**Current focus:** Phase 3 - Scoring System + Master Trigger Table
 
 ## Current Position
 
-Phase: 2 of 4 (Taxonomy + Competitive Benchmark)
-Plan: 1 of 4 in current phase (02-01 complete)
+Phase: 3 of 4 (Scoring System + Master Trigger Table)
+Plan: 2 of 3 in current phase (03-01, 03-02 complete)
 Status: Executing
-Last activity: 2026-03-22 -- Completed 02-01-PLAN.md (Trigger Taxonomy: 6 families with 24 triggers)
+Last activity: 2026-03-22 -- Completed 03-02-PLAN.md (Master Trigger Table: 33 triggers x 14 columns, top 10 MVP)
 
 Progress: [██████████] 100%
 
@@ -54,6 +54,8 @@ Progress: [██████████] 100%
 | Phase 02 P04 | 7min | 1 tasks | 1 files |
 | Phase 02 P03 | 9min | 1 tasks | 1 files |
 | Phase 02 P01 | 9min | 3 tasks | 2 files |
+| Phase 03 P01 | 9min | 2 tasks | 2 files |
+| Phase 03 P02 | 11min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -80,6 +82,13 @@ Recent decisions affecting current work:
 - [Phase 02-01]: Combined all 6 families in single taxonomy file for cohesion
 - [Phase 02-01]: Family D triggers must check active_journey IS NULL to avoid CleverTap journey conflicts
 - [Phase 02-01]: Family F-01 LTV alerts use Nexo 3-tier graduated model (71.4%, 74.1%, 76.9%)
+- [Phase 03]: Send Score Final uses 3 binary gates (compliance, fatigue, cooldown) before weighted score
+- [Phase 03]: Churn risk is a BOOST in Send Score Final (high churn = more reason to send lifecycle triggers)
+- [Phase 03]: Family E replaces trigger_opportunity with cross_sell_eligibility; Family D replaces user_asset_affinity with lifecycle_urgency
+- [Phase 03-02]: 33 triggers total (9 new beyond Phase 2's 24): A-05, B-05, C-05, D-05, D-06, E-05, E-06, F-05, F-06
+- [Phase 03-02]: MVP top 10 by score: A-01(20), A-02(20), A-03(19), F-01(19), D-02(17), F-04(17), B-01(16.5), D-01(16), C-01(14), B-04(13.5)
+- [Phase 03-02]: F-04 "Unusual Login" from taxonomy renamed to F-05 in master table to avoid collision with F-04 "Stablecoin De-Peg"
+- [Phase 03-02]: MVP implementation in 4 waves: Family A first (zero compliance), then F (protective), then D/B (Diego), then C (SDK)
 
 ### Pending Todos
 
@@ -93,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T18:28:00.000Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-22T19:25:23Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

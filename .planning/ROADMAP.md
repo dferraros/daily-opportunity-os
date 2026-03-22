@@ -63,7 +63,7 @@ Plans:
 
 Plans:
 - [ ] 03-01-PLAN.md -- Scoring Formulas: 8 formulas (SCORE-01 to SCORE-08) with BigQuery pseudocode + validation script
-- [ ] 03-02-PLAN.md -- Master Trigger Table: 30+ triggers x 14 columns, top 10 MVP marked
+- [x] 03-02-PLAN.md -- Master Trigger Table: 30+ triggers x 14 columns, top 10 MVP marked
 - [ ] 03-03-PLAN.md -- MVP Selection (top 10 NOT to launch) + Channel Policy (decision tree, deep links, quiet hours, conflict resolution)
 
 ### Phase 4: Measurement + Final Recommendations
@@ -89,5 +89,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation + Safety Architecture | 1/2 | Complete    | 2026-03-22 |
 | 2. Taxonomy + Competitive Benchmark | 4/4 | Complete    | 2026-03-22 |
-| 3. Scoring System + Master Trigger Table | 0/3 | Not started | - |
+| 3. Scoring System + Master Trigger Table | 2/3 | In Progress|  |
 | 4. Measurement + Final Recommendations | 0/2 | Not started | - |

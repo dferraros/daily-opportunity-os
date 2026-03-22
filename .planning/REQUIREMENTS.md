@@ -30,14 +30,14 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Scoring & Formulas
 
-- [ ] **SCORE-01**: Market Relevance Score — fórmula con pct_change, zscore, abnormal_volume_ratio
-- [ ] **SCORE-02**: User Asset Affinity Score — basado en holdings, watchlist, search history, trade history
-- [ ] **SCORE-03**: Trigger Opportunity Score — oportunidad × relevancia × propensity
-- [ ] **SCORE-04**: Notification Pressure Score — sends recientes, opens, dismissals
-- [ ] **SCORE-05**: Fatigue Risk Score — fórmula con decaimiento por bajo engagement
-- [ ] **SCORE-06**: Cross-sell Eligibility Score — product adoption gap, balance, lifecycle stage
-- [ ] **SCORE-07**: Churn Risk Score — days since last action, balance trend, frequency decline
-- [ ] **SCORE-08**: Send Score Final — fórmula compuesta que integra todos los scores con compliance gate
+- [x] **SCORE-01**: Market Relevance Score — fórmula con pct_change, zscore, abnormal_volume_ratio
+- [x] **SCORE-02**: User Asset Affinity Score — basado en holdings, watchlist, search history, trade history
+- [x] **SCORE-03**: Trigger Opportunity Score — oportunidad × relevancia × propensity
+- [x] **SCORE-04**: Notification Pressure Score — sends recientes, opens, dismissals
+- [x] **SCORE-05**: Fatigue Risk Score — fórmula con decaimiento por bajo engagement
+- [x] **SCORE-06**: Cross-sell Eligibility Score — product adoption gap, balance, lifecycle stage
+- [x] **SCORE-07**: Churn Risk Score — days since last action, balance trend, frequency decline
+- [x] **SCORE-08**: Send Score Final — fórmula compuesta que integra todos los scores con compliance gate
 
 ### Master Trigger Table
 
@@ -142,14 +142,14 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | COMP-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | COMP-03 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | COMP-04 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
-| SCORE-01 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-02 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-03 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-04 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-05 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-06 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-07 | Phase 3: Scoring System + Master Trigger Table | Pending |
-| SCORE-08 | Phase 3: Scoring System + Master Trigger Table | Pending |
+| SCORE-01 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-02 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-03 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-04 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-05 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-06 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-07 | Phase 3: Scoring System + Master Trigger Table | Complete |
+| SCORE-08 | Phase 3: Scoring System + Master Trigger Table | Complete |
 | TRIG-01 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | TRIG-02 | Phase 3: Scoring System + Master Trigger Table | Pending |
 | TRIG-03 | Phase 3: Scoring System + Master Trigger Table | Pending |
