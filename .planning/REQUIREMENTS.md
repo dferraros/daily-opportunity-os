@@ -55,9 +55,9 @@ Requirements for the Playbook deliverable (the document/system design).
 
 ### Competitor Benchmark
 
-- [ ] **BENCH-01**: Matriz comparativa de 6 competidores (Coinbase, Binance, Kraken, Bitpanda, Revolut, Nexo)
-- [ ] **BENCH-02**: Por competidor: tipos de alerta, preference center, canales, asset scope, gaps
-- [ ] **BENCH-03**: Recomendaciones concretas: qué copiar, qué evitar, qué innovar
+- [x] **BENCH-01**: Matriz comparativa de 6 competidores (Coinbase, Binance, Kraken, Bitpanda, Revolut, Nexo)
+- [x] **BENCH-02**: Por competidor: tipos de alerta, preference center, canales, asset scope, gaps
+- [x] **BENCH-03**: Recomendaciones concretas: qué copiar, qué evitar, qué innovar
 
 ### Measurement System
 
@@ -135,9 +135,9 @@ Deferred — not in current playbook scope but documented for V3 planning.
 | TAX-06 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-07 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
 | TAX-08 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
-| BENCH-01 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| BENCH-02 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
-| BENCH-03 | Phase 2: Taxonomy + Competitive Benchmark | Pending |
+| BENCH-01 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| BENCH-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
+| BENCH-03 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | COMP-01 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | COMP-02 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
 | COMP-03 | Phase 2: Taxonomy + Competitive Benchmark | Complete |
