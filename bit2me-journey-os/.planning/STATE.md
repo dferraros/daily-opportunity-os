@@ -4,7 +4,8 @@
 Phase 01 executing. Wave 1 in progress.
 - 01-01: DONE (j02-research.md)
 - 01-02: DONE (j02-hub-spain.md) — commit 32500e5
-- 01-03 through 01-08: pending
+- 01-03: DONE (j02-spokes-01-05.md) — commit b2956c0
+- 01-04 through 01-08: pending
 
 ## Project: bit2me-journey-os
 - Folder: C:/Users/ferra/OneDrive/Desktop/bit2me-journey-os/
@@ -39,7 +40,7 @@ Phase 01 executing. Wave 1 in progress.
 ## Output Files Being Built
 - docs/plans/2026-03-23-j02-research.md (01-01) [DONE]
 - docs/plans/2026-03-23-j02-hub-spain.md (01-02) [DONE — commit 32500e5]
-- docs/plans/2026-03-23-j02-spokes-01-05.md (01-03) [pending]
+- docs/plans/2026-03-23-j02-spokes-01-05.md (01-03) [DONE — commit b2956c0]
 - docs/plans/2026-03-23-j02-latam.md (01-04) [pending]
 - docs/plans/2026-03-23-j02-recovery-loyalty.md (01-05) [pending]
 - docs/plans/2026-03-23-j05-b2b.md (01-06) [pending]
@@ -53,5 +54,20 @@ Phase 01 executing. Wave 1 in progress.
 - Diego batch approval table: 17 variants, ready for one-session review.
 - A/B sizes: S0=500, S0.5=400, S1=600, S2=400, S3=300x3.
 
+## Decisions from 01-03 (Spokes SP-01 to SP-05)
+- SP-01 Earn A/B (loss vs gain) is THE most important test in the system
+- SP-05 Referidos MUST NEVER trigger before 2nd purchase confirmed — behavioral economics rule
+- Spoke priority: SP-01 > SP-02 > SP-03 > SP-04 > SP-05 (by monetary impact)
+- Implementation order: SP-01 first (EUR 19.5M AUC), SP-05 second (no new BigQuery events needed)
+- BigQuery P0 fields for Alvaro: balance_idle_days, earn_product_active, second_purchase_confirmed
+
+## Decisions from 01-01 (Research Benchmarks)
+- S0.5 price alert validated by Binance 4.1x conversion data — implement with fallback until Alvaro delivers price_change_pct_24h
+- Push scheduling: 20:30 CET Spain (not fixed T+24h) — OneSignal/Braze peak data validated
+- WhatsApp PRIMARY LatAm: 4.3x open rate vs push (Bnext), Venezuela 92% penetration
+- Earn copy: endowment framing ("Tu BTC trabajando para ti") not yield — Coinbase/Binance validated
+- SP-02 Pro trigger: cumulative fee spend threshold — Kraken fee-savings framing +31% conversion
+- Tipo A/B/C validated by Klaviyo/Braze win-back data (22%/13%/7.5%)
+
 ## Last session
-2026-03-23 — completed 01-02 Hub J02-CORE B2C Spain spec
+2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0)
