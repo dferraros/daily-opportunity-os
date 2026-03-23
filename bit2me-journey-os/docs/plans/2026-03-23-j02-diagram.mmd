@@ -1,0 +1,201 @@
+flowchart TD
+    %% Entry point
+    ENTRY["primera monetizacion\nfirst_monetization event"]
+
+    %% B2C / B2B split
+    SPLIT{"kyc_type?"}
+
+    ENTRY --> SPLIT
+
+    SPLIT -->|"B2C"| HOLDOUT{"holdout 10%?"}
+    SPLIT -->|"empresa"| B2B_BRANCH
+
+    HOLDOUT -->|"si - excluido"| CONTROL["Grupo Control\nHOLDOUT_J02\n10% usuarios"]
+    HOLDOUT -->|"no - continua"| GEOCHECK{"geo?"}
+
+    GEOCHECK -->|"Spain / EU"| HUB_START
+    GEOCHECK -->|"LatAm (VE/MX/CO/AR)"| LATAM_START
+
+    %% ================================================================
+    %% HUB J02-CORE (Spain/EU)
+    %% ================================================================
+    subgraph HUB["Hub J02-CORE — B2C Spain / EU"]
+        HUB_START["ENTRADA HUB\nD+0 post first_monetization"]
+
+        S0["S0 — In-App Banner\nD+0 inmediato (60s post-compra)\nCTA: Activar alerta de precio"]
+        CHK_S0{"segunda op?"}
+
+        S05["S0.5 — In-App Modal\nD+0 2min despues\nAlerta precio activada si asset sube"]
+        CHK_S05{"segunda op?"}
+
+        S1["S1 — Push Notification\nD+1 21:00h local\n3 variantes: subida / neutral / bajada"]
+        CHK_S1{"segunda op?"}
+
+        S2["S2 — In-App Full-Screen Card\nD+3 primer login sin 2a compra\nCopy: endowment framing"]
+        CHK_S2{"segunda op?"}
+
+        S3["S3 — Email\nD+5 10:00-11:00h local\nMiCA footer obligatorio"]
+        CHK_S3{"segunda op?"}
+
+        S4["S4 — Push Notification\nD+7 21:00h\nVariante mercado positivo/negativo"]
+        CHK_S4{"segunda op?"}
+
+        D30_CHECK{"D+30: segunda op\nconfirmada?"}
+
+        HUB_START --> S0 --> CHK_S0
+        CHK_S0 -->|"si"| HUB_CONVERT
+        CHK_S0 -->|"no"| S05 --> CHK_S05
+        CHK_S05 -->|"si"| HUB_CONVERT
+        CHK_S05 -->|"no"| S1 --> CHK_S1
+        CHK_S1 -->|"si"| HUB_CONVERT
+        CHK_S1 -->|"no"| S2 --> CHK_S2
+        CHK_S2 -->|"si"| HUB_CONVERT
+        CHK_S2 -->|"no"| S3 --> CHK_S3
+        CHK_S3 -->|"si"| HUB_CONVERT
+        CHK_S3 -->|"no"| S4 --> CHK_S4
+        CHK_S4 -->|"si"| HUB_CONVERT
+        CHK_S4 -->|"no"| D30_CHECK
+        D30_CHECK -->|"si"| HUB_CONVERT
+        D30_CHECK -->|"no"| RECOVERY_CLASSIFIER
+    end
+
+    HUB_CONVERT["CONVERSION\nsecond_purchase_confirmed"]
+    HUB_CONVERT --> SPOKE_SELECTOR
+
+    %% ================================================================
+    %% SPOKE SELECTOR
+    %% ================================================================
+    subgraph SPOKES["Spokes — Product Activation"]
+        SPOKE_SELECTOR["Selector de Spokes\nPrioridad: SP01 > SP02 > SP03 > SP04 > SP05"]
+
+        SP01["SP-01 EARN\nbalance_idle_days >= 7\nEarn inactivo\n3 emails en 10d\nA/B loss vs gain framing"]
+        SP02["SP-02 PRO UPGRADE\ncumulative_fee_spend >= umbral\n2 emails en 7d\nfee-savings framing"]
+        SP03["SP-03 DCA\nno_dca_active\n2 emails en 7d\ncuenta de ahorro en USD"]
+        SP04["SP-04 DIVERSIFY\nportfolio_assets == 1\n2 emails en 7d\nriesgo concentracion framing"]
+        SP05["SP-05 REFERIDOS\nsecond_purchase_confirmed\n1 email post-D+14\nNUNCA antes de 2a compra"]
+        SP06["SP-06 CARD\ntarjeta no activada\n2 emails"]
+        SP07["SP-07 B2M TOKEN\nb2m_balance == 0\n2 emails\nSpace Center gamification"]
+        SP08["SP-08 MULTI-ASSET\nportfolio_diversity < 2\n1 email"]
+
+        SPOKE_SELECTOR --> SP01
+        SPOKE_SELECTOR --> SP02
+        SPOKE_SELECTOR --> SP03
+        SPOKE_SELECTOR --> SP04
+        SPOKE_SELECTOR --> SP05
+        SPOKE_SELECTOR --> SP06
+        SPOKE_SELECTOR --> SP07
+        SPOKE_SELECTOR --> SP08
+    end
+
+    SP01 --> LOYALTY_CHECK
+    SP02 --> LOYALTY_CHECK
+    SP03 --> LOYALTY_CHECK
+    SP04 --> LOYALTY_CHECK
+    SP05 --> LOYALTY_CHECK
+    SP06 --> LOYALTY_CHECK
+    SP07 --> LOYALTY_CHECK
+    SP08 --> LOYALTY_CHECK
+
+    %% ================================================================
+    %% LOYALTY J02.5
+    %% ================================================================
+    subgraph LOYALTY["J02.5 Loyalty — D+45 a D+90"]
+        LOYALTY_CHECK{"D+45\nsecond_purchase\nconfirmed?"}
+
+        T1["T1 — Email D+45\nMartes 10:00h\nPortfolio milestone recap"]
+        T2["T2 — Push D+60\n20:30h local\nSolo si sin 3a compra\nMercado en movimiento"]
+        T3["T3 — Email D+90\nSolo si sin 3a compra\n90 dias milestone\nIdentity shift framing"]
+        LOYALTY_DONE["OBJETIVO: 3+ operaciones\n3.1x retencion a 12 meses\n(Coinbase benchmark)"]
+
+        LOYALTY_CHECK -->|"si"| T1 --> T2 --> T3 --> LOYALTY_DONE
+        LOYALTY_CHECK -->|"no"| RECOVERY_CLASSIFIER
+    end
+
+    %% ================================================================
+    %% RECOVERY
+    %% ================================================================
+    subgraph RECOVERY["Recovery — D+30 no conversores"]
+        RECOVERY_CLASSIFIER{"Clasificar por\ndias_sin_2a_op"}
+
+        TIPO_A["TIPO A — Indeciso Activo\n491 usuarios, menos de 30d\nA1 Push D+14\nA2 Email D+21\nTarget: 15% conversion"]
+        TIPO_B["TIPO B — Dormido con Saldo\n547 usuarios, 31-60d\nB1 Email ESTA SEMANA manual\nB2 Push D+37\nTarget: 8% conversion\nPRIORIDAD MAXIMA"]
+        TIPO_C["TIPO C — Caso Frio\n295 usuarios, 60+ d\nNo journey automatico\nFOMO Agent pool\nTarget: 5% en 90d"]
+
+        REC_A_EXIT{"segunda op\npost Recovery A?"}
+        REC_B_EXIT{"segunda op\npost Recovery B?"}
+
+        RECOVERY_CLASSIFIER -->|"menos de 30d"| TIPO_A
+        RECOVERY_CLASSIFIER -->|"31-60d"| TIPO_B
+        RECOVERY_CLASSIFIER -->|"60+ dias"| TIPO_C
+
+        TIPO_A --> REC_A_EXIT
+        TIPO_B --> REC_B_EXIT
+        REC_A_EXIT -->|"si"| SPOKE_SELECTOR
+        REC_A_EXIT -->|"no"| TIPO_C
+        REC_B_EXIT -->|"si"| SPOKE_SELECTOR
+        REC_B_EXIT -->|"no"| TIPO_C
+    end
+
+    TIPO_C --> FOMO_POOL["FOMO Agent Pool\nEspera evento de mercado\nBTC +7% o asset +10%\nOwner: Daniel decide, Katy ejecuta"]
+
+    %% ================================================================
+    %% LATAM BRANCH
+    %% ================================================================
+    subgraph LATAM["J02-LATAM — B2C LatAm (VE/MX/CO/AR)"]
+        LATAM_START["ENTRADA LATAM\nB2C fuera de Spain/EU"]
+
+        LATAM_VE{"Venezuela?\nkyc_enhanced\nconfirmed?"}
+        LATAM_GATE["KYC Reforzado\nOFAC/FATF gate\nBloqueo hasta confirmacion"]
+
+        LATAM_HUB["Hub LATAM\nS0 In-App (igual)\nS1 WhatsApp (reemplaza push)\nS2 In-App (igual)\nS3 Email (USD framing)\nS4 WhatsApp (reemplaza push)\nFrecuencia: max 1 WA/semana"]
+
+        LATAM_FB["Fallback: entrega WA\nfalla en 2h -> push"]
+
+        LATAM_START --> LATAM_VE
+        LATAM_VE -->|"si, sin kyc enhanced"| LATAM_GATE
+        LATAM_VE -->|"no / kyc ok"| LATAM_HUB
+        LATAM_GATE -->|"kyc enhanced aprobado"| LATAM_HUB
+        LATAM_HUB --> LATAM_FB
+        LATAM_HUB --> HUB_CONVERT
+    end
+
+    %% ================================================================
+    %% B2B BRANCH
+    %% ================================================================
+    subgraph B2B["J05 — B2B Empresa"]
+        B2B_BRANCH["ENTRADA J05\nkyc_type = empresa\nAlvaro expone como prop CT"]
+
+        B2B_E1["E1 — Fee Savings Anchor\nD+1 email firmado Sales\nROI/treasury tone\nNo push, no WhatsApp"]
+        B2B_E2["E2 — MiCA Compliance\nD+8 email\nCFO / Legal personas\nFATF/AEAT compliance focus"]
+        B2B_E3["E3 — API/Panel Demo\nD+20 email\nOps persona\nCTA: agendar demo"]
+
+        B2B_ESCALATE["Escalacion a Daniel\n1a operacion > EUR 50.000\nVenta consultiva"]
+        B2B_TARGET["Objetivo:\nDemo booked > 5pct\nAccount upgrade > 2pct\nCiclo de venta menor de 45d"]
+
+        B2B_BRANCH --> B2B_E1 --> B2B_E2 --> B2B_E3
+        B2B_E3 --> B2B_ESCALATE
+        B2B_E3 --> B2B_TARGET
+    end
+
+    %% ================================================================
+    %% CLASSDEFS — node colors
+    %% ================================================================
+    classDef hub fill:#1e40af,color:#fff,stroke:#1e3a8a
+    classDef spoke fill:#065f46,color:#fff,stroke:#064e3b
+    classDef recovery fill:#92400e,color:#fff,stroke:#78350f
+    classDef decision fill:#1f2937,color:#fff,stroke:#111827
+    classDef entryexit fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef latam fill:#be185d,color:#fff,stroke:#9d174d
+    classDef b2b fill:#374151,color:#fff,stroke:#1f2937
+    classDef loyalty fill:#1e3a5f,color:#fff,stroke:#1e3a5f
+    classDef control fill:#6b7280,color:#fff,stroke:#4b5563
+
+    class HUB_START,S0,S05,S1,S2,S3,S4 hub
+    class SPOKE_SELECTOR,SP01,SP02,SP03,SP04,SP05,SP06,SP07,SP08 spoke
+    class TIPO_A,TIPO_B,TIPO_C,FOMO_POOL recovery
+    class SPLIT,HOLDOUT,GEOCHECK,CHK_S0,CHK_S05,CHK_S1,CHK_S2,CHK_S3,CHK_S4,D30_CHECK,RECOVERY_CLASSIFIER,REC_A_EXIT,REC_B_EXIT,LATAM_VE,LOYALTY_CHECK decision
+    class ENTRY,HUB_CONVERT entryexit
+    class LATAM_START,LATAM_HUB,LATAM_FB,LATAM_GATE latam
+    class B2B_BRANCH,B2B_E1,B2B_E2,B2B_E3,B2B_ESCALATE,B2B_TARGET b2b
+    class T1,T2,T3,LOYALTY_DONE,LOYALTY_CHECK loyalty
+    class CONTROL control
