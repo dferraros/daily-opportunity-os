@@ -89,5 +89,17 @@ Phase 01 executing. Wave 1 in progress.
 - Diego review: 3-5 days batch for B2B (higher legal complexity than B2C)
 - Prerequisite: Alvaro surfaces kyc_type as CleverTap user property before launch
 
+## Decisions from 01-04 (J02-LATAM)
+- WhatsApp replaces push for S1/S4 in all LatAm markets (VE/MX/CO/AR)
+- USD framing everywhere -- never local currency for portfolio value
+- SP-01 Earn: loss framing expected to win more strongly in LatAm due to inflation context
+- SP-03 DCA reframed as "cuenta de ahorro en USD" not "inversion periodica"
+- Venezuela: kyc_enhanced_confirmed gate required before any financial touchpoint (OFAC/FATF)
+- Argentina: "activos digitales" safer than "criptomonedas" due to BCRA restrictions
+- Frequency cap: max 1 WhatsApp/week per user (Meta sender reputation protection)
+- Fallback: WhatsApp delivery failure in 2h triggers push notification
+- 22 WhatsApp templates for Meta pre-approval -- Katy to initiate immediately (48-72h process)
+- New blocker added: whatsapp_marketing_opt_in field needed in CleverTap (Alvaro P1)
+
 ## Last session
-2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0) + 01-05 Recovery+Loyalty (b05c28f) + 01-06 B2B J05 (a04c828)
+2026-03-23 — completed 01-01 (ff5ddc8) + 01-02 (32500e5) + 01-03 (b2956c0) + 01-04 (ff1d7b8) + 01-05 (b05c28f) + 01-06 (a04c828)
