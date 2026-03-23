@@ -5,7 +5,9 @@ Phase 01 executing. Wave 1 in progress.
 - 01-01: DONE (j02-research.md)
 - 01-02: DONE (j02-hub-spain.md) — commit 32500e5
 - 01-03: DONE (j02-spokes-01-05.md) — commit b2956c0
-- 01-04 through 01-08: pending
+- 01-04: pending
+- 01-05: DONE (j02-recovery-loyalty.md) — commit b05c28f
+- 01-06 through 01-08: pending
 
 ## Project: bit2me-journey-os
 - Folder: C:/Users/ferra/OneDrive/Desktop/bit2me-journey-os/
@@ -42,7 +44,7 @@ Phase 01 executing. Wave 1 in progress.
 - docs/plans/2026-03-23-j02-hub-spain.md (01-02) [DONE — commit 32500e5]
 - docs/plans/2026-03-23-j02-spokes-01-05.md (01-03) [DONE — commit b2956c0]
 - docs/plans/2026-03-23-j02-latam.md (01-04) [pending]
-- docs/plans/2026-03-23-j02-recovery-loyalty.md (01-05) [pending]
+- docs/plans/2026-03-23-j02-recovery-loyalty.md (01-05) [DONE — commit b05c28f]
 - docs/plans/2026-03-23-j05-b2b.md (01-06) [pending]
 - docs/plans/2026-03-23-j02-diagram-jira.md (01-07) [pending]
 - docs/plans/2026-03-23-J02_MASTER.docx (01-08) [pending]
@@ -69,5 +71,12 @@ Phase 01 executing. Wave 1 in progress.
 - SP-02 Pro trigger: cumulative fee spend threshold — Kraken fee-savings framing +31% conversion
 - Tipo A/B/C validated by Klaviyo/Braze win-back data (22%/13%/7.5%)
 
+## Decisions from 01-05 (Recovery + Loyalty)
+- Tipo C (295 users) routes to FOMO Agent pool — no automated journey (unsubscribe risk + low conversion ROI)
+- Tipo B manual launch this week: Marta BigQuery export + Katy CleverTap one-off (no journey setup)
+- J02.5 Loyalty entry at D+45 post second_purchase_confirmed, 3 touchpoints D+45/D+60/D+90
+- Diego batch approval: 12 messages all Tier 1, single-batch recommended (48h SLA)
+- first_purchase_price_eur + current_price_eur are P0 blockers for Tipo B launch (coordinate Marta/Alvaro)
+
 ## Last session
-2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0)
+2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0) + 01-05 Recovery+Loyalty (b05c28f)
