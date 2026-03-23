@@ -5,9 +5,10 @@ Phase 01 executing. Wave 1 in progress.
 - 01-01: DONE (j02-research.md)
 - 01-02: DONE (j02-hub-spain.md) — commit 32500e5
 - 01-03: DONE (j02-spokes-01-05.md) — commit b2956c0
-- 01-04: pending
+- 01-04: DONE (j02-latam.md) — commit ff1d7b8
 - 01-05: DONE (j02-recovery-loyalty.md) — commit b05c28f
-- 01-06 through 01-08: pending
+- 01-06: DONE (j05-b2b.md) — commit a04c828
+- 01-07 through 01-08: pending
 
 ## Project: bit2me-journey-os
 - Folder: C:/Users/ferra/OneDrive/Desktop/bit2me-journey-os/
@@ -43,9 +44,9 @@ Phase 01 executing. Wave 1 in progress.
 - docs/plans/2026-03-23-j02-research.md (01-01) [DONE]
 - docs/plans/2026-03-23-j02-hub-spain.md (01-02) [DONE — commit 32500e5]
 - docs/plans/2026-03-23-j02-spokes-01-05.md (01-03) [DONE — commit b2956c0]
-- docs/plans/2026-03-23-j02-latam.md (01-04) [pending]
+- docs/plans/2026-03-23-j02-latam.md (01-04) [DONE — commit ff1d7b8]
 - docs/plans/2026-03-23-j02-recovery-loyalty.md (01-05) [DONE — commit b05c28f]
-- docs/plans/2026-03-23-j05-b2b.md (01-06) [pending]
+- docs/plans/2026-03-23-j05-b2b.md (01-06) [DONE — commit a04c828]
 - docs/plans/2026-03-23-j02-diagram-jira.md (01-07) [pending]
 - docs/plans/2026-03-23-J02_MASTER.docx (01-08) [pending]
 
@@ -78,5 +79,15 @@ Phase 01 executing. Wave 1 in progress.
 - Diego batch approval: 12 messages all Tier 1, single-batch recommended (48h SLA)
 - first_purchase_price_eur + current_price_eur are P0 blockers for Tipo B launch (coordinate Marta/Alvaro)
 
+## Decisions from 01-06 (B2B J05)
+- J05 is architecturally separate from J02 — kyc_type = empresa trigger, no push/WhatsApp
+- Three personas: CFO (risk/MiCA), Legal (FATF/AEAT), Ops (API/panel)
+- 3 emails in 20 days, max 1/week, signed by named Sales lead (+12% open rate benchmark)
+- E1 fee savings anchor validated (+31% demo booking, Bitstamp benchmark)
+- Escalation to Daniel for first operation > EUR 50,000
+- Demo booked rate target: >5%; account upgrade: >2% in 60 days; sales cycle: <45 days
+- Diego review: 3-5 days batch for B2B (higher legal complexity than B2C)
+- Prerequisite: Alvaro surfaces kyc_type as CleverTap user property before launch
+
 ## Last session
-2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0) + 01-05 Recovery+Loyalty (b05c28f)
+2026-03-23 — completed 01-01 research benchmarks (ff5ddc8) + 01-02 Hub Spain (32500e5) + 01-03 Spokes SP-01-05 (b2956c0) + 01-05 Recovery+Loyalty (b05c28f) + 01-06 B2B J05 (a04c828)
