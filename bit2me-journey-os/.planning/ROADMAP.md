@@ -23,7 +23,7 @@
 ### Progress Table
 | Phase | Status | Plans | Progress |
 |-------|--------|-------|----------|
-| 01 | in_progress | 0/8 | 0% |
+| 01 | in_progress | 2/8 | 25% |
 
 ### Wave Structure
 | Wave | Plans | Dependencies |
@@ -33,8 +33,8 @@
 | 3 | 01-07, 01-08 | Wave 2 complete |
 
 ### Plans
-- [ ] 01-01: Deep Research — benchmarks from Coinbase, Binance, N26, Revolut, Kraken, Bnext, Bitso
-- [ ] 01-02: Hub J02-CORE B2C Spain — complete copy, CleverTap specs, A/B tests, MiCA footer
+- [x] 01-01: Deep Research — benchmarks from Coinbase, Binance, N26, Revolut, Kraken, Bnext, Bitso
+- [x] 01-02: Hub J02-CORE B2C Spain — complete copy, CleverTap specs, A/B tests, MiCA footer
 - [ ] 01-03: Spokes SP-01 to SP-05 — Earn, Pro, DCA, Diversify, Referidos
 - [ ] 01-04: J02-LATAM variant — WhatsApp primary, USD framing, inflation copy
 - [ ] 01-05: Recovery tracks (Tipo A/B/C) + J02.5 Loyalty
