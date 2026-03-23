@@ -11,7 +11,7 @@
 | R07 | Mermaid diagram: full architecture, Confluence-renderable | 01-07 | pending |
 | R08 | Jira tickets: one per touchpoint, owner, priority, acceptance criteria | 01-07 | pending |
 | R09 | Master Word doc: all sections assembled, team-readable | 01-08 | pending |
-| R10 | All benchmarks cited: source + lift % + applicability to Bit2Me | 01-01 | pending |
+| R10 | All benchmarks cited: source + lift % + applicability to Bit2Me | 01-01 | done |
 | R11 | Frequency capping rules documented and embedded in CleverTap specs | 01-02 | pending |
 | R12 | Diego approval batches defined (one per layer) | 01-02 | pending |
 | R13 | A/B test specs: hypothesis, sample size, duration, metric | 01-02, 01-03 | pending |
