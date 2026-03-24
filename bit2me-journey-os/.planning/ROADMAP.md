@@ -41,3 +41,30 @@
 - [x] 01-06: B2B J05 architecture — treasury tone, separate journey
 - [x] 01-07: Mermaid diagram + Jira tickets document — commit 8ee3cbc
 - [ ] 01-08: Master Word document assembly
+
+### Phase 2: journey-content-copy-creatives
+
+**Goal:** Produce production-ready copy, creative briefs, A/B test specs, and MiCA-compliant content for all 11 Lifecycle journeys (excl. DCA JN-01-B). Output: one .md per journey with all touchpoints, variables, creative briefs, Diego approval package.
+
+**Depends on:** Phase 1
+**Skills applied:** content-strategy, executing-marketing-campaigns, ab-test-setup, email-sequence, email-composer, marketing-psychology
+
+### Wave Structure
+| Wave | Plans | Sprint | Status |
+|------|-------|--------|--------|
+| Wave 1 | 02-01, 02-02, 02-03, 02-04 | Sprint 1 | ✓ DONE |
+| Wave 2 | 02-05, 02-06 | Sprint 2 | ○ pending |
+| Wave 3 | 02-07, 02-08 | Sprint 3 | ○ pending |
+| Wave 4 | 02-09, 02-10 | Sprint 4 | ○ pending |
+
+### Plans
+- [x] 02-01: JN-01-A Second Trade Accelerator — S1-S4 copy, creative briefs, 5 A/B tests
+- [x] 02-02: JN-02A Sleeper to Trader — A1-A5 copy, creative briefs, 5 A/B tests
+- [x] 02-03: JN-02B Sleeper to Earn — B1-B5 copy (B-HIGH/B-LOW split), creative briefs, 6 A/B tests
+- [x] 02-04: JN-03 Deep Dormant — D1-D3 copy, batch protocol, anti-withdrawal rules
+- [ ] 02-05: JN-04 Verified Never Operated — 3 tracks (WARM/COOLING/COLD)
+- [ ] 02-06: JN-09 Purchase-Sell Churn Prevention — real-time P&L copy
+- [ ] 02-07: JN-05 EUR Depositors First Crypto — active + dormant tracks
+- [ ] 02-08: JN-07 B2M Holders + JN-08 Stablecoin Parkers
+- [ ] 02-09: JN-06 Active Never-Transacted + JN-10 LATAM Brazil (PT-BR)
+- [ ] 02-10: Diego batch approval packages — all journeys consolidated

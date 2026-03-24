@@ -118,7 +118,34 @@ Phase 01 executing. Wave 1 in progress.
 ## Phase 01 Status
 COMPLETE — all 8 plans done. Ready for team execution (Katy, Diego, Alvaro, Sales).
 
+## Phase 02 Status
+Wave 1 COMPLETE (2026-03-24). 4 plans done, validated, fixes applied.
+- 02-01: jn01a-copy-creatives.md ✓
+- 02-02: jn02a-copy-creatives.md ✓ (guilt phrase fixed, A5 salutation added)
+- 02-03: jn02b-copy-creatives.md ✓ (footer fixed, date var → {{fecha_fin_incentivo}}, A/B sequencing warning)
+- 02-04: jn03-copy-creatives.md ✓ (strongest doc, full compliance)
+- Validation report: wave1-validation-report.md
+
+## Wave 1 Blockers (Action Required)
+- BLOCKER-01: {{fecha_fin_incentivo}} in JN-02B — needs Product to confirm incentive dates
+- BLOCKER-X02: portfolio_change_30d signal — Álvaro must confirm exists in CleverTap before Art.66 suppression works
+- WARNING: JN-01-A A/B tests underpowered at n=75/day — mark as directional only
+- WARNING: JN-02A Subject B "¿Y tú?" — pre-flag for Diego review
+
+## MiCA Compliance Rules (from Legal Brief 2026-03-24)
+- Prohibited: "invertir", "rendimiento", "intereses", "beneficios", "rentabilidad", "depositar", "ingresos pasivos"
+- Use instead: "comprar/adquirir", "APY/recompensa", "rewards", "añadir/almacenar", "recompensas pasivas"
+- Earn disclaimer REQUIRED when mentioning APY: "Los productos de rendimiento implican riesgo. El APY es variable..."
+- EU footer REQUIRED in all emails: "La inversión en criptoactivos no está totalmente regulada..."
+- Never: "el más seguro", "dormir tranquilos", "ingresos pasivos"
+- Art. 66 MiCA: NUNCA push reinversión tras pérdida >10%
+
+## Roadmap Evolution
+- Phase 01 added: J02 Journey System Full Design
+- Phase 02 added: journey-content-copy-creatives (2026-03-24)
+
 ## Last session
 2026-03-23 — completed ALL 8 plans: 01-01 through 01-08. Phase 01 DONE.
 - 01-01 (ff5ddc8) + 01-02 (32500e5) + 01-03 (b2956c0) + 01-04 (ff1d7b8)
 - 01-05 (b05c28f) + 01-06 (a04c828) + 01-07 (8ee3cbc) + 01-08 (43e228a)
+2026-03-24 — Phase 02 initialized: content/copy/creatives for 11 journeys
