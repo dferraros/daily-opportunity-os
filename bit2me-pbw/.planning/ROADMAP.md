@@ -30,7 +30,12 @@
   3. B2B ICP list of 50-100 LinkedIn targets is built from PBW directory, speaker list, and sponsor list — segmented by persona (bank, fintech, asset manager, fund)
   4. Institutional dinner venue shortlist (3 options in Paris, Apr 14 evening, capacity 15-20) is sent for booking confirmation
   5. Speaking slot inquiry is sent to PBW organizer contact with Bit2Me MiCA positioning and speaker credentials
-**Plans**: TBD
+**Plans:** 3 plans (Wave 1 — all parallel)
+
+Plans:
+- [ ] 01-01-PLAN.md — Offer brief + Diego consolidated legal review package (REQ-01, REQ-16)
+- [ ] 01-02-PLAN.md — B2B ICP list build: 50-100 LinkedIn targets segmented by persona (REQ-15)
+- [ ] 01-03-PLAN.md — Institutional dinner venue outreach + PBW speaking slot inquiry (REQ-12, REQ-13)
 
 ### Phase 2: Launch
 **Goal**: Bit2Me is live in market — landing page is running with offer copy approved, paid ads are active, the first email has hit existing users, LinkedIn wave 1 is in flight, and Health Score build is underway.
