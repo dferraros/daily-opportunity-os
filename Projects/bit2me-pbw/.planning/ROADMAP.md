@@ -51,10 +51,10 @@ Plans:
 
 Plans:
 - [ ] 02-01-PLAN.md — Landing page brief + Health Score MVP brief for dev/design/engineering handoff (REQ-02, REQ-11)
-- [ ] 02-02-PLAN.md — Paid ads campaign brief: X/Twitter certification check, campaign structure, targeting, creative specs (REQ-03)
-- [ ] 02-03-PLAN.md — LinkedIn outreach playbook: day-by-day execution + Calendly setup (REQ-15)
-- [ ] 02-04-PLAN.md — CleverTap email #1 brief for Katy: B2C awareness + B2B invite (REQ-04)
-- [ ] 02-05-PLAN.md — Social content calendar (15+ posts for Buffer) + Luma side event shortlist (REQ-07, REQ-14)
+- [x] 02-02-PLAN.md — Paid ads campaign brief: X/Twitter certification check, campaign structure, targeting, creative specs (REQ-03)
+- [x] 02-03-PLAN.md — LinkedIn outreach playbook: day-by-day execution + Calendly setup (REQ-15)
+- [x] 02-04-PLAN.md — CleverTap email #1 brief for Katy: B2C awareness + B2B invite (REQ-04)
+- [x] 02-05-PLAN.md — Social content calendar (15+ posts for Buffer) + Luma side event shortlist (REQ-07, REQ-14)
 
 ### Phase 3: Amplify
 **Goal**: All production assets are locked and in-flight — booth materials sent to print, all pre-booked B2B meetings are confirmed, Crypto Health Score is complete and booth-ready, side events are RSVPd, and the urgency email wave has sent.
@@ -96,7 +96,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | Mar 28 |
-| 2. Launch | 0/5 | Not started | - |
+| 2. Launch | 3/5 | In progress | - |
 | 3. Amplify | 0/3 | Not started | - |
 | 4. Execute | 0/2 | Not started | - |
 | 5. Convert | 0/2 | Not started | - |
@@ -109,7 +109,7 @@ Plans:
 |-------------|-------|--------|
 | REQ-01: Define event offer/hook | Phase 1 | Pending |
 | REQ-02: Build dedicated landing page | Phase 2 | Pending |
-| REQ-03: Launch paid campaigns (X/Twitter, Google) | Phase 2 | Pending |
+| REQ-03: Launch paid campaigns (X/Twitter, Google) | Phase 2 | Brief complete (02-02) |
 | REQ-04: Email sequences (warm-up + B2B invites + urgency) | Phase 2 + 3 | Pending |
 | REQ-05: Booth materials brief (design, swag, QR/NFC) | Phase 3 | Pending |
 | REQ-06: Press release + media outreach list | Phase 3 | Pending |
@@ -121,7 +121,7 @@ Plans:
 | REQ-12: Private institutional dinner (venue + 15-20 guests) | Phase 1 (venue) | Pending |
 | REQ-13: Speaking slot outreach to PBW organizers | Phase 1 | Pending |
 | REQ-14: PBW side event attendance (Luma map + RSVPs) | Phase 2 (map) + Phase 3 (RSVP) | Pending |
-| REQ-15: B2B outreach 50-100 targets, 8-12 meetings goal | Phase 1 (list) + Phase 2 (wave 1) + Phase 3 (confirm) | Pending |
+| REQ-15: B2B outreach 50-100 targets, 8-12 meetings goal | Phase 1 (list) + Phase 2 (wave 1) + Phase 3 (confirm) | Playbook complete (02-03) — execution pending |
 | REQ-16: Diego legal review batch (Day 3-5) | Phase 1 | Pending |
 | REQ-17: Post-event B2B CleverTap sequences pre-built | Phase 3 | Pending |
 

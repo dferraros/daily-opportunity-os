@@ -1,7 +1,7 @@
 # STATE — Bit2Me @ Paris Blockchain Week 2026
 
-**Last updated:** 2026-03-26
-**Session:** Roadmap creation
+**Last updated:** 2026-03-30
+**Session:** Phase 2 execution — plan 02-03 complete
 
 ---
 
@@ -16,16 +16,16 @@
 ## Current Position
 
 **Active phase:** Phase 2 — Launch
-**Active plan:** None (not yet started)
-**Status:** Phase 1 complete. Awaiting plan-phase execution for Phase 2.
-**Days remaining:** 15 (event: April 15-16)
+**Active plan:** 02-04 complete (CleverTap email brief for Katy — B2C awareness + B2B invite)
+**Status:** Phase 2 in progress. Plans 02-02, 02-03, 02-04 complete (02-01, 02-05 pending).
+**Days remaining:** 16 (event: April 15-16)
 
 ```
-[Phase 1: Foundation  ] ░░░░░░░░░░  0%  Days 1-3
-[Phase 2: Launch      ] ░░░░░░░░░░  0%  Days 4-10
-[Phase 3: Amplify     ] ░░░░░░░░░░  0%  Days 11-16
-[Phase 4: Execute     ] ░░░░░░░░░░  0%  Apr 15-16
-[Phase 5: Convert     ] ░░░░░░░░░░  0%  Apr 17-24
+[Phase 1: Foundation  ] ██████████  100%  Days 1-3 — COMPLETE
+[Phase 2: Launch      ] █████░░░░░   57%  Days 4-10 — Plans 02-02, 02-03, 02-04 done (3 of 5)
+[Phase 3: Amplify     ] ░░░░░░░░░░    0%  Days 11-16
+[Phase 4: Execute     ] ░░░░░░░░░░    0%  Apr 15-16
+[Phase 5: Convert     ] ░░░░░░░░░░    0%  Apr 17-24
 ```
 
 ---
@@ -52,6 +52,13 @@
 | Health Score tool: ~€3-5K dev, 10 days to build | High-value booth differentiator, starts Phase 2 | Mar 26 |
 | Institutional dinner: "Estado del Crypto Espanol 2026", 15-20 guests, ~€8-12K | Spain-identity differentiation no competitor can replicate | Mar 26 |
 | Speaking slot: parallel outreach (not blocking) | Check is pending with PBW organizers | Mar 26 |
+| Calendly set up FIRST before any connection request | Booking window is 24-72h after acceptance; no link = lost opportunity | Mar 30 |
+| One full calendar day wait before messaging accepted connections | Messaging immediately feels transactional; 24h wait improves reply rate | Mar 30 |
+| No follow-up within 5-7 days of pitch message | Phase 3 handles follow-up; Phase 2 plants seeds only | Mar 30 |
+| Phase 2 B2B target: 5+ meetings (not 8-12) | Remaining 3-7 meetings close in Phase 3 follow-up after 5-7 day wait | Mar 30 |
+| B2C email type: awareness (not conversion push) | Warm existing users, do not hard-sell; email #2 in Phase 3 handles urgency/conversion | Mar 30 |
+| Email send gate: Diego approval AND live LP URL required | Two hard blockers prevent premature send; 12-item checklist enforces both | Mar 30 |
+| B2B email bypass CleverTap if list < 30 contacts | Manual send by Daniel is faster and more personal for small high-value list | Mar 30 |
 
 ---
 
@@ -129,7 +136,7 @@
 
 ## Next Action
 
-Run `/gsd:plan-phase 2` to decompose Phase 2: Launch into executable plans.
+Continue Phase 2 execution — plans 02-01 and 02-05 pending.
 
 Phase 1 output files (complete):
 - 01-offer-brief.md — internal offer definition, MiCA compliance rationale
@@ -138,4 +145,10 @@ Phase 1 output files (complete):
 - 01-venue-outreach.md — 3 ready-to-send venue emails (Maceo, Drouant, Cafe Marly)
 - 01-speaking-slot-inquiry.md — speaker form pre-filled, 3 angles, LinkedIn follow-up
 
-Phase 2 depends on: Diego approval (April 1 hard deadline). Everything downstream is blocked without it.
+Phase 2 output files (in progress):
+- 02-01-SUMMARY.md — landing page brief + CleverTap pbw_lead tag spec + UTM taxonomy
+- 02-02-SUMMARY.md — Health Score MVP brief + scoring logic + question set
+- 02-linkedin-outreach-playbook.md — day-by-day LinkedIn outreach playbook March 29-April 4 + Calendly setup
+- 02-email-brief-katy.md — complete CleverTap email campaign brief (B2C awareness + B2B invite), segment pbw_warmup_v1, 12-item send checklist
+
+Phase 2 depends on: Diego approval (April 1 hard deadline). Plans 02-01 and 02-05 remaining.
