@@ -47,7 +47,14 @@ Plans:
   3. Existing user email #1 (awareness — "Bit2Me at PBW, 60 days zero fees") is sent to Spain + EU KYC-complete segment; open rate tracking active in CleverTap
   4. LinkedIn connection requests have been sent to the full 50-100 target B2B list; Calendly booking page is live with Apr 15-16 slots
   5. Social content calendar covering pre-event, event, and post-event is drafted and scheduled in Buffer; Luma side event calendar is mapped with 5-8 RSVP candidates identified
-**Plans**: TBD
+**Plans:** 5 plans (Wave 1 — all parallel)
+
+Plans:
+- [ ] 02-01-PLAN.md — Landing page brief + Health Score MVP brief for dev/design/engineering handoff (REQ-02, REQ-11)
+- [ ] 02-02-PLAN.md — Paid ads campaign brief: X/Twitter certification check, campaign structure, targeting, creative specs (REQ-03)
+- [ ] 02-03-PLAN.md — LinkedIn outreach playbook: day-by-day execution + Calendly setup (REQ-15)
+- [ ] 02-04-PLAN.md — CleverTap email #1 brief for Katy: B2C awareness + B2B invite (REQ-04)
+- [ ] 02-05-PLAN.md — Social content calendar (15+ posts for Buffer) + Luma side event shortlist (REQ-07, REQ-14)
 
 ### Phase 3: Amplify
 **Goal**: All production assets are locked and in-flight — booth materials sent to print, all pre-booked B2B meetings are confirmed, Crypto Health Score is complete and booth-ready, side events are RSVPd, and the urgency email wave has sent.
@@ -88,8 +95,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
-| 2. Launch | 0/3 | Not started | - |
+| 1. Foundation | 3/3 | Complete | Mar 28 |
+| 2. Launch | 0/5 | Not started | - |
 | 3. Amplify | 0/3 | Not started | - |
 | 4. Execute | 0/2 | Not started | - |
 | 5. Convert | 0/2 | Not started | - |
