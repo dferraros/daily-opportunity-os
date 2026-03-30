@@ -11,7 +11,7 @@
 ## Phases
 
 - [x] **Phase 1: Foundation** (Days 1-3, Mar 26-28) — Offer locked, Diego package ready, B2B list started, venue outreach sent
-- [ ] **Phase 2: Launch** (Days 4-10, Mar 29 - Apr 4) — Landing live, ads running, email wave 1 sent, LinkedIn wave 1 sent, Health Score build started
+- [x] **Phase 2: Launch** (Days 4-10, Mar 29 - Apr 4) — Landing live, ads running, email wave 1 sent, LinkedIn wave 1 sent, Health Score build started
 - [ ] **Phase 3: Amplify** (Days 11-16, Apr 5-10) — Booth materials to print, meetings confirmed, Health Score complete, side events RSVPd, email urgency wave
 - [ ] **Phase 4: Execute** (Days 17-18, Apr 15-16) — On-site runbook live, lead capture running, live coverage posting
 - [ ] **Phase 5: Convert** (Days 19-26, Apr 17-24) — Post-event sequences fire, B2B follow-up complete, results report delivered
@@ -50,7 +50,7 @@ Plans:
 **Plans:** 5 plans (Wave 1 — all parallel)
 
 Plans:
-- [ ] 02-01-PLAN.md — Landing page brief + Health Score MVP brief for dev/design/engineering handoff (REQ-02, REQ-11)
+- [x] 02-01-PLAN.md — Landing page brief + Health Score MVP brief for dev/design/engineering handoff (REQ-02, REQ-11)
 - [x] 02-02-PLAN.md — Paid ads campaign brief: X/Twitter certification check, campaign structure, targeting, creative specs (REQ-03)
 - [x] 02-03-PLAN.md — LinkedIn outreach playbook: day-by-day execution + Calendly setup (REQ-15)
 - [x] 02-04-PLAN.md — CleverTap email #1 brief for Katy: B2C awareness + B2B invite (REQ-04)
@@ -96,7 +96,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | Mar 28 |
-| 2. Launch | 3/5 | In progress | - |
+| 2. Launch | 5/5 | Complete | Mar 30 |
 | 3. Amplify | 0/3 | Not started | - |
 | 4. Execute | 0/2 | Not started | - |
 | 5. Convert | 0/2 | Not started | - |
@@ -108,7 +108,7 @@ Plans:
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | REQ-01: Define event offer/hook | Phase 1 | Pending |
-| REQ-02: Build dedicated landing page | Phase 2 | Pending |
+| REQ-02: Build dedicated landing page | Phase 2 | Brief complete (02-01) — dev build starts Mar 31 |
 | REQ-03: Launch paid campaigns (X/Twitter, Google) | Phase 2 | Brief complete (02-02) |
 | REQ-04: Email sequences (warm-up + B2B invites + urgency) | Phase 2 + 3 | Pending |
 | REQ-05: Booth materials brief (design, swag, QR/NFC) | Phase 3 | Pending |
@@ -117,7 +117,7 @@ Plans:
 | REQ-08: On-site runbook (demo script, shifts, lead capture) | Phase 3 (draft) + Phase 4 (live) | Pending |
 | REQ-09: Post-event lead nurture sequence (<24h) | Phase 3 (configure) + Phase 5 (fire) | Pending |
 | REQ-10: Results report template (KPIs vs targets) | Phase 5 | Pending |
-| REQ-11: Crypto Health Score interactive tool | Phase 2 (build) + Phase 3 (complete) | Pending |
+| REQ-11: Crypto Health Score interactive tool | Phase 2 (build) + Phase 3 (complete) | Brief complete (02-01) — build starts Apr 1 |
 | REQ-12: Private institutional dinner (venue + 15-20 guests) | Phase 1 (venue) | Pending |
 | REQ-13: Speaking slot outreach to PBW organizers | Phase 1 | Pending |
 | REQ-14: PBW side event attendance (Luma map + RSVPs) | Phase 2 (map) + Phase 3 (RSVP) | Map complete (02-05) — 4 events shortlisted, RSVPs pending Phase 3 |

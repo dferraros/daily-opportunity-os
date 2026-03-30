@@ -1,7 +1,7 @@
 # STATE — Bit2Me @ Paris Blockchain Week 2026
 
 **Last updated:** 2026-03-30
-**Session:** Phase 2 execution — plan 02-05 complete
+**Session:** Phase 2 execution — plan 02-01 complete
 
 ---
 
@@ -16,13 +16,13 @@
 ## Current Position
 
 **Active phase:** Phase 2 — Launch
-**Active plan:** 02-05 complete (Social calendar for Buffer + Luma side event shortlist)
-**Status:** Phase 2 in progress. Plans 02-02, 02-03, 02-04, 02-05 complete (02-01 pending).
+**Active plan:** 02-01 complete (Landing page brief + Health Score MVP brief)
+**Status:** Phase 2 COMPLETE. All 5 plans done (02-01 through 02-05).
 **Days remaining:** 16 (event: April 15-16)
 
 ```
 [Phase 1: Foundation  ] ██████████  100%  Days 1-3 — COMPLETE
-[Phase 2: Launch      ] ████████░░   80%  Days 4-10 — Plans 02-02, 02-03, 02-04, 02-05 done (4 of 5)
+[Phase 2: Launch      ] ██████████  100%  Days 4-10 — ALL 5 plans complete
 [Phase 3: Amplify     ] ░░░░░░░░░░    0%  Days 11-16
 [Phase 4: Execute     ] ░░░░░░░░░░    0%  Apr 15-16
 [Phase 5: Convert     ] ░░░░░░░░░░    0%  Apr 17-24
@@ -59,6 +59,9 @@
 | B2C email type: awareness (not conversion push) | Warm existing users, do not hard-sell; email #2 in Phase 3 handles urgency/conversion | Mar 30 |
 | Email send gate: Diego approval AND live LP URL required | Two hard blockers prevent premature send; 12-item checklist enforces both | Mar 30 |
 | B2B email bypass CleverTap if list < 30 contacts | Manual send by Daniel is faster and more personal for small high-value list | Mar 30 |
+| pbw_lead fires 5 properties including gdpr_consent | Katy needs source + campaign for attribution; gdpr_consent required for GDPR-compliant CleverTap segmentation | Mar 30 |
+| Health Score output text in configurable JSON — no hardcoded strings | Diego may require gap text changes before April 15; config update avoids a booth-day code deploy | Mar 30 |
+| 2 form fields maximum on landing page (Name + Email) | Each additional field reduces conversion rate; phone adds friction with zero benefit at this stage | Mar 30 |
 
 ---
 
@@ -136,7 +139,7 @@
 
 ## Next Action
 
-Continue Phase 2 execution — plan 02-01 pending (landing page + Health Score briefs).
+Phase 2 is COMPLETE. Move to Phase 3: Amplify.
 
 Phase 1 output files (complete):
 - 01-offer-brief.md — internal offer definition, MiCA compliance rationale
@@ -145,12 +148,12 @@ Phase 1 output files (complete):
 - 01-venue-outreach.md — 3 ready-to-send venue emails (Maceo, Drouant, Cafe Marly)
 - 01-speaking-slot-inquiry.md — speaker form pre-filled, 3 angles, LinkedIn follow-up
 
-Phase 2 output files (in progress):
-- 02-01-SUMMARY.md — landing page brief + CleverTap pbw_lead tag spec + UTM taxonomy
-- 02-02-SUMMARY.md — Health Score MVP brief + scoring logic + question set
+Phase 2 output files (COMPLETE — all 5 plans):
+- 02-landing-page-brief.md — dev/design handoff for bit2me.com/pbw with CleverTap pbw_lead spec, UTM table, QR spec, 13-item checklist
+- 02-health-score-brief.md — engineering handoff for 10-day Crypto Health Score build with scoring logic, 5 questions, configurable output text
 - 02-linkedin-outreach-playbook.md — day-by-day LinkedIn outreach playbook March 29-April 4 + Calendly setup
 - 02-social-calendar.md — 18-post Buffer calendar (March 29-April 24), offer posts gated on Diego approval
 - 02-luma-side-events.md — 4 confirmed events shortlist, RSVP protocol, discovery queries, hosting opportunity
 - 02-email-brief-katy.md — complete CleverTap email campaign brief (B2C awareness + B2B invite), segment pbw_warmup_v1, 12-item send checklist
 
-Phase 2 depends on: Diego approval (April 1 hard deadline). Plans 02-01 and 02-05 remaining.
+Next action: Run `/gsd:plan-phase 3` to decompose Phase 3: Amplify.
