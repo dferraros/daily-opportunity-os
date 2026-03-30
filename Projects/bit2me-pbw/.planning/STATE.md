@@ -1,7 +1,7 @@
 # STATE — Bit2Me @ Paris Blockchain Week 2026
 
 **Last updated:** 2026-03-30
-**Session:** Phase 2 execution — plan 02-03 complete
+**Session:** Phase 2 execution — plan 02-05 complete
 
 ---
 
@@ -16,13 +16,13 @@
 ## Current Position
 
 **Active phase:** Phase 2 — Launch
-**Active plan:** 02-04 complete (CleverTap email brief for Katy — B2C awareness + B2B invite)
-**Status:** Phase 2 in progress. Plans 02-02, 02-03, 02-04 complete (02-01, 02-05 pending).
+**Active plan:** 02-05 complete (Social calendar for Buffer + Luma side event shortlist)
+**Status:** Phase 2 in progress. Plans 02-02, 02-03, 02-04, 02-05 complete (02-01 pending).
 **Days remaining:** 16 (event: April 15-16)
 
 ```
 [Phase 1: Foundation  ] ██████████  100%  Days 1-3 — COMPLETE
-[Phase 2: Launch      ] █████░░░░░   57%  Days 4-10 — Plans 02-02, 02-03, 02-04 done (3 of 5)
+[Phase 2: Launch      ] ████████░░   80%  Days 4-10 — Plans 02-02, 02-03, 02-04, 02-05 done (4 of 5)
 [Phase 3: Amplify     ] ░░░░░░░░░░    0%  Days 11-16
 [Phase 4: Execute     ] ░░░░░░░░░░    0%  Apr 15-16
 [Phase 5: Convert     ] ░░░░░░░░░░    0%  Apr 17-24
@@ -136,7 +136,7 @@
 
 ## Next Action
 
-Continue Phase 2 execution — plans 02-01 and 02-05 pending.
+Continue Phase 2 execution — plan 02-01 pending (landing page + Health Score briefs).
 
 Phase 1 output files (complete):
 - 01-offer-brief.md — internal offer definition, MiCA compliance rationale
@@ -149,6 +149,8 @@ Phase 2 output files (in progress):
 - 02-01-SUMMARY.md — landing page brief + CleverTap pbw_lead tag spec + UTM taxonomy
 - 02-02-SUMMARY.md — Health Score MVP brief + scoring logic + question set
 - 02-linkedin-outreach-playbook.md — day-by-day LinkedIn outreach playbook March 29-April 4 + Calendly setup
+- 02-social-calendar.md — 18-post Buffer calendar (March 29-April 24), offer posts gated on Diego approval
+- 02-luma-side-events.md — 4 confirmed events shortlist, RSVP protocol, discovery queries, hosting opportunity
 - 02-email-brief-katy.md — complete CleverTap email campaign brief (B2C awareness + B2B invite), segment pbw_warmup_v1, 12-item send checklist
 
 Phase 2 depends on: Diego approval (April 1 hard deadline). Plans 02-01 and 02-05 remaining.
