@@ -113,14 +113,14 @@ Plans:
 | REQ-04: Email sequences (warm-up + B2B invites + urgency) | Phase 2 + 3 | Pending |
 | REQ-05: Booth materials brief (design, swag, QR/NFC) | Phase 3 | Pending |
 | REQ-06: Press release + media outreach list | Phase 3 | Pending |
-| REQ-07: Social content calendar (pre/during/post) | Phase 2 (plan) + Phase 4 (execution) | Pending |
+| REQ-07: Social content calendar (pre/during/post) | Phase 2 (plan) + Phase 4 (execution) | Calendar complete (02-05) — 18 posts in Buffer |
 | REQ-08: On-site runbook (demo script, shifts, lead capture) | Phase 3 (draft) + Phase 4 (live) | Pending |
 | REQ-09: Post-event lead nurture sequence (<24h) | Phase 3 (configure) + Phase 5 (fire) | Pending |
 | REQ-10: Results report template (KPIs vs targets) | Phase 5 | Pending |
 | REQ-11: Crypto Health Score interactive tool | Phase 2 (build) + Phase 3 (complete) | Pending |
 | REQ-12: Private institutional dinner (venue + 15-20 guests) | Phase 1 (venue) | Pending |
 | REQ-13: Speaking slot outreach to PBW organizers | Phase 1 | Pending |
-| REQ-14: PBW side event attendance (Luma map + RSVPs) | Phase 2 (map) + Phase 3 (RSVP) | Pending |
+| REQ-14: PBW side event attendance (Luma map + RSVPs) | Phase 2 (map) + Phase 3 (RSVP) | Map complete (02-05) — 4 events shortlisted, RSVPs pending Phase 3 |
 | REQ-15: B2B outreach 50-100 targets, 8-12 meetings goal | Phase 1 (list) + Phase 2 (wave 1) + Phase 3 (confirm) | Playbook complete (02-03) — execution pending |
 | REQ-16: Diego legal review batch (Day 3-5) | Phase 1 | Pending |
 | REQ-17: Post-event B2B CleverTap sequences pre-built | Phase 3 | Pending |
