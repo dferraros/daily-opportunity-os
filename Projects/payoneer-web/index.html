@@ -241,33 +241,29 @@
 
     /* ══════════════ PROBLEMA ══════════════ */
     #problema { background: var(--bg); }
-    .prob-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      border: 1px solid var(--border);
-    }
-    @media (max-width: 640px) { .prob-grid { grid-template-columns: 1fr; } }
+    .prob-grid { display: flex; flex-direction: column; }
     .prob-item {
-      padding: 44px 40px;
+      display: grid; grid-template-columns: 48px 1fr;
+      gap: 0 28px; align-items: baseline;
+      padding: 32px 0;
       border-bottom: 1px solid var(--border);
-      border-right: 1px solid var(--border);
+      position: relative;
       transition: background .18s;
     }
-    .prob-item:hover { background: var(--bg-alt); }
-    .prob-item:nth-child(even) { border-right: none; }
-    .prob-item:nth-last-child(-n+2) { border-bottom: none; }
-    @media (max-width: 640px) {
-      .prob-item { border-right: none !important; }
-      .prob-item:last-child { border-bottom: none; }
-      .prob-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
-      .prob-item:last-child { border-bottom: none; }
+    .prob-item::before {
+      content: ''; position: absolute; left: -2px; top: 0; bottom: 0; width: 0;
+      background: var(--accent); transition: width .2s ease;
     }
+    .prob-item:hover::before { width: 3px; }
+    .prob-item:last-child { border-bottom: none; }
     .prob-n {
-      font-family: var(--font-d); font-size: .9rem; color: var(--tx-m);
-      margin-bottom: 14px; letter-spacing: .04em;
+      font-family: var(--font-d); font-size: .85rem; color: var(--tx-m);
+      letter-spacing: .04em; padding-top: 3px;
     }
+    .prob-body { display: flex; flex-direction: column; gap: 6px; }
     .prob-t {
-      font-family: var(--font-d); font-size: 1.45rem; font-weight: 500;
-      color: var(--tx); margin-bottom: 12px; line-height: 1.2;
+      font-family: var(--font-d); font-size: 1.35rem; font-weight: 500;
+      color: var(--tx); line-height: 1.2;
     }
     .prob-b { font-size: .88rem; color: var(--tx-2); line-height: 1.7; }
 
@@ -368,9 +364,16 @@
     }
     .cred-lbl { font-size: .67rem; color: var(--tx-m); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
     .sobre-right {}
+    @media (max-width: 960px) {
+      .sobre-right { max-width: 320px; }
+    }
     .sobre-img {
-      width: 100%; height: auto;
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: top center;
       display: block;
+    }
+    @media (max-width: 960px) {
+      .sobre-img { height: 300px; }
     }
     .sobre-img-init {
       display: none; width: 100%; height: 520px;
@@ -391,24 +394,22 @@
     #proceso { background: var(--bg); }
     .proceso-row {
       display: grid; grid-template-columns: repeat(4, 1fr);
-      border: 1px solid var(--border);
+      gap: 0;
     }
     @media (max-width: 860px) { .proceso-row { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 480px) { .proceso-row { grid-template-columns: 1fr; } }
     .step {
-      padding: 40px 32px;
-      border-right: 1px solid var(--border);
-      transition: background .18s;
+      padding: 36px 28px 36px 0;
+      border-top: 2px solid var(--border);
+      transition: border-color .2s;
     }
-    .step:hover { background: var(--bg-alt); }
-    .step:last-child { border-right: none; }
+    .step:hover { border-top-color: var(--accent); }
     @media (max-width: 860px) {
-      .step:nth-child(2) { border-right: none; }
-      .step:nth-child(1), .step:nth-child(2) { border-bottom: 1px solid var(--border); }
+      .step { padding: 32px 24px 32px 0; }
+      .step:nth-child(odd) { padding-right: 20px; }
     }
     @media (max-width: 480px) {
-      .step { border-right: none !important; border-bottom: 1px solid var(--border); }
-      .step:last-child { border-bottom: none; }
+      .step { padding: 28px 0; border-top-width: 1px; }
     }
     .step-n {
       font-family: var(--font-d); font-size: 2.6rem; font-weight: 400;
@@ -564,7 +565,7 @@
     .f-full textarea::placeholder { color: var(--tx-m); }
     .f-submit { padding: 20px 18px; }
     .btn-submit {
-      width: 100%; padding: 14px;
+      width: auto; min-width: 200px; padding: 14px 32px;
       background: var(--tx); color: var(--bg);
       font-family: var(--font-b); font-size: .75rem; font-weight: 500;
       letter-spacing: .1em; text-transform: uppercase;
@@ -657,7 +658,7 @@
           <span class="hbp-brand">Porneat <em>— burgers</em></span>
           <span class="hbp-brand">Suspecados <em>— parrilla</em></span>
         </div>
-        <p class="hbp-stat">25.000+ reseñas · 4,8★ de media · desde 2018</p>
+        <p class="hbp-stat">Madrid · desde 2018</p>
       </div>
     </div>
   </div>
@@ -665,7 +666,7 @@
     <div class="stat rv"><div class="stat-n">25K+</div><div class="stat-l">Reseñas Google</div></div>
     <div class="stat rv" style="transition-delay:.07s"><div class="stat-n">4,8★</div><div class="stat-l">Valoración media</div></div>
     <div class="stat rv" style="transition-delay:.14s"><div class="stat-n">+15</div><div class="stat-l">Años en hostelería</div></div>
-    <div class="stat rv" style="transition-delay:.21s"><div class="stat-n">Esp · LatAm</div><div class="stat-l">Mercados activos</div></div>
+    <div class="stat rv" style="transition-delay:.21s"><div class="stat-n">2</div><div class="stat-l">Marcas propias en Madrid</div></div>
   </div>
 </section>
 
@@ -710,23 +711,31 @@
     <div class="prob-grid rv" style="transition-delay:.14s">
       <div class="prob-item">
         <p class="prob-n">01</p>
-        <h3 class="prob-t">Invisible en Google</h3>
-        <p class="prob-b">Sin reseñas, sin SEO local, sin ficha optimizada. El primer restaurante que aparece se lleva el 70% de los clics.</p>
+        <div class="prob-body">
+          <h3 class="prob-t">Invisible en Google</h3>
+          <p class="prob-b">Sin reseñas, sin SEO local, sin ficha optimizada. El primer restaurante que aparece se lleva el 70% de los clics.</p>
+        </div>
       </div>
       <div class="prob-item">
         <p class="prob-n">02</p>
-        <h3 class="prob-t">Publicidad sin retorno</h3>
-        <p class="prob-b">Gastan en Meta Ads sin un sistema de conversión detrás. El dinero se va y no queda nada medible.</p>
+        <div class="prob-body">
+          <h3 class="prob-t">Publicidad sin retorno</h3>
+          <p class="prob-b">Gastan en Meta Ads sin un sistema de conversión detrás. El dinero se va y no queda nada medible.</p>
+        </div>
       </div>
       <div class="prob-item">
         <p class="prob-n">03</p>
-        <h3 class="prob-t">Sin marca diferenciada</h3>
-        <p class="prob-b">Compiten en precio porque no tienen identidad propia. Sin posicionamiento claro, siempre gana el más barato.</p>
+        <div class="prob-body">
+          <h3 class="prob-t">Sin marca diferenciada</h3>
+          <p class="prob-b">Compiten en precio porque no tienen identidad propia. Sin posicionamiento claro, siempre gana el más barato.</p>
+        </div>
       </div>
       <div class="prob-item">
         <p class="prob-n">04</p>
-        <h3 class="prob-t">Sin fidelización</h3>
-        <p class="prob-b">Captan clientes pero no los retienen. Sin base de datos, sin programa de lealtad, cada semana empiezan de cero.</p>
+        <div class="prob-body">
+          <h3 class="prob-t">Sin fidelización</h3>
+          <p class="prob-b">Captan clientes pero no los retienen. Sin base de datos, sin programa de lealtad, cada semana empiezan de cero.</p>
+        </div>
       </div>
     </div>
   </div>
