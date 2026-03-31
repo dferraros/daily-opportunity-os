@@ -369,8 +369,7 @@
     .cred-lbl { font-size: .67rem; color: var(--tx-m); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
     .sobre-right {}
     .sobre-img {
-      width: 100%; height: 520px;
-      object-fit: cover; object-position: center top;
+      width: 100%; height: auto;
       display: block;
     }
     .sobre-img-init {
@@ -386,7 +385,7 @@
       font-size: .7rem; font-weight: 300; letter-spacing: .12em;
       text-transform: uppercase; color: rgba(184,132,60,.6); margin-top: 4px;
     }
-    @media (max-width: 960px) { .sobre-img, .sobre-img-init { height: 340px; } }
+    @media (max-width: 960px) { .sobre-img-init { height: 340px; } }
 
     /* ══════════════ PROCESO ══════════════ */
     #proceso { background: var(--bg); }
