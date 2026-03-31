@@ -231,6 +231,7 @@
       letter-spacing: .2em; text-transform: uppercase;
       color: var(--tx-m); margin-bottom: 16px;
     }
+    @media (max-width: 768px) { .sec-tag { letter-spacing: .12em; } }
     h2 {
       font-family: var(--font-d); font-weight: 400;
       font-size: clamp(2.2rem, 4.5vw, 4rem);
@@ -364,16 +365,13 @@
     }
     .cred-lbl { font-size: .67rem; color: var(--tx-m); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
     .sobre-right {}
-    @media (max-width: 960px) {
-      .sobre-right { max-width: 320px; }
-    }
     .sobre-img {
       width: 100%; height: 380px;
-      object-fit: cover; object-position: top center;
+      object-fit: cover; object-position: center 25%;
       display: block;
     }
     @media (max-width: 960px) {
-      .sobre-img { height: 300px; }
+      .sobre-img { height: 260px; width: auto; max-width: 280px; }
     }
     .sobre-img-init {
       display: none; width: 100%; height: 520px;
@@ -666,7 +664,7 @@
     <div class="stat rv"><div class="stat-n">25K+</div><div class="stat-l">Reseñas Google</div></div>
     <div class="stat rv" style="transition-delay:.07s"><div class="stat-n">4,8★</div><div class="stat-l">Valoración media</div></div>
     <div class="stat rv" style="transition-delay:.14s"><div class="stat-n">+15</div><div class="stat-l">Años en hostelería</div></div>
-    <div class="stat rv" style="transition-delay:.21s"><div class="stat-n">2</div><div class="stat-l">Marcas propias en Madrid</div></div>
+    <div class="stat rv" style="transition-delay:.21s"><div class="stat-n">Esp+LatAm</div><div class="stat-l">Mercados activos</div></div>
   </div>
 </section>
 
