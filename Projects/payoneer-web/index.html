@@ -4,1337 +4,1092 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Digital Artwork — Consultoría de Marketing para Restaurantes</title>
-  <meta name="description" content="Consultoría de marketing digital especializada en restaurantes y negocios gastronómicos. Más visibilidad, más reseñas, más reservas. Con más de 25.000 reseñas gestionadas y valoración media de 4,8 estrellas.">
+  <meta name="description" content="Consultoría de marketing gastronómico especializada en restaurantes. He construido Porneat y Suspecados en Madrid — 25.000+ reseñas, 4,8★. Aplico el mismo sistema a tu negocio.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ================================================================
-       RESET + VARIABLES
-    ================================================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:         #0C0907;
-      --bg-s:       #100D0A;
-      --bg-card:    #161109;
-      --border:     #1E1912;
-      --border-l:   #2A2319;
-      --accent:     #C9964F;
-      --accent-h:   #DFBA77;
-      --accent-dim: rgba(201,150,79,.10);
-      --tx:         #EDE4D4;
-      --tx-2:       #9B9188;
-      --tx-m:       #554E47;
-      --font-d: 'Cormorant Garamond', Georgia, serif;
-      --font-b: 'DM Sans', system-ui, sans-serif;
-      --nav-h: 76px;
-      --pad: 120px;
-      --max: 1200px;
+      --bg:       #F8F4EF;
+      --bg-alt:   #F0EBE3;
+      --tx:       #111009;
+      --tx-2:     #6B6560;
+      --tx-m:     #A8A29E;
+      --accent:   #B8843C;
+      --accent-h: #9A6E2E;
+      --border:   #DDD5CC;
+      --nav-h:    68px;
+      --max:      1160px;
+      --font-d:   'Cormorant Garamond', Georgia, serif;
+      --font-b:   'DM Sans', system-ui, sans-serif;
     }
-    @media (max-width: 768px) { :root { --pad: 72px; } }
 
-    html { scroll-behavior: smooth; font-size: 16px; }
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--bg); color: var(--tx);
-      font-family: var(--font-b); font-weight: 300;
-      line-height: 1.7; overflow-x: hidden;
+      background: var(--bg);
+      color: var(--tx);
+      font-family: var(--font-b);
+      font-weight: 300;
+      line-height: 1.65;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Grain overlay */
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: 9999;
-      pointer-events: none; opacity: .032;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 220px 220px;
-    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-      .rv { opacity: 1 !important; transform: none !important; }
-    }
+    .container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 40px; }
+    @media (max-width: 768px) { .container { padding: 0 24px; } }
 
-    h1,h2,h3,h4 { font-family: var(--font-d); font-weight: 400; line-height: 1.06; }
-    h1 { font-size: clamp(3rem, 7.5vw, 6.2rem); letter-spacing: -0.02em; }
-    h2 { font-size: clamp(2.2rem, 4.5vw, 3.8rem); letter-spacing: -0.02em; }
-    h3 { font-size: clamp(1.2rem, 2vw, 1.65rem); }
-    p  { color: var(--tx-2); font-size: .95rem; line-height: 1.8; }
-    a  { color: inherit; text-decoration: none; }
-    em { font-style: italic; color: var(--accent); }
-
-    .c { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 44px; }
-    @media (max-width: 768px) { .c { padding: 0 22px; } }
-
-    /* Label */
-    .lbl {
-      font-family: var(--font-b); font-size: .66rem; font-weight: 500;
-      letter-spacing: .24em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 22px;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .lbl::before { content: ''; width: 32px; height: 1px; background: var(--accent); flex-shrink: 0; }
-    .lbl.ctr { justify-content: center; }
-    .lbl.ctr::before { display: none; }
-    .lbl.ctr::after  { content: ''; width: 32px; height: 1px; background: var(--accent); }
-
-    /* Buttons */
-    .btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      font-family: var(--font-b); font-size: .76rem; font-weight: 500;
-      letter-spacing: .13em; text-transform: uppercase;
-      padding: 18px 40px; cursor: pointer; transition: all .35s ease;
-      position: relative; overflow: hidden; border: none;
-    }
-    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-    .btn-g { background: var(--accent); color: #0C0907; }
-    .btn-g::after {
-      content: ''; position: absolute; inset: 0;
-      background: rgba(255,255,255,.10); transform: translateX(-100%);
-      transition: transform .4s ease;
-    }
-    .btn-g:hover::after { transform: translateX(0); }
-    .btn-g:hover { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 16px 48px rgba(201,150,79,.25); }
-    .btn-o { background: transparent; color: var(--tx); border: 1px solid var(--border-l); }
-    .btn-o:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* Scroll reveal */
-    .rv { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+    /* SCROLL REVEAL */
+    .rv { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
     .rv.on { opacity: 1; transform: none; }
-    .rv-l { opacity: 0; transform: translateX(-28px); transition: opacity .7s ease, transform .7s ease; }
-    .rv-l.on { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } }
 
-    /* Divider */
-    .div { width: 100%; height: 1px; background: var(--border); }
-
-    /* ================================================================
-       NAVBAR
-    ================================================================ */
+    /* ══════════════ NAV ══════════════ */
     #nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       height: var(--nav-h);
       display: flex; align-items: center;
-      transition: background .4s ease, backdrop-filter .4s ease, border-color .4s ease;
       border-bottom: 1px solid transparent;
+      transition: background .25s, border-color .25s, backdrop-filter .25s;
     }
     #nav.scrolled {
-      background: rgba(12,9,7,.82);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom-color: var(--border);
+      background: rgba(248,244,239,.9);
+      border-color: var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .nav-inner {
+      max-width: var(--max); margin: 0 auto; padding: 0 40px; width: 100%;
       display: flex; align-items: center; justify-content: space-between;
-      width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 44px;
     }
+    @media (max-width: 768px) { .nav-inner { padding: 0 24px; } }
     .nav-logo {
-      font-family: var(--font-d); font-weight: 400; font-size: 1.35rem;
-      letter-spacing: .18em; text-transform: uppercase; color: var(--tx);
-      line-height: 1;
+      font-family: var(--font-b); font-size: .7rem; font-weight: 500;
+      letter-spacing: .2em; text-transform: uppercase; color: var(--tx);
     }
-    .nav-logo span { color: var(--accent); }
-    .nav-links { display: flex; align-items: center; gap: 36px; }
+    .nav-links { display: flex; gap: 32px; }
+    @media (max-width: 860px) { .nav-links { display: none; } }
     .nav-links a {
-      font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--tx-2); font-weight: 400; transition: color .25s;
+      font-size: .75rem; font-weight: 400; letter-spacing: .05em;
+      color: var(--tx-2); text-transform: uppercase; transition: color .2s;
     }
-    .nav-links a:hover { color: var(--accent); }
-    .nav-cta { font-size: .7rem !important; padding: 13px 26px; }
-    .nav-toggle {
-      display: none; flex-direction: column; gap: 5px;
-      background: none; border: none; cursor: pointer; padding: 4px;
+    .nav-links a:hover { color: var(--tx); }
+    .nav-cta {
+      font-size: .72rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; padding: 9px 20px;
+      border: 1px solid var(--tx); color: var(--tx);
+      transition: background .2s, color .2s; cursor: pointer;
     }
-    .nav-toggle span { display: block; width: 24px; height: 1px; background: var(--tx); transition: all .3s; }
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .nav-toggle { display: flex; }
-      .nav-inner { padding: 0 22px; }
-    }
+    .nav-cta:hover { background: var(--tx); color: var(--bg); }
 
-    /* Mobile menu */
-    #mobile-menu {
-      display: none; position: fixed; inset: 0; z-index: 999;
-      background: rgba(12,9,7,.97); backdrop-filter: blur(20px);
-      flex-direction: column; align-items: center; justify-content: center; gap: 40px;
-    }
-    #mobile-menu.open { display: flex; }
-    #mobile-menu a {
-      font-family: var(--font-d); font-size: 2.2rem; color: var(--tx);
-      transition: color .25s;
-    }
-    #mobile-menu a:hover { color: var(--accent); }
-    .menu-close {
-      position: absolute; top: 28px; right: 28px;
-      background: none; border: none; color: var(--tx-2); cursor: pointer; font-size: 1.5rem;
-    }
-
-    /* ================================================================
-       HERO
-    ================================================================ */
+    /* ══════════════ HERO ══════════════ */
     #hero {
-      min-height: 100vh; display: flex; align-items: center;
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: 1fr auto;
       padding-top: var(--nav-h);
-      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,150,79,.06) 0%, transparent 70%);
-      position: relative;
     }
-    .hero-inner {
-      padding: var(--pad) 44px calc(var(--pad) * 0.8);
-      width: 100%; max-width: var(--max); margin: 0 auto;
+    .hero-split {
+      display: grid;
+      grid-template-columns: 55% 45%;
     }
-    .hero-supra {
-      font-size: .64rem; letter-spacing: .28em; text-transform: uppercase;
-      color: var(--accent); font-weight: 500; margin-bottom: 32px;
-    }
-    .hero-h1 {
-      font-family: var(--font-d); font-size: clamp(3.4rem, 8.5vw, 7rem);
-      font-weight: 300; line-height: 1.0; letter-spacing: -0.02em;
-      color: var(--tx); max-width: 14ch; margin-bottom: 36px;
-    }
-    .hero-h1 em { font-style: italic; color: var(--accent-h); }
-    .hero-sub {
-      max-width: 55ch; color: var(--tx-2); font-size: 1rem;
-      line-height: 1.75; margin-bottom: 52px;
-    }
-    .hero-btns { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 80px; }
+    @media (max-width: 860px) { .hero-split { grid-template-columns: 1fr; } }
 
-    /* Stats */
+    .hero-left {
+      padding: 72px 60px 72px 40px;
+      display: flex; flex-direction: column; justify-content: center;
+      border-right: 1px solid var(--border);
+    }
+    @media (max-width: 860px) { .hero-left { padding: 60px 24px 40px; border-right: none; } }
+    @media (max-width: 1160px) { .hero-left { padding: 72px 48px 72px 40px; } }
+
+    .hero-label {
+      font-size: .68rem; font-weight: 500; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 28px;
+    }
+    h1 {
+      font-family: var(--font-d); font-weight: 400;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1.04; letter-spacing: -.02em;
+      color: var(--tx); margin-bottom: 28px;
+    }
+    h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+    .hero-sub {
+      font-size: 1rem; font-weight: 300; color: var(--tx-2);
+      max-width: 420px; line-height: 1.7; margin-bottom: 40px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block; padding: 13px 28px;
+      background: var(--tx); color: var(--bg);
+      font-size: .75rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; transition: background .2s; cursor: pointer;
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-ghost {
+      display: inline-block; padding: 13px 28px;
+      border: 1px solid var(--border); color: var(--tx-2);
+      font-size: .75rem; font-weight: 400; letter-spacing: .08em;
+      text-transform: uppercase; transition: border-color .2s, color .2s; cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: var(--tx-2); color: var(--tx); }
+
+    .hero-right {
+      position: relative; overflow: hidden;
+      background: var(--bg-alt);
+    }
+    @media (max-width: 860px) {
+      .hero-right { height: 320px; }
+    }
+    .hero-photo {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+    }
+    .hero-photo-init {
+      display: none; position: absolute; inset: 0;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px;
+    }
+    .hero-photo-init svg { opacity: .25; }
+    .hero-photo-init span { font-size: .72rem; color: var(--tx-m); letter-spacing: .08em; }
+
+    /* Stats strip */
     .hero-stats {
       display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 1px; background: var(--border);
       border-top: 1px solid var(--border);
     }
-    .stat-box {
-      background: var(--bg); padding: 32px 24px;
-      display: flex; flex-direction: column; gap: 6px;
+    @media (max-width: 600px) { .hero-stats { grid-template-columns: repeat(2, 1fr); } }
+    .stat {
+      padding: 28px 40px;
+      border-right: 1px solid var(--border);
     }
-    .stat-num {
-      font-family: var(--font-d); font-size: clamp(1.8rem, 3vw, 2.6rem);
-      font-weight: 400; color: var(--tx); line-height: 1;
+    .stat:last-child { border-right: none; }
+    @media (max-width: 768px) { .stat { padding: 20px 24px; } }
+    @media (max-width: 600px) {
+      .stat:nth-child(2) { border-right: none; }
+      .stat:nth-child(3) { border-right: 1px solid var(--border); border-top: 1px solid var(--border); }
+      .stat:nth-child(4) { border-top: 1px solid var(--border); }
     }
-    .stat-lbl { font-size: .75rem; color: var(--tx-2); letter-spacing: .04em; }
-    @media (max-width: 768px) {
-      .hero-stats { grid-template-columns: repeat(2, 1fr); }
-      .hero-inner { padding: calc(var(--pad) * 0.8) 22px calc(var(--pad) * 0.6); }
+    .stat-n {
+      font-family: var(--font-d); font-size: 2.2rem; font-weight: 500;
+      color: var(--tx); line-height: 1; margin-bottom: 5px; letter-spacing: -.01em;
     }
-    @media (max-width: 480px) { .hero-stats { grid-template-columns: 1fr 1fr; } }
+    .stat-l { font-size: .68rem; color: var(--tx-m); letter-spacing: .1em; text-transform: uppercase; }
 
-    /* ================================================================
-       MARQUEE
-    ================================================================ */
+    /* ══════════════ MARQUEE ══════════════ */
     .marquee-wrap {
-      overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      background: var(--bg-s); padding: 20px 0;
+      overflow: hidden; border-bottom: 1px solid var(--border);
+      background: var(--bg-alt); padding: 14px 0;
     }
     .marquee-track {
-      display: flex; gap: 0; white-space: nowrap;
-      animation: marquee 28s linear infinite;
+      display: flex; width: max-content;
+      animation: scroll 30s linear infinite;
     }
     .marquee-track:hover { animation-play-state: paused; }
-    .marquee-item {
-      font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
-      color: var(--tx-m); padding: 0 32px;
-      display: inline-flex; align-items: center; gap: 32px;
+    @keyframes scroll { to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+    .m-item {
+      white-space: nowrap; padding: 0 32px;
+      font-size: .67rem; font-weight: 500; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--tx-m);
     }
-    .marquee-item::after {
-      content: '';
-      display: inline-block; width: 4px; height: 4px;
-      background: var(--accent); border-radius: 50%;
-    }
-    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .m-dot { color: var(--accent); opacity: .6; padding: 0; }
 
-    /* ================================================================
-       SECTION BASE
-    ================================================================ */
-    section { padding: var(--pad) 0; }
+    /* ══════════════ SECTION STRUCTURE ══════════════ */
+    section { border-bottom: 1px solid var(--border); }
 
-    /* ================================================================
-       PROBLEMA
-    ================================================================ */
-    #problema { background: var(--bg-s); }
-    .problem-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 2px; background: var(--border); margin-top: 64px;
-    }
-    .problem-card {
-      background: var(--bg-card); padding: 48px 40px;
-      position: relative; overflow: hidden;
-    }
-    .problem-card::before {
-      content: ''; position: absolute; top: 0; left: 0;
-      width: 2px; height: 0; background: var(--accent);
-      transition: height .5s ease;
-    }
-    .problem-card:hover::before { height: 100%; }
-    .problem-num {
-      font-family: var(--font-d); font-size: 4rem; font-weight: 300;
-      color: var(--tx-m); line-height: 1; margin-bottom: 24px;
-      opacity: .4;
-    }
-    .problem-card h3 { font-size: 1.25rem; margin-bottom: 16px; color: var(--tx); }
-    .problem-card p { font-size: .88rem; max-width: 40ch; }
-    @media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr; } }
+    .sec-pad { padding: 100px 0; }
+    @media (max-width: 768px) { .sec-pad { padding: 72px 0; } }
 
-    /* ================================================================
-       TRANSFORMACION
-    ================================================================ */
-    #transformacion { background: var(--bg); }
-    .trans-grid {
-      display: grid; gap: 2px; background: var(--border); margin-top: 64px;
+    .sec-header { margin-bottom: 56px; }
+    .sec-tag {
+      display: block; font-size: .67rem; font-weight: 500;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--tx-m); margin-bottom: 16px;
     }
-    .trans-row {
+    h2 {
+      font-family: var(--font-d); font-weight: 400;
+      font-size: clamp(2.2rem, 4.5vw, 4rem);
+      line-height: 1.08; letter-spacing: -.02em; color: var(--tx);
+    }
+    h2 em { font-style: italic; }
+    .sec-sub { margin-top: 18px; font-size: .95rem; color: var(--tx-2); max-width: 480px; line-height: 1.7; }
+
+    /* ══════════════ PROBLEMA ══════════════ */
+    #problema { background: var(--bg); }
+    .prob-grid {
       display: grid; grid-template-columns: 1fr 1fr;
-      background: var(--border); gap: 2px;
+      border: 1px solid var(--border);
     }
-    .trans-cell {
-      background: var(--bg-card); padding: 40px;
+    @media (max-width: 640px) { .prob-grid { grid-template-columns: 1fr; } }
+    .prob-item {
+      padding: 44px 40px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      transition: background .18s;
+    }
+    .prob-item:hover { background: var(--bg-alt); }
+    .prob-item:nth-child(even) { border-right: none; }
+    .prob-item:nth-last-child(-n+2) { border-bottom: none; }
+    @media (max-width: 640px) {
+      .prob-item { border-right: none !important; }
+      .prob-item:last-child { border-bottom: none; }
+      .prob-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+      .prob-item:last-child { border-bottom: none; }
+    }
+    .prob-n {
+      font-family: var(--font-d); font-size: .9rem; color: var(--tx-m);
+      margin-bottom: 14px; letter-spacing: .04em;
+    }
+    .prob-t {
+      font-family: var(--font-d); font-size: 1.45rem; font-weight: 500;
+      color: var(--tx); margin-bottom: 12px; line-height: 1.2;
+    }
+    .prob-b { font-size: .88rem; color: var(--tx-2); line-height: 1.7; }
+
+    /* ══════════════ SERVICIOS ══════════════ */
+    #servicios { background: var(--bg-alt); }
+    .svc-list { border-top: 1px solid var(--border); }
+    .svc-row {
+      display: grid; grid-template-columns: 3rem 1fr auto;
+      align-items: baseline; gap: 0 32px;
+      padding: 36px 0; border-bottom: 1px solid var(--border);
       position: relative;
+      transition: padding-left .15s;
     }
-    .trans-tag {
-      font-size: .62rem; letter-spacing: .2em; text-transform: uppercase;
-      font-weight: 500; margin-bottom: 14px; display: block;
+    .svc-row::before {
+      content: ''; position: absolute; left: -2px; top: 0; bottom: 0; width: 0;
+      background: var(--accent);
+      transition: width .2s ease;
     }
-    .before .trans-tag { color: var(--tx-m); }
-    .after .trans-tag { color: var(--accent); }
-    .trans-cell p { font-size: .9rem; max-width: 48ch; }
-    @media (max-width: 768px) {
-      .trans-row { grid-template-columns: 1fr; }
+    .svc-row:hover::before { width: 3px; }
+    .svc-row:last-child { border-bottom: none; }
+    @media (max-width: 640px) { .svc-row { grid-template-columns: 2.5rem 1fr; } }
+    .svc-n {
+      font-family: var(--font-d); font-size: 1.1rem; color: var(--tx-m);
+      font-weight: 400; padding-top: 3px;
     }
+    .svc-body {}
+    .svc-t {
+      font-family: var(--font-d); font-size: 1.55rem; font-weight: 500;
+      color: var(--tx); margin-bottom: 8px; line-height: 1.15;
+      transition: color .15s;
+    }
+    .svc-row:hover .svc-t { color: var(--accent); }
+    .svc-d { font-size: .88rem; color: var(--tx-2); line-height: 1.7; max-width: 560px; margin-bottom: 12px; }
+    .svc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .svc-tag {
+      font-size: .62rem; font-weight: 400; letter-spacing: .1em;
+      text-transform: uppercase; padding: 4px 10px;
+      border: 1px solid var(--border); color: var(--tx-m);
+    }
+    .svc-cta {
+      font-size: .72rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--accent);
+      white-space: nowrap; align-self: start; margin-top: 4px;
+      border-bottom: 1px solid transparent; transition: border-color .15s;
+    }
+    .svc-cta:hover { border-color: var(--accent); }
+    @media (max-width: 640px) { .svc-cta { display: none; } }
 
-    /* ================================================================
-       SERVICIOS
-    ================================================================ */
-    #servicios { background: var(--bg-s); }
-    .services-header { margin-bottom: 64px; }
-    .services-header h2 { max-width: 22ch; }
-    .services-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 2px; background: var(--border);
+    /* ══════════════ TRANSFORMACION ══════════════ */
+    #transformacion { background: var(--bg); }
+    .transform-table { width: 100%; border-collapse: collapse; }
+    .transform-table th {
+      padding: 16px 24px; text-align: left; font-size: .67rem;
+      font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+      border-bottom: 2px solid var(--border);
     }
-    .service-card {
-      background: var(--bg-card); padding: 52px 44px;
-      display: flex; flex-direction: column; gap: 20px;
-      transition: background .3s;
+    .transform-table th:first-child { color: var(--tx-m); }
+    .transform-table th:last-child { color: var(--accent); }
+    .transform-table td {
+      padding: 20px 24px; font-size: .9rem; vertical-align: top;
+      border-bottom: 1px solid var(--border);
     }
-    .service-card:hover { background: #1a1610; }
-    .service-num {
-      font-family: var(--font-d); font-size: .9rem; color: var(--accent);
-      letter-spacing: .12em;
-    }
-    .service-card h3 { font-size: 1.45rem; color: var(--tx); }
-    .service-card p { font-size: .88rem; flex-grow: 1; max-width: 44ch; }
-    .service-tags {
-      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
-    }
-    .service-tag {
-      font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--tx-m); border: 1px solid var(--border-l);
-      padding: 5px 12px;
-    }
-    .service-cta {
-      margin-top: 12px; align-self: flex-start;
-      font-size: .7rem; padding: 14px 30px;
-    }
-    @media (max-width: 768px) { .services-grid { grid-template-columns: 1fr; } }
+    .transform-table tr:last-child td { border-bottom: none; }
+    .transform-table td:first-child { color: var(--tx-m); }
+    .transform-table td:last-child { color: var(--tx); font-weight: 400; }
+    .transform-table tr { transition: background .15s; }
+    .transform-table tr:hover { background: var(--bg-alt); }
 
-    /* ================================================================
-       SOBRE
-    ================================================================ */
-    #sobre { background: var(--bg); }
-    .sobre-inner {
-      display: grid; grid-template-columns: 1fr 1.2fr;
-      gap: 80px; align-items: start;
+    /* ══════════════ SOBRE ══════════════ */
+    #sobre { background: var(--bg-alt); }
+    .sobre-grid {
+      display: grid; grid-template-columns: 1fr 380px;
+      gap: 0; align-items: start;
     }
-    .sobre-photo-wrap {
-      position: relative;
+    @media (max-width: 960px) { .sobre-grid { grid-template-columns: 1fr; gap: 56px; } }
+    .sobre-left { padding-right: 72px; }
+    @media (max-width: 960px) { .sobre-left { padding-right: 0; } }
+    blockquote {
+      font-family: var(--font-d); font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+      font-style: italic; font-weight: 400; color: var(--tx);
+      line-height: 1.5; padding-left: 24px;
+      border-left: 3px solid var(--accent);
+      margin-bottom: 36px;
     }
-    .sobre-photo-wrap::before {
-      content: ''; position: absolute;
-      inset: -1px; border: 1px solid var(--border-l);
-      pointer-events: none; z-index: 1;
+    .sobre-body { font-size: .9rem; color: var(--tx-2); line-height: 1.8; margin-bottom: 40px; }
+    .creds {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border);
     }
-    .sobre-photo-wrap::after {
-      content: ''; position: absolute;
-      bottom: -20px; right: -20px;
-      width: 60%; height: 60%;
-      border: 1px solid var(--accent-dim);
-      z-index: 0;
+    .cred {
+      background: var(--bg-alt);
+      padding: 22px 24px;
     }
-    .sobre-photo {
-      width: 100%; display: block;
-      filter: grayscale(20%) contrast(1.05);
-      aspect-ratio: 3/4; object-fit: cover;
+    .cred-val {
+      font-family: var(--font-d); font-size: 1.5rem; font-weight: 500;
+      color: var(--tx); line-height: 1;
     }
-    .sobre-photo-name {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(transparent, rgba(12,9,7,.92));
-      padding: 48px 28px 24px;
-      font-family: var(--font-d); font-size: 1.1rem;
-      color: var(--tx); z-index: 2;
+    .cred-lbl { font-size: .67rem; color: var(--tx-m); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
+    .sobre-right {}
+    .sobre-img {
+      width: 100%; height: 520px;
+      object-fit: cover; object-position: center top;
+      display: block;
     }
-    .sobre-photo-name span { display: block; font-size: .7rem; color: var(--tx-2); letter-spacing: .1em; margin-top: 4px; }
-    .sobre-content { padding-top: 8px; }
-    .sobre-content h2 { margin-bottom: 32px; max-width: 20ch; }
-    .sobre-content p { margin-bottom: 20px; max-width: 52ch; }
-    .creds-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 2px; background: var(--border); margin-top: 48px;
+    .sobre-img-init {
+      display: none; width: 100%; height: 520px;
+      background: var(--bg); align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px;
     }
-    .cred-box {
-      background: var(--bg-card); padding: 28px 24px;
-    }
-    .cred-num {
-      font-family: var(--font-d); font-size: 1.8rem;
-      color: var(--accent); line-height: 1; margin-bottom: 8px;
-    }
-    .cred-lbl { font-size: .78rem; color: var(--tx-2); line-height: 1.5; }
-    @media (max-width: 1024px) {
-      .sobre-inner { grid-template-columns: 1fr; gap: 56px; }
-      .sobre-photo-wrap { max-width: 420px; }
-    }
+    .sobre-img-init svg { opacity: .2; }
+    .sobre-img-init span { font-size: .72rem; color: var(--tx-m); letter-spacing: .06em; }
+    @media (max-width: 960px) { .sobre-img, .sobre-img-init { height: 340px; } }
 
-    /* ================================================================
-       PROCESO
-    ================================================================ */
-    #proceso { background: var(--bg-s); }
-    .proceso-grid {
+    /* ══════════════ PROCESO ══════════════ */
+    #proceso { background: var(--bg); }
+    .proceso-row {
       display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 2px; background: var(--border); margin-top: 64px;
+      border: 1px solid var(--border);
     }
-    .paso {
-      background: var(--bg-card); padding: 44px 36px;
-      position: relative;
+    @media (max-width: 860px) { .proceso-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .proceso-row { grid-template-columns: 1fr; } }
+    .step {
+      padding: 40px 32px;
+      border-right: 1px solid var(--border);
+      transition: background .18s;
     }
-    .paso-num {
-      font-family: var(--font-d); font-size: 3.5rem; font-weight: 300;
-      color: var(--tx-m); line-height: 1; opacity: .35; margin-bottom: 24px;
+    .step:hover { background: var(--bg-alt); }
+    .step:last-child { border-right: none; }
+    @media (max-width: 860px) {
+      .step:nth-child(2) { border-right: none; }
+      .step:nth-child(1), .step:nth-child(2) { border-bottom: 1px solid var(--border); }
     }
-    .paso h3 { font-size: 1.15rem; margin-bottom: 16px; }
-    .paso p { font-size: .85rem; }
-    .paso-line {
-      position: absolute; top: 50%; right: 0;
-      width: 2px; height: 32px; background: var(--border-l);
-      transform: translateY(-50%);
+    @media (max-width: 480px) {
+      .step { border-right: none !important; border-bottom: 1px solid var(--border); }
+      .step:last-child { border-bottom: none; }
     }
-    .paso:last-child .paso-line { display: none; }
-    @media (max-width: 1024px) { .proceso-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .proceso-grid { grid-template-columns: 1fr; } }
+    .step-n {
+      font-family: var(--font-d); font-size: 2.6rem; font-weight: 400;
+      color: var(--border); line-height: 1; margin-bottom: 20px;
+    }
+    .step-t {
+      font-family: var(--font-d); font-size: 1.25rem; font-weight: 500;
+      color: var(--tx); margin-bottom: 10px;
+    }
+    .step-b { font-size: .85rem; color: var(--tx-2); line-height: 1.7; }
 
-    /* ================================================================
-       TESTIMONIOS
-    ================================================================ */
-    #testimonios { background: var(--bg); }
-    .test-grid {
+    /* ══════════════ TESTIMONIOS ══════════════ */
+    #testimonios { background: var(--bg-alt); }
+    .testi-grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 2px; background: var(--border); margin-top: 64px;
+      gap: 0; border: 1px solid var(--border);
     }
-    .test-card {
-      background: var(--bg-card); padding: 48px 40px;
-      display: flex; flex-direction: column; gap: 28px;
+    @media (max-width: 860px) { .testi-grid { grid-template-columns: 1fr; } }
+    .testi {
+      padding: 44px 36px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
     }
-    .test-quote-icon {
-      width: 36px; height: 28px; fill: var(--accent); opacity: .6; flex-shrink: 0;
+    .testi:last-child { border-right: none; }
+    @media (max-width: 860px) {
+      .testi { border-right: none; border-bottom: 1px solid var(--border); }
+      .testi:last-child { border-bottom: none; }
     }
-    .test-quote { font-family: var(--font-d); font-style: italic; font-size: 1.1rem; line-height: 1.55; color: var(--tx); }
-    .test-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 24px; }
-    .test-name { font-weight: 500; font-size: .88rem; color: var(--tx); margin-bottom: 4px; }
-    .test-role { font-size: .78rem; color: var(--tx-2); }
-    @media (max-width: 1024px) { .test-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) { .test-grid { grid-template-columns: 1fr; } }
+    .testi-stars { display: flex; gap: 3px; margin-bottom: 20px; }
+    .testi-stars span { color: var(--accent); font-size: .85rem; }
+    .testi-q {
+      font-family: var(--font-d); font-style: italic; font-size: 1.1rem;
+      font-weight: 400; color: var(--tx); line-height: 1.6;
+      flex: 1; margin-bottom: 24px;
+    }
+    .testi-who { display: flex; flex-direction: column; gap: 3px; }
+    .testi-name { font-size: .85rem; font-weight: 500; color: var(--tx); }
+    .testi-biz { font-size: .75rem; color: var(--tx-2); }
 
-    /* ================================================================
-       FAQ
-    ================================================================ */
-    #faq { background: var(--bg-s); }
-    .faq-list { margin-top: 64px; border-top: 1px solid var(--border); }
+    /* ══════════════ FAQ ══════════════ */
+    #faq { background: var(--bg); }
+    .faq-list { border-top: 1px solid var(--border); }
     .faq-item { border-bottom: 1px solid var(--border); }
     .faq-q {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 28px 0; cursor: pointer;
-      font-family: var(--font-d); font-size: 1.25rem; color: var(--tx);
-      background: none; border: none; width: 100%; text-align: left;
-      gap: 24px; transition: color .25s;
+      width: 100%; background: none; border: none;
+      padding: 26px 0; display: flex; align-items: center;
+      justify-content: space-between; gap: 24px; cursor: pointer;
+      font-family: var(--font-d); font-size: 1.1rem; font-weight: 400;
+      color: var(--tx); text-align: left; line-height: 1.3;
+      transition: color .15s;
     }
     .faq-q:hover { color: var(--accent); }
     .faq-icon {
-      width: 22px; height: 22px; flex-shrink: 0;
-      border: 1px solid var(--border-l); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform .35s, background .25s, border-color .25s;
+      flex-shrink: 0; width: 18px; height: 18px;
+      position: relative;
     }
-    .faq-icon svg { width: 10px; height: 10px; stroke: var(--tx-2); fill: none; }
-    .faq-item.open .faq-icon {
-      transform: rotate(45deg); background: var(--accent-dim); border-color: var(--accent);
+    .faq-icon::before,
+    .faq-icon::after {
+      content: ''; position: absolute;
+      background: var(--tx-m); transition: transform .25s, opacity .25s;
     }
-    .faq-a {
-      max-height: 0; overflow: hidden;
-      transition: max-height .45s ease, padding .35s ease;
+    .faq-icon::before { width: 12px; height: 1px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .faq-icon::after  { width: 1px; height: 12px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .faq-item.open .faq-icon::after { transform: translate(-50%,-50%) rotate(90deg); opacity: 0; }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .faq-a-inner {
+      padding: 0 0 24px; font-size: .9rem;
+      color: var(--tx-2); line-height: 1.75; max-width: 660px;
     }
-    .faq-a-inner { padding-bottom: 28px; max-width: 66ch; }
-    .faq-a-inner p { font-size: .92rem; line-height: 1.75; max-width: 66ch; }
-    .faq-item.open .faq-a { max-height: 300px; }
+    .faq-item.open .faq-a { max-height: 280px; }
 
-    /* ================================================================
-       CTA FINAL
-    ================================================================ */
+    /* ══════════════ CTA FINAL ══════════════ */
     #cta-final {
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      text-align: center; padding: calc(var(--pad) * 1.2) 44px;
+      background: var(--tx); padding: 100px 0; text-align: center;
     }
-    #cta-final h2 {
-      max-width: 22ch; margin: 0 auto 28px;
-      font-size: clamp(2rem, 4.5vw, 3.5rem);
+    #cta-final .sec-tag { color: rgba(248,244,239,.5); }
+    #cta-final h2 { color: var(--bg); font-size: clamp(2.5rem, 5vw, 4.5rem); }
+    #cta-final h2 em { color: rgba(184,132,60,1); }
+    .cta-sub { font-size: .95rem; color: rgba(248,244,239,.6); margin: 20px 0 40px; line-height: 1.7; }
+    .btn-light {
+      display: inline-block; padding: 14px 32px;
+      background: var(--bg); color: var(--tx);
+      font-size: .75rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; transition: background .2s, color .2s; cursor: pointer;
     }
-    #cta-final p { max-width: 52ch; margin: 0 auto 48px; }
-    @media (max-width: 768px) { #cta-final { padding: calc(var(--pad) * 0.8) 22px; } }
+    .btn-light:hover { background: var(--accent); color: var(--bg); }
 
-    /* ================================================================
-       CONTACTO
-    ================================================================ */
-    #contacto { background: var(--bg); }
+    /* ══════════════ CONTACTO ══════════════ */
+    #contacto { background: var(--bg-alt); }
     .contacto-grid {
-      display: grid; grid-template-columns: 1fr 1.3fr;
-      gap: 80px; align-items: start; margin-top: 64px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; align-items: start;
     }
-    .contacto-info h3 { font-size: 1.5rem; margin-bottom: 24px; }
-    .contacto-info p { margin-bottom: 32px; font-size: .9rem; max-width: 40ch; }
-    .contact-details { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
-    .contact-row {
-      display: flex; align-items: flex-start; gap: 16px;
-      font-size: .88rem; color: var(--tx-2);
+    @media (max-width: 860px) { .contacto-grid { grid-template-columns: 1fr; gap: 52px; } }
+    .contacto-left { padding-right: 72px; }
+    @media (max-width: 860px) { .contacto-left { padding-right: 0; } }
+    .contacto-intro { font-size: .9rem; color: var(--tx-2); line-height: 1.75; margin-bottom: 40px; }
+    .data-rows { border-top: 1px solid var(--border); margin-bottom: 32px; }
+    .d-row {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 18px 0; border-bottom: 1px solid var(--border);
     }
-    .contact-icon {
-      width: 36px; height: 36px; flex-shrink: 0;
-      border: 1px solid var(--border-l);
-      display: flex; align-items: center; justify-content: center;
+    .d-icon { flex-shrink: 0; margin-top: 1px; }
+    .d-icon svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+    .d-info { display: flex; flex-direction: column; gap: 2px; }
+    .d-lbl { font-size: .63rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tx-m); }
+    .d-val { font-size: .88rem; color: var(--tx); }
+    .d-val a { color: var(--tx); transition: color .15s; }
+    .d-val a:hover { color: var(--accent); }
+    .pay-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pay-chip {
+      font-size: .62rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; padding: 5px 12px;
+      border: 1px solid var(--border); color: var(--tx-2);
     }
-    .contact-icon svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; }
-    .contact-row-text { padding-top: 8px; line-height: 1.5; }
-    .contact-row-text strong { color: var(--tx); display: block; font-weight: 500; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
 
     /* Form */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-group label {
-      font-size: .68rem; letter-spacing: .16em; text-transform: uppercase;
-      color: var(--tx-m); font-weight: 500;
+    .form-box { border: 1px solid var(--border); background: var(--bg); }
+    .form-row-2 {
+      display: grid; grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
     }
-    .form-group input, .form-group select, .form-group textarea {
-      background: var(--bg-card); border: 1px solid var(--border-l);
-      color: var(--tx); font-family: var(--font-b); font-size: .88rem;
-      padding: 14px 18px; outline: none; transition: border-color .25s;
-      width: 100%;
+    .f-field {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border);
     }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: var(--accent);
+    .f-field:last-child { border-right: none; }
+    .f-field label {
+      font-size: .62rem; font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--tx-m);
+      padding: 14px 18px 5px;
     }
-    .form-group textarea { resize: vertical; min-height: 120px; }
-    .form-group select option { background: #1a1610; }
-    .form-submit { margin-top: 8px; font-size: .72rem; padding: 17px 36px; width: 100%; justify-content: center; }
-    .form-note { font-size: .72rem; color: var(--tx-m); margin-top: 14px; text-align: center; }
-    .form-success {
-      display: none; text-align: center; padding: 48px;
-      background: var(--bg-card); border: 1px solid var(--border-l);
+    .f-field input,
+    .f-field select {
+      background: none; border: none; outline: none;
+      font-family: var(--font-b); font-size: .88rem; font-weight: 300;
+      color: var(--tx); padding: 0 18px 14px;
     }
-    .form-success svg { width: 40px; height: 40px; stroke: var(--accent); fill: none; margin-bottom: 16px; }
-    .form-success h3 { margin-bottom: 12px; font-size: 1.5rem; }
-    .form-success p { font-size: .9rem; }
-    @media (max-width: 1024px) { .contacto-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+    .f-field input::placeholder { color: var(--tx-m); }
+    .f-field select { cursor: pointer; -webkit-appearance: none; appearance: none; }
+    .f-field select option { background: var(--bg); color: var(--tx); }
+    .f-full { display: flex; flex-direction: column; border-bottom: 1px solid var(--border); }
+    .f-full label {
+      font-size: .62rem; font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--tx-m);
+      padding: 14px 18px 5px;
+    }
+    .f-full textarea {
+      background: none; border: none; outline: none;
+      font-family: var(--font-b); font-size: .88rem; font-weight: 300;
+      color: var(--tx); padding: 0 18px 16px; resize: none; height: 110px;
+    }
+    .f-full textarea::placeholder { color: var(--tx-m); }
+    .f-submit { padding: 20px 18px; }
+    .btn-submit {
+      width: 100%; padding: 14px;
+      background: var(--tx); color: var(--bg);
+      font-family: var(--font-b); font-size: .75rem; font-weight: 500;
+      letter-spacing: .1em; text-transform: uppercase;
+      border: none; cursor: pointer; transition: background .2s;
+    }
+    .btn-submit:hover { background: var(--accent); }
+    .form-ok {
+      display: none; padding: 44px 28px; text-align: center;
+    }
+    .form-ok svg { width: 36px; height: 36px; stroke: var(--accent); fill: none; stroke-width: 1.5; margin: 0 auto 16px; }
+    .form-ok h3 {
+      font-family: var(--font-d); font-size: 1.5rem; font-weight: 400;
+      color: var(--tx); margin-bottom: 8px;
+    }
+    .form-ok p { font-size: .88rem; color: var(--tx-2); }
 
-    /* ================================================================
-       FOOTER
-    ================================================================ */
-    footer {
-      background: var(--bg-s); border-top: 1px solid var(--border);
-      padding: 52px 0;
-    }
+    /* ══════════════ FOOTER ══════════════ */
+    #footer { padding: 44px 0; border-bottom: none; }
     .footer-inner {
-      display: grid; grid-template-columns: 1.5fr 1fr 1fr;
-      gap: 48px; align-items: start;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 40px;
+      flex-wrap: wrap;
     }
-    .footer-brand { }
-    .footer-logo {
-      font-family: var(--font-d); font-weight: 400; font-size: 1.2rem;
-      letter-spacing: .18em; text-transform: uppercase; color: var(--tx); margin-bottom: 12px;
+    .f-logo {
+      font-family: var(--font-b); font-size: .68rem; font-weight: 500;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--tx); margin-bottom: 12px;
     }
-    .footer-logo span { color: var(--accent); }
-    .footer-tagline { font-size: .8rem; color: var(--tx-m); margin-bottom: 20px; }
-    .footer-address { font-size: .78rem; color: var(--tx-m); line-height: 1.7; }
-    .footer-col h4 {
-      font-family: var(--font-b); font-size: .68rem; letter-spacing: .18em;
-      text-transform: uppercase; color: var(--tx-2); margin-bottom: 18px;
-      font-weight: 500;
+    .f-info {
+      font-size: .78rem; color: var(--tx-m); line-height: 1.9;
     }
-    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .footer-col ul li a { font-size: .82rem; color: var(--tx-m); transition: color .25s; }
-    .footer-col ul li a:hover { color: var(--accent); }
-    .footer-bottom {
-      margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 14px;
+    .f-info a { color: var(--tx-2); transition: color .15s; }
+    .f-info a:hover { color: var(--accent); }
+    .f-right { text-align: right; }
+    @media (max-width: 640px) { .f-right { text-align: left; } }
+    .f-nav { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; justify-content: flex-end; }
+    @media (max-width: 640px) { .f-nav { justify-content: flex-start; } }
+    .f-nav a {
+      font-size: .7rem; font-weight: 400; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--tx-2); transition: color .15s;
     }
-    .footer-copy { font-size: .76rem; color: var(--tx-m); }
-    .footer-legal { display: flex; gap: 24px; }
-    .footer-legal a { font-size: .76rem; color: var(--tx-m); transition: color .25s; }
-    .footer-legal a:hover { color: var(--accent); }
-    @media (max-width: 768px) {
-      .footer-inner { grid-template-columns: 1fr; }
-      .footer-bottom { flex-direction: column; align-items: flex-start; }
-    }
-
+    .f-nav a:hover { color: var(--tx); }
+    .f-copy { font-size: .7rem; color: var(--tx-m); }
   </style>
 </head>
 
 <body>
 
-  <!-- ================================================================
-       MOBILE MENU
-  ================================================================ -->
-  <div id="mobile-menu" role="dialog" aria-label="Navigation menu">
-    <button class="menu-close" id="menu-close" aria-label="Close menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-    <a href="#servicios" class="menu-link">Servicios</a>
-    <a href="#sobre" class="menu-link">Sobre nosotros</a>
-    <a href="#proceso" class="menu-link">Nuestro método</a>
-    <a href="#contacto" class="menu-link">Contacto</a>
-    <a href="#contacto" class="btn btn-g" style="font-size:.72rem;padding:16px 32px;letter-spacing:.13em">Agenda tu consulta</a>
-  </div>
-
-  <!-- ================================================================
-       NAVBAR
-  ================================================================ -->
-  <nav id="nav" role="navigation" aria-label="Main navigation">
-    <div class="nav-inner">
-      <a href="#" class="nav-logo" aria-label="Digital Artwork — inicio">
-        DIGITAL <span>ARTWORK</span>
-      </a>
-      <div class="nav-links">
-        <a href="#servicios">Servicios</a>
-        <a href="#sobre">Sobre nosotros</a>
-        <a href="#proceso">Nuestro método</a>
-        <a href="#contacto">Contacto</a>
-        <a href="#contacto" class="btn btn-g nav-cta">Agenda tu consulta gratuita</a>
-      </div>
-      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">Digital Artwork</a>
+    <div class="nav-links">
+      <a href="#servicios">Servicios</a>
+      <a href="#sobre">Sobre mí</a>
+      <a href="#testimonios">Resultados</a>
+      <a href="#contacto">Contacto</a>
     </div>
-  </nav>
+    <a href="#contacto" class="nav-cta">Consulta gratuita</a>
+  </div>
+</nav>
 
-  <!-- ================================================================
-       HERO
-  ================================================================ -->
-  <section id="hero" aria-label="Hero">
-    <div class="hero-inner">
-      <p class="hero-supra rv">Consultoría de marketing digital para restaurantes</p>
-      <h1 class="hero-h1 rv">
-        Tu restaurante merece<br>
-        estar donde están<br>
-        <em>tus clientes.</em>
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-split">
+    <div class="hero-left">
+      <span class="hero-label rv">Consultoría de marketing gastronómico</span>
+      <h1 class="rv" style="transition-delay:.1s">
+        Tu restaurante<br>puede <em>facturar<br>el doble.</em>
       </h1>
-      <p class="hero-sub rv">
-        Transformamos la presencia digital de restaurantes y negocios gastronómicos en reservas reales y clientes recurrentes. Con más de 25.000 reseñas gestionadas y una valoración media de 4,8 estrellas, respaldamos marcas como Porneat y Suspecados en Madrid. Llevamos más de 15 años construyendo reputaciones que duran.
+      <p class="hero-sub rv" style="transition-delay:.2s">
+        He construido Porneat y Suspecados en Madrid —
+        dos marcas con 25.000+ reseñas y 4,8★ de media.
+        Ahora aplico ese mismo sistema a tu negocio.
       </p>
-      <div class="hero-btns rv">
-        <a href="#contacto" class="btn btn-g">
-          Agenda tu consulta gratuita
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a href="#proceso" class="btn btn-o">Ver cómo trabajamos</a>
-      </div>
-      <div class="hero-stats rv">
-        <div class="stat-box">
-          <span class="stat-num">25K+</span>
-          <span class="stat-lbl">Reseñas gestionadas</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-num">4.8 ★</span>
-          <span class="stat-lbl">Valoración media</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-num">2 Marcas</span>
-          <span class="stat-lbl">de referencia en Madrid</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-num">+15 Años</span>
-          <span class="stat-lbl">de experiencia</span>
-        </div>
+      <div class="hero-actions rv" style="transition-delay:.3s">
+        <a href="#contacto" class="btn-primary">Agendar llamada gratuita</a>
+        <a href="#servicios" class="btn-ghost">Ver servicios</a>
       </div>
     </div>
-  </section>
-
-  <!-- ================================================================
-       MARQUEE
-  ================================================================ -->
-  <div class="marquee-wrap" aria-hidden="true">
-    <div class="marquee-track">
-      <span class="marquee-item">Porneat</span>
-      <span class="marquee-item">Suspecados</span>
-      <span class="marquee-item">Marketing gastronómico</span>
-      <span class="marquee-item">Gestión de reseñas</span>
-      <span class="marquee-item">Google Mi Negocio</span>
-      <span class="marquee-item">Redes sociales para restaurantes</span>
-      <span class="marquee-item">Fotografía culinaria</span>
-      <span class="marquee-item">Posicionamiento local</span>
-      <span class="marquee-item">Branding gastronómico</span>
-      <span class="marquee-item">Estrategia digital</span>
-      <span class="marquee-item">Reputación online</span>
-      <span class="marquee-item">Fidelización de clientes</span>
-      <span class="marquee-item">Contenidos para hostelería</span>
-      <span class="marquee-item">Consultoría especializada</span>
-      <!-- duplicate for seamless loop -->
-      <span class="marquee-item">Porneat</span>
-      <span class="marquee-item">Suspecados</span>
-      <span class="marquee-item">Marketing gastronómico</span>
-      <span class="marquee-item">Gestión de reseñas</span>
-      <span class="marquee-item">Google Mi Negocio</span>
-      <span class="marquee-item">Redes sociales para restaurantes</span>
-      <span class="marquee-item">Fotografía culinaria</span>
-      <span class="marquee-item">Posicionamiento local</span>
-      <span class="marquee-item">Branding gastronómico</span>
-      <span class="marquee-item">Estrategia digital</span>
-      <span class="marquee-item">Reputación online</span>
-      <span class="marquee-item">Fidelización de clientes</span>
-      <span class="marquee-item">Contenidos para hostelería</span>
-      <span class="marquee-item">Consultoría especializada</span>
+    <div class="hero-right rv" style="transition-delay:.18s">
+      <img
+        src="foto.jpg"
+        alt="Juan Ignacio De Biase — Digital Artwork"
+        class="hero-photo"
+        onerror="this.style.display='none';document.getElementById('hero-init').style.display='flex';"
+      >
+      <div class="hero-photo-init" id="hero-init">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#6B6560" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Foto del consultor</span>
+      </div>
     </div>
   </div>
+  <div class="hero-stats">
+    <div class="stat rv"><div class="stat-n" data-count="25000" data-suffix="K+">0</div><div class="stat-l">Reseñas acumuladas</div></div>
+    <div class="stat rv" style="transition-delay:.07s"><div class="stat-n">4,8★</div><div class="stat-l">Valoración media</div></div>
+    <div class="stat rv" style="transition-delay:.14s"><div class="stat-n">2</div><div class="stat-l">Marcas construidas</div></div>
+    <div class="stat rv" style="transition-delay:.21s"><div class="stat-n">+15</div><div class="stat-l">Años en hostelería</div></div>
+  </div>
+</section>
 
-  <!-- ================================================================
-       PROBLEMA
-  ================================================================ -->
-  <section id="problema" aria-label="Problemas comunes">
-    <div class="c">
-      <p class="lbl rv">El problema</p>
-      <h2 class="rv">¿Reconoces alguna de<br>estas situaciones?</h2>
-      <div class="problem-grid">
-        <div class="problem-card rv">
-          <div class="problem-num">01</div>
-          <h3>Tu restaurante es bueno, pero no aparece.</h3>
-          <p>Cuando alguien busca "dónde comer" en tu zona, tu nombre no aparece entre las primeras opciones. Tus competidores capturan clientes que deberían ser tuyos.</p>
+<!-- MARQUEE -->
+<div class="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="m-item">Porneat</span><span class="m-dot">·</span>
+    <span class="m-item">Suspecados</span><span class="m-dot">·</span>
+    <span class="m-item">Madrid</span><span class="m-dot">·</span>
+    <span class="m-item">25.000+ Reseñas</span><span class="m-dot">·</span>
+    <span class="m-item">Meta Ads</span><span class="m-dot">·</span>
+    <span class="m-item">Branding Gastronómico</span><span class="m-dot">·</span>
+    <span class="m-item">WhatsApp Marketing</span><span class="m-dot">·</span>
+    <span class="m-item">SEO Local</span><span class="m-dot">·</span>
+    <span class="m-item">Delivery</span><span class="m-dot">·</span>
+    <span class="m-item">Redes Sociales</span><span class="m-dot">·</span>
+    <span class="m-item">Fidelización</span><span class="m-dot">·</span>
+    <span class="m-item">Google Mi Negocio</span><span class="m-dot">·</span>
+    <!-- dup for seamless loop -->
+    <span class="m-item">Porneat</span><span class="m-dot">·</span>
+    <span class="m-item">Suspecados</span><span class="m-dot">·</span>
+    <span class="m-item">Madrid</span><span class="m-dot">·</span>
+    <span class="m-item">25.000+ Reseñas</span><span class="m-dot">·</span>
+    <span class="m-item">Meta Ads</span><span class="m-dot">·</span>
+    <span class="m-item">Branding Gastronómico</span><span class="m-dot">·</span>
+    <span class="m-item">WhatsApp Marketing</span><span class="m-dot">·</span>
+    <span class="m-item">SEO Local</span><span class="m-dot">·</span>
+    <span class="m-item">Delivery</span><span class="m-dot">·</span>
+    <span class="m-item">Redes Sociales</span><span class="m-dot">·</span>
+    <span class="m-item">Fidelización</span><span class="m-dot">·</span>
+    <span class="m-item">Google Mi Negocio</span><span class="m-dot">·</span>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section id="problema">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">El problema</span>
+      <h2 class="rv" style="transition-delay:.08s">Por qué la mayoría de restaurantes<br><em>no crecen online</em></h2>
+    </div>
+    <div class="prob-grid rv" style="transition-delay:.14s">
+      <div class="prob-item">
+        <p class="prob-n">01</p>
+        <h3 class="prob-t">Invisible en Google</h3>
+        <p class="prob-b">Sin reseñas, sin SEO local, sin ficha optimizada. El primer restaurante que aparece se lleva el 70% de los clics.</p>
+      </div>
+      <div class="prob-item">
+        <p class="prob-n">02</p>
+        <h3 class="prob-t">Publicidad sin retorno</h3>
+        <p class="prob-b">Gastan en Meta Ads sin un sistema de conversión detrás. El dinero se va y no queda nada medible.</p>
+      </div>
+      <div class="prob-item">
+        <p class="prob-n">03</p>
+        <h3 class="prob-t">Sin marca diferenciada</h3>
+        <p class="prob-b">Compiten en precio porque no tienen identidad propia. Sin posicionamiento claro, siempre gana el más barato.</p>
+      </div>
+      <div class="prob-item">
+        <p class="prob-n">04</p>
+        <h3 class="prob-t">Sin fidelización</h3>
+        <p class="prob-b">Captan clientes pero no los retienen. Sin base de datos, sin programa de lealtad, cada semana empiezan de cero.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section id="servicios">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">Servicios</span>
+      <h2 class="rv" style="transition-delay:.08s">Cómo trabajo<br><em>con tu negocio</em></h2>
+      <p class="sec-sub rv" style="transition-delay:.14s">Cada proyecto parte de tu situación concreta, no de plantillas genéricas.</p>
+    </div>
+    <div class="svc-list rv" style="transition-delay:.18s">
+      <div class="svc-row">
+        <span class="svc-n">01</span>
+        <div class="svc-body">
+          <h3 class="svc-t">Auditoría de Marketing</h3>
+          <p class="svc-d">Diagnóstico completo: presencia digital, reseñas, competencia y quick wins accionables. Entregable en 48 horas.</p>
+          <div class="svc-tags">
+            <span class="svc-tag">Análisis de reseñas</span>
+            <span class="svc-tag">SEO local</span>
+            <span class="svc-tag">Benchmarking</span>
+          </div>
         </div>
-        <div class="problem-card rv">
-          <div class="problem-num">02</div>
-          <h3>Una mala reseña puede cerrar tu negocio.</h3>
-          <p>La mayoría de los dueños no responden reseñas, no piden valoraciones activamente y no saben cómo convertir la crítica en oportunidad. Tu reputación se construye sin ti.</p>
+        <a href="#contacto" class="svc-cta">Solicitar →</a>
+      </div>
+      <div class="svc-row">
+        <span class="svc-n">02</span>
+        <div class="svc-body">
+          <h3 class="svc-t">Estrategia de Marca</h3>
+          <p class="svc-d">Posicionamiento, identidad visual, propuesta de valor y naming. Todo lo que hace que te elijan a ti, no al de al lado.</p>
+          <div class="svc-tags">
+            <span class="svc-tag">Identidad visual</span>
+            <span class="svc-tag">Posicionamiento</span>
+            <span class="svc-tag">Naming</span>
+          </div>
         </div>
-        <div class="problem-card rv">
-          <div class="problem-num">03</div>
-          <h3>Publicar por publicar no es marketing.</h3>
-          <p>Subir fotos al azar sin un plan editorial, sin diseño coherente y sin seguimiento de resultados no genera reservas. Solo consume tu tiempo sin retorno visible.</p>
+        <a href="#contacto" class="svc-cta">Solicitar →</a>
+      </div>
+      <div class="svc-row">
+        <span class="svc-n">03</span>
+        <div class="svc-body">
+          <h3 class="svc-t">Marketing Digital Mensual</h3>
+          <p class="svc-d">Redes sociales, gestión de reseñas, email y WhatsApp marketing. Gestión completa mes a mes con reporting semanal.</p>
+          <div class="svc-tags">
+            <span class="svc-tag">Redes sociales</span>
+            <span class="svc-tag">Google Mi Negocio</span>
+            <span class="svc-tag">WhatsApp</span>
+          </div>
         </div>
-        <div class="problem-card rv">
-          <div class="problem-num">04</div>
-          <h3>Todos los restaurantes se parecen en internet.</h3>
-          <p>Sin una identidad visual clara, sin un mensaje diferenciador y sin posicionamiento definido, tu local es uno más entre cientos. El cliente no encuentra razón para elegirte a ti.</p>
+        <a href="#contacto" class="svc-cta">Solicitar →</a>
+      </div>
+      <div class="svc-row">
+        <span class="svc-n">04</span>
+        <div class="svc-body">
+          <h3 class="svc-t">Mentoría Directa <span style="font-size:.7rem;font-family:var(--font-b);font-style:normal;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;background:var(--accent);color:var(--bg);vertical-align:middle;margin-left:8px;">Más solicitado</span></h3>
+          <p class="svc-d">Acceso directo. Sesiones semanales, revisión de métricas en tiempo real y decisiones estratégicas contigo.</p>
+          <div class="svc-tags">
+            <span class="svc-tag">Sesiones semanales</span>
+            <span class="svc-tag">Reporting</span>
+            <span class="svc-tag">Estrategia</span>
+          </div>
+        </div>
+        <a href="#contacto" class="svc-cta">Solicitar →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFORMACION -->
+<section id="transformacion">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">El antes y el después</span>
+      <h2 class="rv" style="transition-delay:.08s">Lo que cambia cuando tienes<br><em>un sistema</em></h2>
+    </div>
+    <div class="rv" style="transition-delay:.14s;overflow-x:auto;">
+      <table class="transform-table">
+        <thead>
+          <tr>
+            <th>Sin estrategia</th>
+            <th>Con sistema Digital Artwork</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mesa vacía entre semana</td><td>+70% de ocupación los 7 días</td></tr>
+          <tr><td>12 reseñas en Google</td><td>400+ reseñas activas y en crecimiento</td></tr>
+          <tr><td>Instagram sin actividad</td><td>Comunidad activa de más de 10.000 seguidores</td></tr>
+          <tr><td>Sin canal de delivery</td><td>Delivery con +30% en ingresos adicionales</td></tr>
+          <tr><td>0 base de datos de clientes</td><td>2.000 contactos activos en WhatsApp</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE -->
+<section id="sobre">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">Sobre mí</span>
+      <h2 class="rv" style="transition-delay:.08s">Juan Ignacio<br><em>De Biase</em></h2>
+    </div>
+    <div class="sobre-grid">
+      <div class="sobre-left rv">
+        <blockquote>
+          "En 2018 abrí Porneat en Madrid con prácticamente nada. Hoy tiene 25.000+ reseñas y es uno de los burgers más valorados de la ciudad."
+        </blockquote>
+        <p class="sobre-body">
+          Después construí Suspecados, una parrilla premium que compite en el segmento más difícil del mercado.
+          Ninguno de los dos creció por suerte — crecieron por sistema.
+          <br><br>
+          Ese sistema es lo que llevo ahora a tu negocio. Cada restaurante tiene sus propias palancas.
+          Mi trabajo es identificarlas y activarlas de forma medible.
+        </p>
+        <div class="creds">
+          <div class="cred"><div class="cred-val">Porneat</div><div class="cred-lbl">Madrid, 2018</div></div>
+          <div class="cred"><div class="cred-val">Suspecados</div><div class="cred-lbl">Madrid</div></div>
+          <div class="cred"><div class="cred-val">25.000+</div><div class="cred-lbl">Reseñas gestionadas</div></div>
+          <div class="cred"><div class="cred-val">4,8★</div><div class="cred-lbl">Valoración media</div></div>
+        </div>
+      </div>
+      <div class="sobre-right rv" style="transition-delay:.14s">
+        <img
+          src="foto.jpg"
+          alt="Juan Ignacio Temistocle De Biase Malave"
+          class="sobre-img"
+          onerror="this.style.display='none';document.getElementById('sobre-init').style.display='flex';"
+        >
+        <div class="sobre-img-init" id="sobre-init">
+          <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#6B6560" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Foto del consultor</span>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ================================================================
-       TRANSFORMACION
-  ================================================================ -->
-  <section id="transformacion" aria-label="Transformación">
-    <div class="c">
-      <p class="lbl rv">La transformación</p>
-      <h2 class="rv">Lo que cambia cuando<br>trabajamos juntos</h2>
-      <div class="trans-grid rv">
-        <div class="trans-row">
-          <div class="trans-cell before">
-            <span class="trans-tag">Antes</span>
-            <p>Tu restaurante aparece en la página 3 de Google, invisible para nuevos clientes.</p>
-          </div>
-          <div class="trans-cell after">
-            <span class="trans-tag">Después</span>
-            <p>Posicionamiento en el top 3 del mapa local para las búsquedas más relevantes de tu zona.</p>
-          </div>
+<!-- PROCESO -->
+<section id="proceso">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">El proceso</span>
+      <h2 class="rv" style="transition-delay:.08s">Cuatro pasos.<br><em>Un sistema.</em></h2>
+    </div>
+    <div class="proceso-row rv" style="transition-delay:.14s">
+      <div class="step">
+        <div class="step-n">01</div>
+        <h3 class="step-t">Diagnóstico</h3>
+        <p class="step-b">Auditoría completa en 48h: qué tienes, qué falta, qué palanca pesa más en tu caso.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <h3 class="step-t">Estrategia</h3>
+        <p class="step-b">Plan personalizado con canales, presupuesto, KPIs y calendario. Sin genéricos.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <h3 class="step-t">Ejecución</h3>
+        <p class="step-b">Implementación mes a mes con reporting semanal. Sabes en todo momento qué pasa y por qué.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">04</div>
+        <h3 class="step-t">Escala</h3>
+        <p class="step-b">Lo que funciona se multiplica. Lo que no, se elimina. El sistema mejora con cada ciclo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section id="testimonios">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">Resultados reales</span>
+      <h2 class="rv" style="transition-delay:.08s">Lo que dicen<br><em>quienes ya lo usan</em></h2>
+    </div>
+    <div class="testi-grid rv" style="transition-delay:.14s">
+      <div class="testi">
+        <div class="testi-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <p class="testi-q">"En tres meses pasamos de 40 a 280 reseñas en Google. Nuestro ranking local cambió por completo y el salón se llena entre semana."</p>
+        <div class="testi-who">
+          <span class="testi-name">Alejandro Méndez</span>
+          <span class="testi-biz">La Brasa del Centro · Madrid</span>
         </div>
-        <div class="trans-row">
-          <div class="trans-cell before">
-            <span class="trans-tag">Antes</span>
-            <p>12 reseñas con media de 3,6 estrellas, varias sin respuesta y sin estrategia de gestión.</p>
-          </div>
-          <div class="trans-cell after">
-            <span class="trans-tag">Después</span>
-            <p>Flujo constante de reseñas positivas, media por encima de 4,5 estrellas y cada reseña respondida con criterio.</p>
-          </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <p class="testi-q">"La estrategia de delivery nos abrió un canal de ingresos que no teníamos. El 30% de nuestra facturación viene de ahí ahora."</p>
+        <div class="testi-who">
+          <span class="testi-name">Valentina Rojas</span>
+          <span class="testi-biz">Bistró Candelaria · Bogotá</span>
         </div>
-        <div class="trans-row">
-          <div class="trans-cell before">
-            <span class="trans-tag">Antes</span>
-            <p>Instagram con 340 seguidores, publicaciones irregulares y cero reservas atribuidas a redes sociales.</p>
-          </div>
-          <div class="trans-cell after">
-            <span class="trans-tag">Después</span>
-            <p>Comunidad activa y creciente, contenido semanal planificado y un canal que trae mesas reservadas cada semana.</p>
-          </div>
-        </div>
-        <div class="trans-row">
-          <div class="trans-cell before">
-            <span class="trans-tag">Antes</span>
-            <p>Fotos de móvil mal iluminadas que hacen que tu cocina parezca mediocre aunque sea excelente.</p>
-          </div>
-          <div class="trans-cell after">
-            <span class="trans-tag">Después</span>
-            <p>Banco de imágenes profesionales que reflejan la calidad real de tu propuesta gastronómica.</p>
-          </div>
-        </div>
-        <div class="trans-row">
-          <div class="trans-cell before">
-            <span class="trans-tag">Antes</span>
-            <p>No sabes cuántos clientes llegan a través de canales digitales ni qué está funcionando.</p>
-          </div>
-          <div class="trans-cell after">
-            <span class="trans-tag">Después</span>
-            <p>Panel de métricas claro: fuentes de tráfico, conversiones y ROI de cada acción digital.</p>
-          </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <p class="testi-q">"Lo más valioso es que ha gestionado restaurantes propios. No te habla de teoría — te dice exactamente qué hacer y por qué funciona."</p>
+        <div class="testi-who">
+          <span class="testi-name">Marcos Fuentes</span>
+          <span class="testi-biz">Casa Fuentes · Miami</span>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ================================================================
-       SERVICIOS
-  ================================================================ -->
-  <section id="servicios" aria-label="Servicios">
-    <div class="c">
-      <div class="services-header">
-        <p class="lbl rv">Nuestros servicios</p>
-        <h2 class="rv">Todo lo que tu restaurante<br>necesita en digital</h2>
+<!-- FAQ -->
+<section id="faq">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">Preguntas frecuentes</span>
+      <h2 class="rv" style="transition-delay:.08s">Todo lo que necesitas<br><em>saber antes de empezar</em></h2>
+    </div>
+    <div class="faq-list rv" style="transition-delay:.14s">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Para qué tipo de negocio es esto?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Para restaurantes, bares, cafeterías, dark kitchens, food trucks y cualquier negocio de hostelería. Si tienes un local físico o vendes comida, esta consultoría es para ti.</p></div>
       </div>
-      <div class="services-grid">
-
-        <div class="service-card rv">
-          <span class="service-num">01</span>
-          <h3>Presencia &amp; Reputación Digital</h3>
-          <p>Optimizamos tu perfil en Google, TripAdvisor y plataformas de reservas para que aparezcas donde buscan tus futuros clientes. Implementamos un sistema de captación y gestión de reseñas que construye autoridad de forma sostenida. Tu reputación online pasa a ser un activo real de negocio.</p>
-          <div class="service-tags">
-            <span class="service-tag">Google Mi Negocio</span>
-            <span class="service-tag">Gestión de reseñas</span>
-            <span class="service-tag">SEO local</span>
-            <span class="service-tag">TripAdvisor</span>
-          </div>
-          <a href="#contacto" class="btn btn-o service-cta">Solicitar información</a>
-        </div>
-
-        <div class="service-card rv">
-          <span class="service-num">02</span>
-          <h3>Redes Sociales &amp; Contenido</h3>
-          <p>Creamos y ejecutamos tu estrategia editorial en Instagram, Facebook y TikTok con un calendario de publicaciones coherente, copy adaptado a tu voz y creatividades que generan apetito y reservas. Dejamos de improvisar y empezamos a construir.</p>
-          <div class="service-tags">
-            <span class="service-tag">Instagram</span>
-            <span class="service-tag">Facebook</span>
-            <span class="service-tag">TikTok</span>
-            <span class="service-tag">Calendario editorial</span>
-            <span class="service-tag">Copywriting</span>
-          </div>
-          <a href="#contacto" class="btn btn-o service-cta">Solicitar información</a>
-        </div>
-
-        <div class="service-card rv">
-          <span class="service-num">03</span>
-          <h3>Fotografía &amp; Identidad Visual</h3>
-          <p>Producimos sesiones fotográficas gastronómicas que capturan la esencia de tu propuesta: platos, ambiente, equipo y experiencia. Desarrollamos o reforzamos tu identidad visual para que seas reconocible y memorable en todos los canales digitales.</p>
-          <div class="service-tags">
-            <span class="service-tag">Fotografía gastronómica</span>
-            <span class="service-tag">Branding</span>
-            <span class="service-tag">Diseño gráfico</span>
-            <span class="service-tag">Dirección creativa</span>
-          </div>
-          <a href="#contacto" class="btn btn-o service-cta">Solicitar información</a>
-        </div>
-
-        <div class="service-card rv">
-          <span class="service-num">04</span>
-          <h3>Estrategia &amp; Consultoría Integral</h3>
-          <p>Para negocios que quieren un partner estratégico, no solo un proveedor. Auditamos tu situación actual, definimos objetivos con métricas claras y diseñamos un plan de marketing digital a medida. Hacemos seguimiento mensual y ajustamos en función de resultados reales.</p>
-          <div class="service-tags">
-            <span class="service-tag">Auditoría digital</span>
-            <span class="service-tag">Plan de marketing</span>
-            <span class="service-tag">KPIs</span>
-            <span class="service-tag">Seguimiento mensual</span>
-          </div>
-          <a href="#contacto" class="btn btn-o service-cta">Solicitar información</a>
-        </div>
-
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Trabajáis con negocios en cualquier país de habla hispana?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Sí. Trabajo con negocios en España, Colombia, México, Chile, Miami y cualquier mercado hispanohablante. Las estrategias se adaptan al contexto local.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Cuánto tiempo tarda en verse resultados?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Los primeros resultados en reseñas y visibilidad local aparecen en 4-6 semanas. Los resultados de facturación (más reservas, más delivery) entre el mes 2 y el mes 3, dependiendo del punto de partida.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Cómo se realiza el pago?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Acepto transferencia bancaria internacional, Payoneer, Zelle y tarjeta de crédito/débito. Los pagos se acuerdan al inicio del proyecto con factura de Digital Artwork 126 LLC.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Qué diferencia esta consultoría de una agencia?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Una agencia asigna tu cuenta a alguien que no ha pisado un restaurante en su vida. Aquí trabajas directamente con alguien que ha construido y operado restaurantes propios con más de 25.000 reseñas.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Hay permanencia mínima?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">No hay permanencia forzosa. Recomiendo un mínimo de 3 meses para ver resultados sólidos, pero la relación se basa en resultados, no en contratos.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">¿Cómo empezamos?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p class="faq-a-inner">Agenda una llamada gratuita de 30 minutos usando el formulario de esta página. Hacemos un diagnóstico rápido y te cuento qué cambiaría en tu negocio específicamente.</p></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ================================================================
-       SOBRE
-  ================================================================ -->
-  <section id="sobre" aria-label="Sobre Digital Artwork">
-    <div class="c">
-      <div class="sobre-inner">
-        <div class="sobre-photo-wrap rv-l">
-          <img src="foto.jpg" alt="Juan Ignacio Temistocle De Biase Malave — Digital Artwork" class="sobre-photo">
-          <div class="sobre-photo-name">
-            Juan Ignacio Temistocle De Biase Malave
-            <span>Fundador &amp; Consultor Senior, Digital Artwork</span>
+<!-- CTA FINAL -->
+<section id="cta-final">
+  <div class="container" style="text-align:center;">
+    <span class="sec-tag rv" style="display:block;">¿Listo para empezar?</span>
+    <h2 class="rv" style="transition-delay:.08s">Tu restaurante puede<br><em>llegar más lejos.</em></h2>
+    <p class="cta-sub rv" style="transition-delay:.16s">30 minutos de llamada gratuita. Sin compromiso.<br>Te digo exactamente qué cambiaría en tu negocio.</p>
+    <div class="rv" style="transition-delay:.22s">
+      <a href="#contacto" class="btn-light">Agendar llamada gratuita</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto">
+  <div class="container sec-pad">
+    <div class="sec-header">
+      <span class="sec-tag rv">Contacto</span>
+      <h2 class="rv" style="transition-delay:.08s">Hablemos de<br><em>tu negocio</em></h2>
+    </div>
+    <div class="contacto-grid">
+      <div class="contacto-left rv">
+        <p class="contacto-intro">Rellena el formulario o escríbeme directamente. Respondo en menos de 24 horas.</p>
+        <div class="data-rows">
+          <div class="d-row">
+            <div class="d-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="d-info"><span class="d-lbl">Nombre completo</span><span class="d-val">Juan Ignacio Temistocle De Biase Malave</span></div>
+          </div>
+          <div class="d-row">
+            <div class="d-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+            <div class="d-info"><span class="d-lbl">Empresa</span><span class="d-val">Digital Artwork 126 LLC</span></div>
+          </div>
+          <div class="d-row">
+            <div class="d-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.73a16 16 0 0 0 7.36 7.36l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+            <div class="d-info"><span class="d-lbl">Teléfono / WhatsApp</span><a href="https://wa.me/584241840755" class="d-val" target="_blank" rel="noopener">+58 424-1840755</a></div>
+          </div>
+          <div class="d-row">
+            <div class="d-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <div class="d-info"><span class="d-lbl">Email</span><a href="mailto:juanignacio2122@gmail.com" class="d-val">juanignacio2122@gmail.com</a></div>
+          </div>
+          <div class="d-row">
+            <div class="d-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div class="d-info"><span class="d-lbl">Dirección de contacto</span><span class="d-val">30 N Gould St, Ste R · Sheridan, WY 82801, USA</span></div>
           </div>
         </div>
-        <div class="sobre-content rv">
-          <p class="lbl">Sobre Digital Artwork</p>
-          <h2>15 años convirtiendo buena comida en negocios digitalmente fuertes.</h2>
-          <p>Llevo más de 15 años trabajando en la intersección entre gastronomía y marketing digital. No llegué a este sector por casualidad: me apasiona la hostelería, entiendo sus ritmos, sus presiones y sus oportunidades, y he construido metodologías específicas para este tipo de negocio porque lo genérico no funciona en restauración.</p>
-          <p>He tenido el privilegio de trabajar con marcas que se han convertido en referencia en sus ciudades. Porneat y Suspecados, dos restaurantes de Madrid con fuerte identidad propia, son ejemplos de lo que ocurre cuando se combina una propuesta gastronómica sólida con una estrategia digital coherente. Entre las marcas que acompañamos hemos acumulado más de 25.000 reseñas con una valoración media de 4,8 estrellas.</p>
-          <p>En Digital Artwork no trabajo con volumen. Trabajo con profundidad. Cada cliente recibe atención directa, estrategia personalizada y resultados medibles. Si buscas una agencia que te asigne un junior y te mande un informe mensual de métricas vacías, no soy tu opción. Si buscas un consultor que entienda tu negocio y se comprometa con sus resultados, hablemos.</p>
-          <div class="creds-grid">
-            <div class="cred-box">
-              <div class="cred-num">25.000+</div>
-              <div class="cred-lbl">Reseñas gestionadas en Google, TripAdvisor y plataformas de reservas</div>
-            </div>
-            <div class="cred-box">
-              <div class="cred-num">4,8 ★</div>
-              <div class="cred-lbl">Valoración media mantenida en los negocios con los que trabajamos</div>
-            </div>
-            <div class="cred-box">
-              <div class="cred-num" style="font-size:1.1rem;padding-top:4px">Porneat &amp; Suspecados</div>
-              <div class="cred-lbl">Restaurantes de referencia en Madrid con estrategia digital activa</div>
-            </div>
-            <div class="cred-box">
-              <div class="cred-num">+15 años</div>
-              <div class="cred-lbl">De experiencia en marketing digital especializado en gastronomía</div>
-            </div>
-          </div>
+        <div class="pay-row">
+          <span class="pay-chip">Payoneer</span>
+          <span class="pay-chip">Zelle</span>
+          <span class="pay-chip">Tarjeta</span>
+          <span class="pay-chip">Transferencia</span>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       PROCESO
-  ================================================================ -->
-  <section id="proceso" aria-label="Cómo trabajamos">
-    <div class="c">
-      <p class="lbl ctr rv">Cómo trabajamos</p>
-      <h2 class="rv" style="text-align:center">Un método claro,<br>sin improvisación</h2>
-      <div class="proceso-grid">
-        <div class="paso rv">
-          <div class="paso-num">01</div>
-          <h3>Diagnóstico</h3>
-          <p>Auditamos tu presencia digital completa: Google, redes sociales, reseñas, web y competencia local, para entender exactamente desde dónde partimos.</p>
-          <div class="paso-line"></div>
-        </div>
-        <div class="paso rv">
-          <div class="paso-num">02</div>
-          <h3>Estrategia</h3>
-          <p>Diseñamos un plan a medida con objetivos concretos, acciones priorizadas y métricas de seguimiento. Nada genérico: todo pensado para tu negocio, tu zona y tus clientes.</p>
-          <div class="paso-line"></div>
-        </div>
-        <div class="paso rv">
-          <div class="paso-num">03</div>
-          <h3>Ejecución</h3>
-          <p>Implementamos las acciones acordadas con rigor y consistencia: contenidos, optimización de perfiles, gestión de reseñas, fotografía y lo que el plan requiera.</p>
-          <div class="paso-line"></div>
-        </div>
-        <div class="paso rv">
-          <div class="paso-num">04</div>
-          <h3>Seguimiento</h3>
-          <p>Medimos resultados cada mes, ajustamos la estrategia según los datos y te informamos con transparencia de qué está funcionando y qué vamos a mejorar.</p>
+      <div class="rv" style="transition-delay:.12s">
+        <form class="form-box" id="cf" novalidate>
+          <div class="form-row-2">
+            <div class="f-field"><label for="fn">Nombre</label><input type="text" id="fn" placeholder="Tu nombre" required autocomplete="given-name"></div>
+            <div class="f-field"><label for="fe">Email</label><input type="email" id="fe" placeholder="tu@email.com" required autocomplete="email"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="f-field"><label for="fc">Ciudad</label><input type="text" id="fc" placeholder="Madrid, Bogotá…" autocomplete="address-level2"></div>
+            <div class="f-field">
+              <label for="ft">Tipo de negocio</label>
+              <select id="ft">
+                <option value="" disabled selected>Selecciona</option>
+                <option>Restaurante</option>
+                <option>Bar / cafetería</option>
+                <option>Dark kitchen</option>
+                <option>Food truck</option>
+                <option>Otro</option>
+              </select>
+            </div>
+          </div>
+          <div class="f-full">
+            <label for="fm">Mensaje</label>
+            <textarea id="fm" placeholder="Cuéntame sobre tu negocio…"></textarea>
+          </div>
+          <div class="f-submit"><button type="submit" class="btn-submit">Enviar mensaje</button></div>
+        </form>
+        <div class="form-ok" id="form-ok">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <h3>Mensaje recibido</h3>
+          <p>Te respondo en menos de 24 horas.<br>También puedes escribirme por WhatsApp.</p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ================================================================
-       TESTIMONIOS
-  ================================================================ -->
-  <section id="testimonios" aria-label="Testimonios">
-    <div class="c">
-      <p class="lbl ctr rv">Lo que dicen nuestros clientes</p>
-      <h2 class="rv" style="text-align:center">Resultados que hablan solos</h2>
-      <div class="test-grid">
-        <div class="test-card rv">
-          <svg class="test-quote-icon" viewBox="0 0 36 28" aria-hidden="true">
-            <path d="M10 0C4.477 0 0 4.477 0 10c0 5.522 4.477 10 10 10 .337 0 .671-.017 1-.05C9.375 22.46 7.17 26 4 28h6c6.627 0 12-5.373 12-12V10C22 4.477 17.523 0 12 0h-2zM24 0c-5.523 0-10 4.477-10 10s4.477 10 10 10c.337 0 .671-.017 1-.05C23.375 22.46 21.17 26 18 28h6c6.627 0 12-5.373 12-12V10C36 4.477 31.523 0 26 0h-2z"/>
-          </svg>
-          <p class="test-quote">"Antes de trabajar con Digital Artwork, nuestro restaurante era invisible en Google. En menos de cuatro meses pasamos al top 3 del mapa local y las reservas de nuevos clientes aumentaron de forma notable. Lo que más valoro es que Juan entiende el sector: habla nuestro idioma y sabe lo que importa en hostelería."</p>
-          <div class="test-footer">
-            <div class="test-name">Alejandro Méndez</div>
-            <div class="test-role">Restaurante La Cuadra — Madrid, España</div>
-          </div>
-        </div>
-        <div class="test-card rv">
-          <svg class="test-quote-icon" viewBox="0 0 36 28" aria-hidden="true">
-            <path d="M10 0C4.477 0 0 4.477 0 10c0 5.522 4.477 10 10 10 .337 0 .671-.017 1-.05C9.375 22.46 7.17 26 4 28h6c6.627 0 12-5.373 12-12V10C22 4.477 17.523 0 12 0h-2zM24 0c-5.523 0-10 4.477-10 10s4.477 10 10 10c.337 0 .671-.017 1-.05C23.375 22.46 21.17 26 18 28h6c6.627 0 12-5.373 12-12V10C36 4.477 31.523 0 26 0h-2z"/>
-          </svg>
-          <p class="test-quote">"La gestión de reseñas era nuestro punto débil. Teníamos muchas críticas sin responder y eso nos estaba costando clientes. Con Digital Artwork implementamos un sistema que nos da ahora una media de 4,7 estrellas y cada reseña negativa se convierte en una oportunidad de mostrar quiénes somos. El cambio en nuestra reputación online ha sido increíble."</p>
-          <div class="test-footer">
-            <div class="test-name">Valentina Rojas</div>
-            <div class="test-role">Bistró Canela — Bogotá, Colombia</div>
-          </div>
-        </div>
-        <div class="test-card rv">
-          <svg class="test-quote-icon" viewBox="0 0 36 28" aria-hidden="true">
-            <path d="M10 0C4.477 0 0 4.477 0 10c0 5.522 4.477 10 10 10 .337 0 .671-.017 1-.05C9.375 22.46 7.17 26 4 28h6c6.627 0 12-5.373 12-12V10C22 4.477 17.523 0 12 0h-2zM24 0c-5.523 0-10 4.477-10 10s4.477 10 10 10c.337 0 .671-.017 1-.05C23.375 22.46 21.17 26 18 28h6c6.627 0 12-5.373 12-12V10C36 4.477 31.523 0 26 0h-2z"/>
-          </svg>
-          <p class="test-quote">"Llevábamos dos años con Instagram estancado en 800 seguidores y sin saber qué publicar. En seis meses con Digital Artwork llegamos a 4.500 seguidores orgánicos y, más importante, empezamos a recibir reservas directas por mensaje directo. El retorno es real y medible. No podría recomendar este trabajo más."</p>
-          <div class="test-footer">
-            <div class="test-name">Marcos Fuentes</div>
-            <div class="test-role">Taberna Sal Gruesa — Miami, Estados Unidos</div>
-          </div>
-        </div>
+<!-- FOOTER -->
+<footer id="footer">
+  <div style="height:1px;background:var(--border);"></div>
+  <div class="container" style="padding-top:44px;">
+    <div class="footer-inner">
+      <div>
+        <p class="f-logo">Digital Artwork</p>
+        <p class="f-info">
+          Juan Ignacio Temistocle De Biase Malave<br>
+          Digital Artwork 126 LLC<br>
+          30 N Gould St, Ste R · Sheridan, WY 82801, USA<br>
+          <a href="tel:+584241840755">+58 424-1840755</a> ·
+          <a href="mailto:juanignacio2122@gmail.com">juanignacio2122@gmail.com</a>
+        </p>
+      </div>
+      <div class="f-right">
+        <nav class="f-nav">
+          <a href="#servicios">Servicios</a>
+          <a href="#sobre">Sobre mí</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+        <p class="f-copy">© 2026 Digital Artwork 126 LLC</p>
       </div>
     </div>
-  </section>
+  </div>
+</footer>
 
-  <!-- ================================================================
-       FAQ
-  ================================================================ -->
-  <section id="faq" aria-label="Preguntas frecuentes">
-    <div class="c">
-      <p class="lbl ctr rv">Preguntas frecuentes</p>
-      <h2 class="rv" style="text-align:center">Todo lo que necesitas saber<br>antes de empezar</h2>
-      <div class="faq-list rv" role="list">
+<script>
+  // Navbar scroll
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 20), { passive: true });
 
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Para qué tipo de negocios trabajáis?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>Trabajamos exclusivamente con negocios del sector gastronómico y hostelero: restaurantes, bares de tapas, tabernas, bistrós, cafeterías especializadas, dark kitchens, catering y proyectos gastronómicos en fase de lanzamiento. Nuestra especialización nos permite ofrecer una profundidad que una agencia generalista no puede alcanzar.</p>
-            </div>
-          </div>
-        </div>
+  // Scroll reveal
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+  }), { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
 
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Trabajáis con negocios en cualquier país de habla hispana?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>Sí. Tenemos clientes activos en España y en varios países de América Latina. Toda nuestra metodología está adaptada a los contextos locales: algoritmos de Google, comportamiento del consumidor gastronómico y dinámicas de plataformas como TripAdvisor o Google Maps varían según el mercado, y sabemos trabajar con esas diferencias. Operamos completamente en remoto con total normalidad.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Cómo se gestiona el pago si estoy en otro país?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>Aceptamos pagos internacionales de forma sencilla a través de Payoneer y transferencia bancaria. No hay complicaciones con la facturación internacional. En la llamada de consulta te explicamos el proceso concreto según tu país de origen.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Cuánto tiempo tarda en verse resultados?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>Depende del servicio y del punto de partida. En gestión de reseñas y optimización de Google Mi Negocio, los primeros resultados suelen verse entre las 4 y las 8 semanas. En redes sociales, el crecimiento orgánico sostenido requiere entre 3 y 6 meses de consistencia. Somos honestos en las expectativas: no prometemos milagros rápidos, prometemos resultados sólidos.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Cuál es la diferencia con una agencia de marketing normal?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>Una agencia generalista trabaja con clientes de todos los sectores: moda, inmobiliaria, tecnología, hostelería. Nosotros solo trabajamos con gastronomía. Eso significa que nuestras estrategias, plantillas, metodologías y benchmarks están calibrados para tu sector. Además, en Digital Artwork tendrás contacto directo con el consultor senior, no con un gestor de cuentas junior.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Hay contrato de permanencia?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>No exigimos permanencias largas. Creemos que la mejor garantía de continuidad son los resultados. Los servicios de consultoría estratégica se contratan por períodos acordados, pero siempre con flexibilidad. Te lo explicamos en detalle en la llamada inicial.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item" role="listitem">
-          <button class="faq-q" aria-expanded="false">
-            ¿Cómo empezamos a trabajar juntos?
-            <span class="faq-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </button>
-          <div class="faq-a" role="region">
-            <div class="faq-a-inner">
-              <p>El primer paso es una llamada de consulta gratuita de 30 minutos. En esa llamada analizamos tu situación actual, entendemos tus objetivos y vemos si hay encaje real entre lo que necesitas y lo que ofrecemos. Si tiene sentido para los dos, diseñamos una propuesta personalizada. Sin presión, sin compromiso.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       CTA FINAL
-  ================================================================ -->
-  <section id="cta-final" aria-label="Llamada a la acción">
-    <div class="rv">
-      <h2>¿Listo para que tu restaurante trabaje también cuando cierras la cocina?</h2>
-      <p>La presencia digital de tu negocio no puede esperar. Cada día sin estrategia es un día regalándole clientes a la competencia. Agenda una llamada gratuita y descubramos juntos qué está frenando tu crecimiento digital.</p>
-      <a href="#contacto" class="btn btn-g">
-        Agenda tu consulta gratuita ahora
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </a>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       CONTACTO
-  ================================================================ -->
-  <section id="contacto" aria-label="Contacto">
-    <div class="c">
-      <p class="lbl ctr rv">Contacto</p>
-      <h2 class="rv" style="text-align:center">Hablemos de tu negocio</h2>
-      <div class="contacto-grid">
-        <div class="contacto-info rv-l">
-          <h3>¿Tienes preguntas?</h3>
-          <p>¿Tienes preguntas antes de agendar? Escríbenos directamente. Respondemos en menos de 24 horas hábiles.</p>
-          <p>La consulta inicial es gratuita y sin compromiso. En esa primera llamada no vamos a venderte nada: vamos a escucharte, entender tu situación y ver si podemos ayudarte de verdad.</p>
-
-          <div class="contact-details">
-            <div class="contact-row">
-              <div class="contact-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </div>
-              <div class="contact-row-text">
-                <strong>Nombre</strong>
-                Juan Ignacio Temistocle De Biase Malave
-              </div>
-            </div>
-            <div class="contact-row">
-              <div class="contact-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg>
-              </div>
-              <div class="contact-row-text">
-                <strong>Empresa</strong>
-                Digital Artwork 126 LLC
-              </div>
-            </div>
-            <div class="contact-row">
-              <div class="contact-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </div>
-              <div class="contact-row-text">
-                <strong>Email</strong>
-                <a href="mailto:juanignacio2122@gmail.com" style="color:var(--accent)">juanignacio2122@gmail.com</a>
-              </div>
-            </div>
-            <div class="contact-row">
-              <div class="contact-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.95 2 2 0 0 1 3.58 2.75h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.09a16 16 0 0 0 6 6l1.41-1.41a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              </div>
-              <div class="contact-row-text">
-                <strong>Teléfono</strong>
-                <a href="tel:+584241840755" style="color:var(--accent)">+58 424-1840755</a>
-              </div>
-            </div>
-            <div class="contact-row">
-              <div class="contact-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              </div>
-              <div class="contact-row-text">
-                <strong>Dirección</strong>
-                30 N Gould St, Ste R<br>Sheridan, WY 82801, USA
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="rv">
-          <form id="contact-form" novalidate>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="f-name">Nombre completo *</label>
-                <input type="text" id="f-name" name="name" required placeholder="Tu nombre completo" autocomplete="name">
-              </div>
-              <div class="form-group">
-                <label for="f-email">Email *</label>
-                <input type="email" id="f-email" name="email" required placeholder="tu@email.com" autocomplete="email">
-              </div>
-              <div class="form-group">
-                <label for="f-phone">Teléfono (con código de país)</label>
-                <input type="tel" id="f-phone" name="phone" placeholder="+34 600 000 000" autocomplete="tel">
-              </div>
-              <div class="form-group">
-                <label for="f-location">País / ciudad donde está tu negocio</label>
-                <input type="text" id="f-location" name="location" placeholder="ej. Madrid, España">
-              </div>
-              <div class="form-group full">
-                <label for="f-business">Nombre de tu restaurante o negocio</label>
-                <input type="text" id="f-business" name="business" placeholder="Nombre del restaurante">
-              </div>
-              <div class="form-group full">
-                <label for="f-message">¿En qué podemos ayudarte?</label>
-                <textarea id="f-message" name="message" placeholder="Cuéntanos brevemente tu situación y qué necesitas..."></textarea>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-g form-submit">
-              Enviar mensaje
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-            <p class="form-note">Al enviar este formulario aceptas nuestra política de privacidad. No compartimos tu información con terceros.</p>
-          </form>
-          <div class="form-success" id="form-success" role="status" aria-live="polite">
-            <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <h3>Mensaje enviado</h3>
-            <p>Gracias por contactarnos. Responderemos en menos de 24 horas hábiles.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       FOOTER
-  ================================================================ -->
-  <footer aria-label="Footer">
-    <div class="c">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <div class="footer-logo">DIGITAL <span>ARTWORK</span></div>
-          <div class="footer-tagline">Marketing digital especializado en gastronomía.</div>
-          <address class="footer-address" style="font-style:normal">
-            Juan Ignacio Temistocle De Biase Malave<br>
-            Digital Artwork 126 LLC<br>
-            30 N Gould St, Ste R<br>
-            Sheridan, WY 82801, USA<br>
-            <a href="tel:+584241840755" style="color:var(--tx-m);transition:color .25s">+58 424-1840755</a><br>
-            <a href="mailto:juanignacio2122@gmail.com" style="color:var(--tx-m);transition:color .25s">juanignacio2122@gmail.com</a>
-          </address>
-        </div>
-        <div class="footer-col">
-          <h4>Servicios</h4>
-          <ul>
-            <li><a href="#servicios">Presencia &amp; Reputación Digital</a></li>
-            <li><a href="#servicios">Redes Sociales &amp; Contenido</a></li>
-            <li><a href="#servicios">Fotografía &amp; Identidad Visual</a></li>
-            <li><a href="#servicios">Estrategia &amp; Consultoría</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Empresa</h4>
-          <ul>
-            <li><a href="#sobre">Sobre nosotros</a></li>
-            <li><a href="#proceso">Nuestro método</a></li>
-            <li><a href="#testimonios">Clientes</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="#contacto">Contacto</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p class="footer-copy">© 2025 Digital Artwork 126 LLC. Todos los derechos reservados.</p>
-        <div class="footer-legal">
-          <a href="#">Política de privacidad</a>
-          <a href="#">Aviso legal</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ================================================================
-       JAVASCRIPT
-  ================================================================ -->
-  <script>
-    // --- Scroll reveal ---
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('on'); observer.unobserve(e.target); }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-    document.querySelectorAll('.rv, .rv-l').forEach(el => observer.observe(el));
-
-    // --- Navbar frosted glass on scroll ---
-    const nav = document.getElementById('nav');
-    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 40);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    // --- Mobile menu ---
-    const toggle = document.getElementById('nav-toggle');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const closeBtn = document.getElementById('menu-close');
-    const menuLinks = document.querySelectorAll('.menu-link');
-
-    const openMenu = () => {
-      mobileMenu.classList.add('open');
-      toggle.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    };
-    const closeMenu = () => {
-      mobileMenu.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-    };
-
-    toggle.addEventListener('click', openMenu);
-    closeBtn.addEventListener('click', closeMenu);
-    menuLinks.forEach(l => l.addEventListener('click', closeMenu));
-    document.querySelector('#mobile-menu .btn').addEventListener('click', closeMenu);
-
-    // --- FAQ accordion ---
-    document.querySelectorAll('.faq-q').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.closest('.faq-item');
-        const isOpen = item.classList.contains('open');
-        document.querySelectorAll('.faq-item.open').forEach(i => {
-          i.classList.remove('open');
-          i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
-        });
-        if (!isOpen) {
-          item.classList.add('open');
-          btn.setAttribute('aria-expanded', 'true');
-        }
-      });
+  // FAQ
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => { i.classList.remove('open'); i.querySelector('.faq-q').setAttribute('aria-expanded','false'); });
+      if (!open) { item.classList.add('open'); q.setAttribute('aria-expanded','true'); }
     });
+  });
 
-    // --- Contact form success state ---
-    const form = document.getElementById('contact-form');
-    const success = document.getElementById('form-success');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = form.querySelector('[name="name"]').value.trim();
-      const email = form.querySelector('[name="email"]').value.trim();
-      if (!name || !email) return;
-      form.style.display = 'none';
-      success.style.display = 'block';
-    });
-  </script>
-
+  // Form
+  document.getElementById('cf').addEventListener('submit', e => {
+    e.preventDefault();
+    document.getElementById('cf').style.display = 'none';
+    document.getElementById('form-ok').style.display = 'flex';
+  });
+</script>
 </body>
 </html>
