@@ -4,43 +4,185 @@
 
 ---
 
-## Top Opportunities
+## 1. Executive Summary
+
+{% set top3 = opportunities[:3] %}
+{% if top3 %}
+**Today's strongest signals:**
+
+{% for opp in top3 %}
+{{ loop.index }}. **{{ opp.name }}** ({{ opp.geography | upper }}, `{{ opp.bucket | default('unclassified') }}`, `{{ opp.portfolio_lane | default('?') }}`) — {{ opp.final_score | default(0) | round(1) }}/10
+   *{{ opp.problem_statement | default('No thesis.') | truncate(120, true, '...') }}*
+{% endfor %}
+
+**Machine health:** {{ run_stats.total_scored | default(0) }} live · {{ run_stats.total_killed | default(0) }} killed · {{ run_stats.total_today | default(0) }} processed today
+{% else %}
+No opportunities scored today. Check signals file for {{ date }}.
+{% endif %}
+
+---
+
+## 2. Top {{ top_n | default(10) }} Opportunities (All Geos, Ranked)
 
 {% for opp in opportunities[:top_n] %}
 ### {{ loop.index }}. {{ opp.name }} · {{ opp.geography | upper }} · {{ opp.final_score | default(0) | round(1) }}/10
 
-**Bucket:** `{{ opp.bucket | default('unclassified') }}` | **Lane:** `{{ opp.portfolio_lane | default('unassigned') }}` | **Archetype:** {{ opp.benchmark_archetype | default('unknown') }}
+**Bucket:** `{{ opp.bucket | default('unclassified') }}` | **Lane:** `{{ opp.portfolio_lane | default('unassigned') }}` | **Vertical:** {{ opp.vertical | default('unknown') }} | **Archetype:** {{ opp.benchmark_archetype | default('unknown') }}
 
-{{ opp.problem_statement | default('No problem statement.') }}
+**Thesis:** {{ opp.problem_statement | default('No problem statement.') }}
 
-| TAM | First Revenue | Speed to MVP | Wedge Score |
-|-----|--------------|--------------|-------------|
-| {{ opp.tam_usd_estimate if opp.tam_usd_estimate else 'Unknown' }} | {{ opp.path_to_first_revenue_description | default('TBD') }} | {{ opp.speed_to_mvp | default('?') }}/10 | {{ opp.daniels_wedge_score | default(0) }}/6 |
+**Target customer:** {{ opp.target_customer | default('Not defined.') }}
+
+**Why now:** {{ opp.why_now | default('Not specified.') }}
+
+| TAM | First Revenue Path | Speed to MVP | Capital Efficiency | Defensibility |
+|-----|-------------------|--------------|-------------------|---------------|
+| {{ opp.tam | format_tam }} | {{ opp.path_to_first_revenue | default('TBD') }} | {{ opp.speed_to_mvp | default('?') }}/10 | {{ opp.capital_efficiency | default('?') }}/10 | {{ opp.defensibility | default('?') }}/10 |
 
 {% if opp.first_revenue_path %}
-**First €1,000 path:** {{ opp.first_revenue_path.first_offer | default('') }} → {{ opp.first_revenue_path.first_sales_channel | default('') }} @ {{ opp.first_revenue_path.first_price_point | default('') }}
+**First €1,000 path:** {{ opp.first_revenue_path.first_offer | default('') }}{% if opp.first_revenue_path.first_sales_channel %} → {{ opp.first_revenue_path.first_sales_channel }}{% endif %}{% if opp.first_revenue_path.first_price_point %} @ {{ opp.first_revenue_path.first_price_point }}{% endif %}
 {% endif %}
 
+{% if opp.recommendation %}
+**Recommendation:** `{{ opp.recommendation }}`{% if opp.next_action %} — {{ opp.next_action }}{% endif %}
+
+{% endif %}
 {% if opp.venezuela_wedge_category %}
-🇻🇪 Venezuela wedge: `{{ opp.venezuela_wedge_category }}`
+Venezuela wedge: `{{ opp.venezuela_wedge_category }}`
+{% endif %}
+{% if opp.daniels_wedge_score is not none %}
+**Daniel's wedge match:** {{ opp.daniels_wedge_score }}/6
 {% endif %}
 
 ---
+{% else %}
+No opportunities to display.
 {% endfor %}
 
-## Rising Signals
-{% if rising %}
-{% for r in rising %}
-- **{{ r.name }}** ({{ r.geography }}) — score {{ r.prev_score | round(1) }} → {{ r.final_score | round(1) }} (+{{ (r.final_score - r.prev_score) | round(1) }})
+## 3. Opportunities by Vertical
+
+{% if opportunities %}
+{% set seen_verticals = namespace(list=[]) %}
+{% for opp in opportunities %}
+{% if opp.vertical not in seen_verticals.list %}
+{% set seen_verticals.list = seen_verticals.list + [opp.vertical] %}
+{% endif %}
+{% endfor %}
+{% for v in seen_verticals.list %}
+{% set v_opps = opportunities | selectattr('vertical', 'equalto', v) | list %}
+{% if v_opps %}
+### {{ v | title }} ({{ v_opps | length }})
+
+{% for opp in v_opps | sort(attribute='final_score', reverse=True) %}
+- **{{ opp.name }}** ({{ opp.geography | upper }}) — {{ opp.final_score | default(0) | round(1) }}/10 · `{{ opp.bucket | default('?') }}` · `{{ opp.portfolio_lane | default('?') }}`
+{% endfor %}
+
+{% endif %}
 {% endfor %}
 {% else %}
-No score changes today.
+No vertical breakdown available.
 {% endif %}
 
-## Kill List — {{ kills | length }} Rejected Today
-{% for k in kills %}
-- ~~{{ k.name }}~~ ({{ k.geography }}) — {{ k.kill_reason | default('Failed kill gate') }}
+---
+
+## 4. Fast-Rising Signals
+
+{% if rising %}
+{% for r in rising %}
+- **{{ r.name }}** ({{ r.geography | upper }}) — score {{ r.prev_score | default(0) | round(1) }} → {{ r.final_score | default(0) | round(1) }} (+{{ ((r.final_score | default(0)) - (r.prev_score | default(0))) | round(1) }}){% if r.vertical %} · {{ r.vertical }}{% endif %}
+
 {% endfor %}
+{% else %}
+No score changes detected today. First run or no prior data.
+{% endif %}
 
 ---
-*Generated {{ date }} by opportunity-os*
+
+## 5. Low-Complexity Opportunities — Fastest Path to MVP + First Revenue
+
+{% set fast_lane = opportunities | selectattr('portfolio_lane', 'equalto', 'now') | list %}
+{% set fast_lane_sorted = fast_lane | sort(attribute='speed_to_mvp', reverse=True) %}
+{% if fast_lane_sorted %}
+*These are live in < 30 days — test before scoring further.*
+
+{% for opp in fast_lane_sorted[:5] %}
+**{{ loop.index }}. {{ opp.name }}** ({{ opp.geography | upper }}) — Speed to MVP: {{ opp.speed_to_mvp | default('?') }}/10 · Capital Efficiency: {{ opp.capital_efficiency | default('?') }}/10 · Score: {{ opp.final_score | default(0) | round(1) }}
+{% if opp.first_revenue_path %}
+- First offer: {{ opp.first_revenue_path.first_offer | default('TBD') }}
+- Channel: {{ opp.first_revenue_path.first_sales_channel | default('TBD') }}
+- Price: {{ opp.first_revenue_path.first_price_point | default('TBD') }}
+{% elif opp.path_to_first_revenue %}
+- Path: {{ opp.path_to_first_revenue }}
+{% endif %}
+
+{% endfor %}
+{% else %}
+No `now` lane opportunities today.
+{% endif %}
+
+---
+
+## 6. High-Upside Opportunities — Harder, Larger
+
+{% set strategic = opportunities | selectattr('portfolio_lane', 'equalto', 'strategic') | list %}
+{% set strategic_sorted = strategic | sort(attribute='final_score', reverse=True) %}
+{% if strategic_sorted %}
+*These need more proof but carry outsized upside. 6-18 month horizon.*
+
+{% for opp in strategic_sorted[:5] %}
+**{{ loop.index }}. {{ opp.name }}** ({{ opp.geography | upper }}) — Score: {{ opp.final_score | default(0) | round(1) }} · TAM: {{ opp.tam | format_tam }}
+- Bucket: `{{ opp.bucket | default('?') }}` · Archetype: {{ opp.benchmark_archetype | default('?') }}
+- Pain severity: {{ opp.pain_severity | default('?') }}/10 · Defensibility: {{ opp.defensibility | default('?') }}/10
+{% if opp.path_to_1m_arr %}
+- Path to $1M ARR: {{ opp.path_to_1m_arr }}
+{% endif %}
+
+{% endfor %}
+{% else %}
+No `strategic` lane opportunities today.
+{% endif %}
+
+---
+
+## 7. Ignore List — {{ kills | length }} Rejected Today
+
+{% if kills %}
+| Name | Geography | Kill Reason |
+|------|-----------|-------------|
+{% for k in kills %}
+| ~~{{ k.name }}~~ | {{ k.geography | upper }} | {{ k.kill_reason | default('Failed kill gate') }} |
+{% endfor %}
+{% else %}
+Nothing killed today.
+{% endif %}
+
+---
+
+## 8. Suggested Next Actions
+
+{% set top5 = opportunities[:5] %}
+{% if top5 %}
+Based on today's scoring, suggested next 3-5 actions:
+
+{% set action_count = namespace(n=0) %}
+{% for opp in top5 %}
+{% if opp.recommendation == 'deep_dive' or opp.recommendation == 'build' or opp.recommendation == 'test' %}
+{% set action_count.n = action_count.n + 1 %}
+{{ action_count.n }}. **{{ opp.name }}** — `{{ opp.recommendation }}` — {{ opp.next_action | default('Define next step.') }}
+{% endif %}
+{% endfor %}
+
+{% if action_count.n == 0 %}
+1. Review `watch` candidates and decide if any warrant promotion to validation
+2. Add more signals to data/raw/{{ date }}-signals.jsonl for tomorrow's run
+3. Run a deep dive on {{ top3[0].name if top3 else 'the top opportunity' }} using the deep_dive_template
+{% endif %}
+{% else %}
+1. Add signals to data/raw/{{ date }}-signals.jsonl and re-run
+2. Review the kill list — are any kills recoverable with more research?
+3. Check rising signals for the week and identify a conviction area to double down on
+{% endif %}
+
+---
+
+*Generated {{ date }} by opportunity-os · Global report — see latam_report and venezuela_report for regional breakdowns*

@@ -207,3 +207,107 @@ def opportunities_to_markdown_table(
         rows.append(f"| {i} | {name} | {geo} | {score_str} | {bucket} | {lane} |")
 
     return "\n".join([header, separator] + rows)
+
+
+# ---------------------------------------------------------------------------
+# Deep dives CSV (validation + deep_dive stage)
+# ---------------------------------------------------------------------------
+
+_DEEP_DIVE_COLUMNS = [
+    "id",
+    "name",
+    "geography",
+    "vertical",
+    "bucket",
+    "portfolio_lane",
+    "final_score",
+    "stage",
+    "target_customer",
+    "problem_statement",
+    "why_now",
+    "path_to_first_revenue",
+    "path_to_1m_arr",
+    "path_to_10m_arr",
+    "tam",
+    "defensibility",
+    "speed_to_mvp",
+    "capital_efficiency",
+    "venezuela_wedge_category",
+    "kill_criteria_passed",
+    "recommendation",
+    "validation_status",
+    "first_seen",
+    "last_updated",
+]
+
+
+def deep_dives_to_csv(
+    opps: list[dict],
+    output_path: Optional[str] = None,
+) -> str:
+    """
+    Exports opportunities in stage=validation or stage=deep_dive to CSV.
+
+    Writes to exports/notion/deep_dives.csv by default.
+    Returns the path written.
+    """
+    if output_path is None:
+        output_path = os.path.join(_DEFAULT_EXPORT_DIR, "deep_dives.csv")
+
+    _ensure_dir(output_path)
+
+    target_stages = {"validation", "deep_dive"}
+    filtered = [
+        opp for opp in opps
+        if (opp.get("stage") or "").lower().strip() in target_stages
+    ]
+
+    sorted_opps = sorted(
+        filtered,
+        key=lambda o: (o.get("final_score") or 0),
+        reverse=True,
+    )
+
+    def _row(opp: dict) -> dict:
+        final_score = opp.get("final_score")
+        tam_raw = opp.get("tam_usd_estimate") or opp.get("tam")
+        tam_display = format_tam_usd(float(tam_raw)) if tam_raw is not None else ""
+        kill_passed = opp.get("kill_criteria_passed")
+        if kill_passed is None:
+            kill_passed = not opp.get("kill_decision", False)
+
+        return {
+            "id": opp.get("id", ""),
+            "name": opp.get("name", ""),
+            "geography": opp.get("geography", ""),
+            "vertical": opp.get("vertical", ""),
+            "bucket": opp.get("bucket", ""),
+            "portfolio_lane": opp.get("portfolio_lane", ""),
+            "final_score": f"{final_score:.2f}" if final_score is not None else "",
+            "stage": opp.get("stage", ""),
+            "target_customer": opp.get("target_customer", ""),
+            "problem_statement": opp.get("problem_statement", ""),
+            "why_now": opp.get("why_now", ""),
+            "path_to_first_revenue": opp.get("path_to_first_revenue", ""),
+            "path_to_1m_arr": opp.get("path_to_1m_arr", ""),
+            "path_to_10m_arr": opp.get("path_to_10m_arr", ""),
+            "tam": tam_display,
+            "defensibility": opp.get("defensibility", ""),
+            "speed_to_mvp": opp.get("speed_to_mvp", ""),
+            "capital_efficiency": opp.get("capital_efficiency", ""),
+            "venezuela_wedge_category": opp.get("venezuela_wedge_category", ""),
+            "kill_criteria_passed": str(kill_passed),
+            "recommendation": opp.get("recommendation", ""),
+            "validation_status": opp.get("validation_status", ""),
+            "first_seen": opp.get("first_seen", ""),
+            "last_updated": opp.get("last_updated", ""),
+        }
+
+    rows = [_row(opp) for opp in sorted_opps]
+
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=_DEEP_DIVE_COLUMNS, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return output_path
