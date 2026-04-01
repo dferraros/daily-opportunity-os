@@ -130,12 +130,67 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         if not dry_run:
             append_opportunity(opp_dict)
 
-    # Step 9: Render reports
+    # Step 9: Rank scored opportunities
     all_opps_sorted = sorted(
         scored_opps, key=lambda x: x.get("final_score", 0), reverse=True
     )
 
-    # Global daily report
+    # ─── Step 10: Customer Pain OS — enrich top 5 scored opportunities ───
+    print("Step 10: Running Customer Pain OS on top 5 opportunities...")
+    top_5 = all_opps_sorted[:5]
+    try:
+        from opportunity_os.pain_intelligence import run_pain_intelligence
+        for opp in top_5:
+            pain_result = run_pain_intelligence(opp)
+            opp.update({k: v for k, v in pain_result.items() if not k.startswith("_")})
+            print(f"  Pain queries built for: {opp.get('name', 'unknown')} ({len(pain_result.get('_pain_queries', []))} queries)")
+    except ImportError as e:
+        print(f"WARNING  Pain intelligence module not available: {e}")
+    except Exception as e:
+        print(f"WARNING  Pain OS error (non-blocking): {e}")
+
+    # ─── Step 11: Distribution OS — map distribution reality for top 5 ───
+    print("Step 11: Running Distribution OS on top 5 opportunities...")
+    try:
+        from opportunity_os.distribution_intelligence import run_distribution_intelligence
+        for opp in top_5:
+            dist_result = run_distribution_intelligence(opp)
+            opp.update({k: v for k, v in dist_result.items() if not k.startswith("_")})
+            channels = dist_result.get("_recommended_channels", [])
+            print(f"  Distribution mapped for: {opp.get('name', 'unknown')} → top channel: {channels[0] if channels else 'unknown'}")
+    except ImportError as e:
+        print(f"WARNING  Distribution intelligence module not available: {e}")
+    except Exception as e:
+        print(f"WARNING  Distribution OS error (non-blocking): {e}")
+
+    # ─── Step 12: Save enriched records back to JSONL ───
+    print("Step 12: Saving enriched opportunity records...")
+    if not dry_run:
+        try:
+            all_stored_opps = read_all_opportunities()
+            enriched_ids = {o["id"]: o for o in top_5 if o.get("id")}
+            updated_opps = [enriched_ids.get(o.get("id"), o) for o in all_stored_opps]
+            opps_path = os.path.join(_get_project_root(), "data", "opportunities", "opportunities.jsonl")
+            with open(opps_path, "w", encoding="utf-8") as f:
+                for o in updated_opps:
+                    f.write(json.dumps(o) + "\n")
+            print(f"  Saved {len(top_5)} enriched records")
+        except Exception as e:
+            print(f"WARNING  Save enriched records error (non-blocking): {e}")
+
+    # ─── Step 13: Notion sync instructions ───
+    print("Step 13: Generating Notion sync instructions...")
+    try:
+        from opportunity_os.notion_sync import get_sync_instructions
+        sync_instructions = get_sync_instructions(top_5)
+        sync_path = os.path.join(_get_project_root(), "reports", "daily", f"{date}-notion-sync.md")
+        with open(sync_path, "w", encoding="utf-8") as f:
+            f.write(sync_instructions)
+        print(f"  Notion sync instructions written to {sync_path}")
+    except Exception as e:
+        print(f"WARNING  Notion sync instructions error (non-blocking): {e}")
+
+    # Render reports
     context = {
         "date": date,
         "opportunities": all_opps_sorted,

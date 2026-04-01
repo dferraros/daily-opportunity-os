@@ -62,5 +62,11 @@ def get_sync_instructions(opportunities: list[dict]) -> str:
         lines.append(f"## {opp.get('name', 'Unknown')} ({opp.get('id', 'no-id')})")
         lines.append(f"Action: upsert to Opportunity Database ({NOTION_COLLECTION_IDS['opportunity_database']})")
         lines.append(f"Score: {opp.get('final_score', 0)} | Stage: {opp.get('stage', 'scout')} | Geo: {opp.get('geography', '?')}")
+        if opp.get("pain_validation_score"):
+            lines.append(f"Pain Score: {opp['pain_validation_score']} | Phrases: {', '.join(opp.get('exact_customer_phrases', [])[:2])}")
+        if opp.get("top_distribution_channels"):
+            lines.append(f"Top Channel: {opp['top_distribution_channels'][0]} | CAC Logic: {opp.get('estimated_cac_logic', 'TBD')}")
+        if opp.get("first_10_customer_path"):
+            lines.append(f"First 10 Path: {opp['first_10_customer_path'][:120]}...")
         lines.append("")
     return "\n".join(lines)
