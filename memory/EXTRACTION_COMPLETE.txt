@@ -1,0 +1,161 @@
+EXTRACTION COMPLETE - COWORK SESSION ARCHIVE
+==============================================
+
+Extraction Date: 2026-02-24
+Source Session ID: aa354d00-f848-4558-a240-3a726a9507b0
+Source Subagent ID: a0bb373
+
+---
+
+FILES CREATED (3 total):
+
+1. COWORK_SESSION_INDEX.md (894 lines)
+   - Master navigation document
+   - Quick reference guide
+   - Strategic content summary
+   - Next phase blockers
+   - READ THIS FIRST
+
+2. SESSION_SUMMARY.md (221 lines)  
+   - Strategic decisions summary
+   - Architecture recommendations
+   - Data infrastructure requirements
+   - Immediate next steps
+   - Estimated effort breakdown
+   - READ THIS SECOND
+
+3. PREV_SESSION_EXTRACTED.md (978 lines)
+   - Full conversation transcript
+   - All tool results (research, code examples)
+   - Technical deep-dives
+   - Resource links
+   - READ THIS FOR DETAILS
+
+---
+
+STRATEGIC CONTENT CAPTURED:
+
+Topic: Building AI Agent for Bit2Me Lifecycle A/B Testing Dashboard
+
+Key Stakeholder: Daniel Ferraro (Head of Growth, LC Lead)
+
+Problem: 
+- Need specialized agent for analyzing + managing A/B tests
+- Reference: "Poly" dashboard (colleague's brokerage analytics tool)
+- Multiple data sources (Qlik, CleverTap, BigQuery) need orchestration
+- Manual analysis blocks Daniel from strategic work
+
+Solution Proposed:
+- 3-tier architecture: Agent → MCP Servers → Data Sources
+- MCP (Model Context Protocol) for data integration
+- Claude Agent SDK for autonomous tool use
+- Cowork plugin for deployment
+- Specialized skills for A/B test design, retention analysis, stat testing
+
+Key Findings:
+- 80% effort is data plumbing (MCP servers, schema docs, APIs)
+- 20% effort is the agent intelligence itself
+- Qlik should be bypassed in favor of direct DB access
+- CleverTap integration is highest priority
+- Estimated 12-17 days to build (5 phases)
+
+Critical Success Factors:
+1. Clean schema documentation
+2. Reliable API connectivity
+3. User feedback loop
+4. Statistical guardrails
+5. Governance + compliance safeguards
+
+---
+
+BLOCKING QUESTION FOR PHASE 2:
+
+Agent awaiting from Daniel:
+"What does your current data setup look like?"
+
+Needs:
+- Database architecture diagram
+- CleverTap API docs + available events
+- Qlik schema/fields
+- Bitquery integration preferences
+- Top 10 most-asked LC queries
+
+---
+
+ALIGNMENT WITH INITIATIVES:
+
+Supports Daniel's priorities:
+✓ Lifecycle Definition (HIGHEST PRIORITY)
+✓ LC Daily Syncs automation
+✓ CleverTap A/B Tests (T1, T2, T3)
+✓ Loan Journey (Feb 26 launch)
+✓ Flash Diario Growth dashboard
+
+Aligns with Pablo Campos directives:
+✓ Frees Daniel from operational work
+✓ Enables focus on STRATEGY not tactics
+✓ Supports "cuando domines los datos" goal
+
+---
+
+RESEARCH COMPLETED:
+
+✓ Claude Agent SDK capabilities
+✓ Model Context Protocol (MCP) architecture
+✓ Claude Code plugin structure
+✓ Cowork plugin integration
+✓ BigQuery MCP server setup
+✓ Snowflake MCP integration
+✓ Bitquery connector options
+✓ A/B testing statistical frameworks
+✓ Data agent architecture patterns
+
+Resources provided:
+- 20+ official Anthropic documentation links
+- Code examples for MCP servers
+- Architecture patterns (3-tier, skills-based, etc.)
+- Integration approaches for multiple data sources
+
+---
+
+ARCHIVE CONTENTS:
+
+Total lines extracted: 2,093 (across 3 files)
+Full conversation: YES (13 messages)
+Tool results: YES (research, code examples, schemas)
+Strategic insights: YES (decisions, blockers, next steps)
+Technical depth: YES (architecture, MCP specs, code)
+Actionable output: YES (specific next steps, effort estimates)
+
+---
+
+NEXT STEPS:
+
+Immediate (Daniel):
+1. Provide data infrastructure specs
+2. List top 10 lifecycle queries
+3. Confirm CleverTap + Qlik API access
+
+Week 2-3 (Engineering):
+1. Build CleverTap MCP server
+2. Build BigQuery MCP server (if needed)
+3. Document agent skills
+
+Week 4-5:
+1. Agent design + implementation
+2. Integration testing
+3. User feedback iteration
+
+---
+
+STATUS: Phase 1 COMPLETE - Awaiting Phase 2 start trigger
+
+Files Location: /sessions/determined-pensive-bohr/mnt/Desktop/memory/
+
+For questions: Refer to SESSION_SUMMARY.md → "FOLLOW-UP QUESTION" section
+
+---
+
+Archive created by: Claude Research Agent (Cowork session a0bb373)
+For: Daniel Ferraro, Head of Growth @ Bit2Me
+Date: 2026-02-24

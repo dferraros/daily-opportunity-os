@@ -1,0 +1,175 @@
+
+================================================================================
+FILE: brief-tests-w09-mar26.docx
+================================================================================
+BRIEF
+Tests W09
+Lifecycle Brokerage B2C
+Semana del 2-7 Marzo 2026
+Basado en resultados W08 + investigación externa
+Bit2me
+Spanish Crypto Exchange (MiCA-regulated)
+TABLA DE CONTENIDOS
+• TEST 1 — T1 Riesgo
+• TEST 2 — T2 Activos 90d
+• TEST 3 — T3 L1 Depositado
+• W08 → W09 Summary
+• Send Calendar
+PERFIL DE USUARIO
+MOTIVACIÓN
+W08 LEARNINGS
+PUSH A/B
+Variante A — CONTROL | 26 chars
+"Mira cómo está tu dinero."
+Title: Tu cartera te espera | Message: Mira cómo está tu dinero.
+Variante B — LOAN | 65 chars
+"Tienes crypto. No tienes que vender para tener liquidez."
+Title: Tu crypto trabaja por ti | Message: Tienes crypto. No tienes que vender...
+PARÁMETROS CLEVERTAP
+PERFIL DE USUARIO
+W08 LEARNINGS
+PUSH A/B
+Variante A — DCA | 68 chars
+"BTC en mínimos. €10/semana automático. 59% de inversores ya lo hacen."
+Title: Acumula sin decidir | Message: BTC en mínimos...
+Variante B — Institutional | 65 chars
+"Los institucionales llevan 3 semanas acumulando. El mínimo fue el 6 feb."
+Title: Datos de mercado | Message: Los institucionales llevan 3 semanas...
+PARÁMETROS CLEVERTAP
+PUSH (Envío único)
+"No tienes que elegir momento. €10 cada lunes, automático. Así empiezan los que saben."
+Title: Tu primer paso | Message: No tienes que elegir...
+PARÁMETROS CLEVERTAP
+W08 → W09 DECISION SUMMARY
+SEND CALENDAR — W09 (2-7 Marzo 2026)
+
+================================================================================
+FILE: brief-tests-w08-feb26.docx
+================================================================================
+Contexto de mercado — por qué importa esta semana
+Resumen de poblaciones disponibles (datos reales, 19 feb)
+Hipótesis: Un usuario en riesgo que ya ha operado antes y tiene saldo, en un momento de miedo extremo de mercado, responde mejor a un mensaje que le posiciona como inversor inteligente que a un CTA de compra. El ángulo de acumulación genera más confianza y más trades que el ángulo de urgencia.
+Filtro CleverTap
+Mensajes push (solo texto, máx. 90 caracteres)
+Mensaje InApp (se activa al abrir la app tras el push)
+Hipótesis: Un usuario que el sistema clasifica como 'activo' pero no ha operado en 90 días está en una ventana crítica. Aún no es 'riesgo' pero está dejando de operar. El mensaje de contexto de mercado funciona mejor que el mensaje emocional de reactivación.
+Filtro CleverTap
+Mensajes push (solo texto, máx. 90 caracteres)
+Nota sobre este segmento: Los 566 son los usuarios L1 depositados que han hecho login en los últimos 30 días. El total de L1 en España es ~29.010, pero la gran mayoría no ha hecho login recientemente. Empezamos con los que están activos en la app ahora mismo.
+Filtro CleverTap
+Mensaje push — envío único (ganador 13 feb)
+Mensaje InApp (tras apertura de la app)
+Verificaciones antes de lanzar
+Calendario de la semana
+Lo que NO se lanza esta semana
+19 feb 2026  •  Bit2me Growth  •  Datos: lifecycle Excel 19 feb + Flash Revenue W7 + Council W08  •  Creado desde cero. Nada de esto existía antes de esta semana.
+
+================================================================================
+FILE: segmentation-brief-feb26.docx
+================================================================================
+0. Context
+Spain Lifecycle Population — Feb 2026
+1. Feb 13–15 Round — What Happened
+Key learning: Dormant users need a non-transactional first touch. Pushing “Buy” to someone who hasn’t traded in 90–180 days is too much friction. Show them what they’re missing (portfolio performance, Earn yield) before asking for a trade.
+2. Strategic Focus — Why These 3 Populations
+Revenue is down. Patri confirmed the trend on Feb 15. The fastest recovery path does not come from acquiring new users — it comes from converting users who are already on the platform with money and intent. The three populations below are ranked by expected revenue velocity.
+3. Population Definitions & CleverTap Filter Logic
+Population 1 — L3 Near-Dormant (Priority: HIGH)
+Population 2 — L1 Deposited-Only (Priority: HIGH)
+Population 3 — L4 Early Dormant (Priority: MEDIUM)
+4. UTM Attribution Setup
+Every CleverTap campaign must have UTM parameters defined BEFORE sending. Without this, Qlik Transaction Attribution cannot link revenue to a specific campaign. This was the issue in the Feb 13 round.
+5. Sample Size Reference
+Minimum users per variant needed to detect a real effect with 80% statistical power (α=0.05, two-sided). Do not run A/B tests below these thresholds.
+6. What NOT to Run This Week
+7. Open Questions for Data Team
+8. Next Steps
+Document generated: 19 Feb 2026  •  Bit2me Growth  •  Working baseline: raw data + existing tools only. No aspirational infrastructure assumed.
+
+================================================================================
+FILE: data-brief-marta-alvaro.docx
+================================================================================
+DATA BRIEF — EQUIPO DE ANALYTICS
+Maquina de A/B Testing Brokerage B2C — Requerimientos de Data
+Para: Marta / Alvaro   |   De: Daniel   |   Fecha: Semana del 24 febrero 2026
+RESUMEN — 7 REQUESTS PRIORIZADOS
+AGENDA DE REUNION — 30 MINUTOS
+Reunion recomendada: Martes 25 febrero o Miercoles 26 febrero. Daniel + Marta + Alvaro + Katy (opcional).
+Preguntas clave que Daniel debe resolver en la reunion
+
+================================================================================
+FILE: ab-machine-framework-mar26.docx
+================================================================================
+Bit2me Brokerage
+A/B Testing Machine
+Framework completo para escalar de 1 test/semana a 10-20
+Lifecycle Growth — Brokerage B2C
+Febrero 2026
+1. Resultados W08 — Señales tempranas
+Qlik pull confirmará revenue (martes 3 mar para T1/T2). Los datos de CleverTap muestran CTR y conversiones dentro de la ventana de 1h de la plataforma. Los datos de conversiones influenciadas indican impacto broader.
+Aprendizajes clave
+T2B ganador: Anclaje temporal ('mínimo histórico') supera datos técnicos (MVRV). 4 conversiones vs 0 para Variant A. CTR 13% vs 8.6%.
+T1A domina CTR: 14.7% CTR en push con el ángulo de portfolio ('Revisa tu portfolio'). Pero el mensaje de Katy fue más largo que el brief — a validar.
+InApp bate push en CTR: T1 InApp 14.2%, T2 InApp 14.0% vs push 8-15%. El in-app tiene captive audience — más contexto = más click.
+T3 sin conversiones: 566 usuarios es un segmento pequeño. 0 conversiones CleverTap pero 1 influenciada. Qlik dirá si hay revenue.
+ALERTA — T2 no fue un A/B limpio: Variant B recibió 5x más usuarios que Variant A (2,499 vs 493). Posible error en la configuración del split. A corregir en W09.
+Discrepancia brief vs. ejecución
+Los mensajes que Katy envió fueron diferentes a los del brief v3. Ejemplo T1 Variant A:
+El template de lanzamiento (sección 4) resuelve este problema.
+2. La Máquina — Arquitectura del sistema
+Objetivo: pasar de 1 test/semana (dependiente de Daniel) a 10-20 tests/semana (sistema autónomo con Katy como ejecutora).
+2.1 Los 5 componentes
+2.2 El ciclo semanal
+Cada semana sigue el mismo ritmo de 4 días:
+2.3 Arquitectura multi-agente (Claude Cowork)
+Basado en investigación: las tareas paralelizables se benefician de multi-agente. Las secuenciales no.
+Paralelismo real: Agentes 1, 2 y 3 pueden correr simultáneamente en Cowork. Solo el Agente 4 (análisis) necesita esperar el CSV. Total tiempo estimado: 30-45 min por semana vs 4-6h actuales.
+3. Backlog de hipótesis — 30 tests listos
+Organizados por prioridad. Los primeros 5 se pueden lanzar en W09. Los de prioridad media entran en W10-W11. Los experimentales se priorizan si los resultados de Qlik confirman señales fuertes.
+4. Template de lanzamiento — Katy autónoma
+Este template elimina la dependencia de Daniel para cada test. Katy recibe el documento rellenado y configura CleverTap directamente. El briefing verbal desaparece.
+4.1 Cómo funciona
+Daniel (o Claude) elige las hipótesis del backlog y rellena el template.
+Katy recibe el template y configura CleverTap campo por campo.
+Katy NO toma decisiones creativas. Solo ejecuta lo que está en el template.
+Antes de enviar: Katy confirma checklist de 7 puntos (ver sección 4.3).
+4.2 Template — Sección por test
+Duplicar esta sección para cada test (T1, T2, T3...)
+4.3 Checklist de Katy — Antes de enviar
+Katy confirma estos 7 puntos antes de activar cualquier campaña:
+Si algo no cuadra: Katy escribe a Daniel ANTES de enviar, no después.
+5. Calculadora de muestra — ¿Cuántos usuarios necesita cada test?
+La calculadora está integrada en el A/B Test Bot (ab-test-bot.jsx). Aquí la referencia rápida para decisiones sin abrir el bot.
+5.1 Los parámetros fijos de Bit2me
+5.2 Tabla rápida de muestra
+Con los parámetros de Bit2me, el mínimo por variante es 1,550 usuarios (3,100 total para A/B).
+5.3 Regla rápida para T3 y segmentos pequeños
+Menos de 3,100 usuarios: NO hacer A/B. Envío único, aprender del CTR.
+Entre 3,100 y 5,000: A/B posible con MDE 10-15%.
+Más de 5,000: A/B estándar con todos los parámetros de Bit2me.
+Si hay duda: preguntar al bot. Sección 'Sample Size' del ab-test-bot.jsx.
+5.4 Qué hace el bot automáticamente
+Input: usuarios control, usuarios variante, conversiones de cada grupo.
+Output: z-score, p-value, lift %, intervalo de confianza, decisión (SHIP / NEED MORE DATA / DO NOT SHIP).
+Próxima versión del bot: calculadora de muestra pre-test y vista multi-test simultáneo.
+6. Cadencia semanal — Cómo funciona en la práctica
+W09 — Esta semana (3-7 mar 2026)
+Reglas de decisión post-Qlik
+KPIs del sistema (meta a 90 días)
+7. Próximos pasos inmediatos
+Esta semana (antes del viernes 6 mar)
+Daniel: Leer resultados Qlik T1+T2+T3 cuando Marta/Álvaro los envíen. Abrir bot → tomar decisión.
+Katy: Elegir 1-2 tests del backlog (sección 3). Rellenar template. Configurar CleverTap. Enviar W09.
+Katy: Corregir el split A/B en W09. Siempre 50/50 exacto.
+Katy: Confirmar que {{balance}} token funciona en CleverTap.
+Daniel + equipo: Reunión de 30min el viernes 6 mar para revisar resultados y decidir W10.
+Próximas 3 semanas (W09-W11)
+Prioridad 1: Validar el ganador T2B (temporal anchor) en un test separado y limpio.
+Prioridad 2: Re-test T1 con el mensaje correcto del brief (26 chars) vs el largo de Katy (130 chars).
+Prioridad 3: Primer test en segmento Churn+Balance (8,444 usuarios). Win-back de máximo impacto.
+Bot upgrade: Añadir calculadora de muestra pre-test + vista multi-test para ver W09 y W10 juntos.
+A 60-90 días
+10-20 tests/semana: Solo posible si Katy ejecuta autónomamente con el template. Objetivo: Daniel revisa 30min/semana.
+Multi-agente activo: Configurar Claude Cowork con los 4 agentes para generar hipótesis y copys automáticamente.
+Base de conocimiento: Cada test concluido entra en el backlog como 'aprendizaje'. En 3 meses: 50-100 aprendizajes documentados.
+Bit2me Growth — Brokerage Lifecycle — Febrero 2026

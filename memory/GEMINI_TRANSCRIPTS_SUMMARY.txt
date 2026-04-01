@@ -1,0 +1,448 @@
+================================================================================
+COMPREHENSIVE STRATEGIC EXTRACTION REPORT
+Bit2Me Growth Team - Meeting Transcripts & Analysis
+Date Range: February 5-24, 2026
+================================================================================
+
+OVERVIEW:
+This document contains complete extractions from 6 strategic meetings and
+transcript documents covering Growth Strategy, Product Business, Lifecycle
+Management, Referrals, Revenue Actions, and operational initiatives.
+
+FILES EXTRACTED:
+1. Growth Strategy Weekly - 2026_02_24 12_46 CET
+2. Product Business Sprint - Brokerage - 2026_02_24 11_39 CET
+3. Weekly LifeCycle - 2026_02_19 10_56 CET (PDF)
+4. Campaña Referidos - 2026_02_10 14_59 CET
+5. Growth AccionesTODO parte1 - 2026_02_09 11_00 CET
+6. Review Acciones Revenue Brokerage B2C - 2026_02_05 10_55 CET
+
+================================================================================
+SECTION 1: CRITICAL STRATEGIC INSIGHTS
+================================================================================
+
+LOAN PRODUCT PRIORITIZATION (Feb 24 - Growth Strategy Weekly)
+- Decision: Focus test on Loan product due to revenue generation potential
+- Approach: Test existing lifecycle users (never requested loan before)
+- Criteria: Users with crypto balance (BTC, ETH, SOL, XRP) above minimum threshold
+- Journey channels: Email + Push notifications + In-app messaging
+- Owner: Growth team (Daniel Ferraro + Patri Gargallo)
+- Timeline: Segments due Feb 24 5pm
+- Rationale: Loan generates more revenue than Card; current capacity allows focus
+
+LANDING PAGE INFRASTRUCTURE ISSUES
+- Current tool: Not optimizable, paid without consultation
+- Migration: Moving to block-based tool
+- Impact: Landing creation takes excessive time; limits test velocity
+- Owner: Patri Gargallo + Marketing team
+
+PRO PRODUCT TRACEABILITY GAP
+- Issue: Pro product lacks complete traceability definition
+- Impact: Growth cannot measure test effectiveness properly
+- Status: Dependency blocking Growth actions
+- Mentioned leverage point: Using traceability gap to motivate UX alignment
+
+================================================================================
+SECTION 2: DATA & ANALYTICS STRATEGY
+================================================================================
+
+WEEKLY DATA ANALYSIS FRAMEWORK (Feb 24 - Product Business Sprint)
+- Goal: Enable weekly data reviews to monitor progress
+- Current state: Data dispersed, no clear temporal dimension
+- New registrations (last week): 8,000 users
+- Portugal metrics: 160 registrations → 27 purchases (16.9%)
+- Action item: Juan Fornell to share analysis + proposals every Monday
+
+USER CLUSTERING & ML ALGORITHM
+- Classification: Weekly machine learning algorithm execution
+- Owner: Juan Fornell (Product) with Data team
+- Logic: Not simple rules; based on business variables provided
+- Temporal execution: Weekly clustering updates
+- Limitation: Users without certain actions not yet clustered
+
+POLY - INTERNAL AI AGENT TOOL (Under Development)
+- Builder: Pablo Paredes
+- Technology: Claude + Anthropic research + Replit
+- Purpose: Dynamic queries, table relationships, context management
+- Current stage: Schema designed, tables defined, data not yet filled
+- Blocker: Missing API connection
+- Features planned: 12 tools identified, dashboard integration, modify metrics dynamically
+- Architecture: Single specialized agent vs. team of agents (chosen for cost)
+- Comparison: Similar to Factorial's agent ("One")
+- Capability: Resolve questions without consulting multiple sources
+- Expected timeline: Ready when data connection complete
+
+METRICS & SEGMENTATION GAPS
+- Smart Holders potential revenue: €600,000
+- Advanced Brokerage potential: €41,000
+- Transacting Active Users (TAU): 1,028 in B2B (last 12m)
+- ARPU B2B Annual: €1,581.78
+- Data traceability: Brokerage 80%, Earn 50%, Loan 60%, Funding 40%
+- Flash Diario attribution (W8): Brokerage 80%, Earn 50%, Loan 0%, Fund 40%
+
+================================================================================
+SECTION 3: LIFECYCLE MANAGEMENT STRATEGY
+================================================================================
+
+LIFECYCLE FRAMEWORK DEFINITION (Feb 19 - Weekly LifeCycle)
+Owner: Daniel Ferraro
+Status: Framework being built with definitions and discussions
+
+LC PHASES STRUCTURE:
+1. Activation: Starts immediately after FM (First Monetizable event)
+   - Includes: Onboarding, product education, cross-sell, offers
+   - Duration: ~1 month (TBD)
+   - Owner: LC team (not Conversión/Pablo García)
+
+2. Retention: Iterative sub-phases
+   - Inactivity triggers
+   - Market triggers
+   - Duration: Using internal Bit2Me scatter plot data (not industry benchmarks)
+
+3. Reactivation: Strategic priority
+   - Target: 500K+ inactive registered users
+   - Approach: Personalized email + special offer (7% cashback + discount)
+   - CAC advantage: Reactivation CAC << acquisition CAC
+   - Owner: LC team
+
+BANNED USER ANALYSIS (from Salvia / S. Rut)
+- Characteristics: Generally <30 years old, many from Italy/Portugal
+- Behavioral flag: Quick referrer registration (same week account creation)
+- Operational volume (good users): Average €350 operated
+- Alert system: Identifying suspicious patterns for early intervention
+
+DCA BEHAVIOR INSIGHT
+- Observation: Users with DCA configured churn 60-70% less
+- Status: Needs internal validation + LC Activation strategy incorporation
+- Owner: David Sales for validation, LC for strategy
+
+BANNED USER DETECTION SIGNALS:
+- Age <30
+- Nationality: Italy, Portugal (overrepresented)
+- Referrer behavior: Register → invite in same week (quality indicator)
+- Operation volume much lower than legitimate users
+
+================================================================================
+SECTION 4: A/B TESTING & EXPERIMENTATION
+================================================================================
+
+TESTING FRAMEWORK (Feb 9 - Growth AccionesTODO)
+Lead: Daniel Ferraro (LC tests), Consuelo Morcillo (Acquisition), Juan Luis Pascual (B2B)
+Velocity target: 1 test this week → 2 next week → establish cadence
+
+TEST UNIVERSE & SEGMENTATION:
+T1 (L1 verified no FM): Push notification test - universe 5,298 → 1,030 in test
+T2 (L3 active with value): In-app test - launched Feb 20
+T3 (L4 inactive holders): Push notification - later
+C8 suppression: ALWAYS exclude whales from mass tests (JuanF exports → Katy uploads)
+
+VARIANT A RESULT (Portfolio Review):
+Winner: Portfolio review prompt in push content (Feb 20 launch)
+
+LEGAL GATE REQUIREMENT:
+ALL CRM messages (email, push, in-app) must pass Legal Brief before launch
+Owner: Diego Barreira (creates brief)
+Gate: Before deployment approval
+
+BALANCE PERSONALIZATION:
+- Attempted: totalBalanceConverted in CleverTap in-app (Feb 20)
+- Status: Buggy; deferred to next iteration
+- Owner: Katy Gildemeister (CRM execution)
+
+================================================================================
+SECTION 5: REFERRAL CAMPAIGN STRATEGY
+================================================================================
+
+REFERRAL CAMPAIGN PLANNING (Feb 10 - Campaña Referidos)
+Status: Campaigns launching tomorrow (Feb 11)
+Owner: Salvia (S. Rut) + Diego Barreira
+
+APPROACH:
+- Challenge: No time for base strategy; working backwards from channel campaigns
+- Diego's input: Cross-sector referral experience (crypto + other sectors)
+- Daniel's input: Crypto industry benchmarks (Binance example: up to €100/user)
+
+CURRENT CAMPAIGN STRUCTURE (launching Feb 11):
+- Email flows being prepared (limited copywriting time)
+- Future campaigns: Will have structured flujo (flow/sequence)
+- Potential improvements: Multi-layer approach, condition optimization
+
+COMPETITIVE BENCHMARKING:
+- Binance model: €100 reward per user acquired
+- Caveat: Complex conditions on redemption (hidden requirements)
+- Opportunity: Design better/clearer conditions than competitors
+
+COLLABORATION STRUCTURE:
+- Sales/Revenue team (David Dahan GTM): Strategy input
+- LC/Lifecycle team (Salvia): Execution coordination
+- Diego Barreira: Content/legal compliance
+- Growth/Daniel: Overall vision alignment
+
+================================================================================
+SECTION 6: REVENUE & PRODUCT SEGMENTATION
+================================================================================
+
+ADVANCED USER SEGMENTS (Feb 5 - Review Acciones Revenue)
+Owner: Juan Fornell (Product Business)
+
+SMART HOLDERS SEGMENT:
+- Definition: Operate relatively frequently, capture opportunities
+- Characteristics: Higher ticket average, more purchases than sales
+- Revenue potential: €600,000
+- Behavior: App-active but not high-volume trading
+- Engagement strategy: Targeted for product expansion
+
+ADVANCED BROKERAGE USERS:
+- Revenue potential: €41,000
+- Average revenue per user: €17
+- Non-operator subset: Highest conversion target
+- Action strategy: Recommend moving inactive balance to products
+
+DCA USERS SEGMENT:
+- Configured DCA users: 2,400
+- Actual DCA buyers: 800
+- Gap reason: Attributed to insufficient funds
+- Churn advantage: 60-70% less likely to churn vs non-DCA
+- Strategy: Highlight DCA benefits, reduce friction for setup
+
+SEGMENTATION CHALLENGES:
+- Manual data crossing (balance + brokerage metrics from dashboards)
+- Missing global segmentation combining Brokerage + Loan + other products
+- Action implementation difficulty: Some proposed actions too complex
+- Control group requirement: All actions must have control for incrementality
+
+================================================================================
+SECTION 7: OPERATIONAL CHANGES & DIRECTIVES
+================================================================================
+
+PABLO CAMPOS' KEY DIRECTIVES (Feb 24):
+1. Revenue/Monetization → ALL to Lifecycle
+   - ADQ/Conversión: NOT responsible for revenue metrics
+   
+2. Activation Phase: Within Lifecycle
+   - Duration: ~1 month (TBD based on internal data)
+   - Owner: LC team (Daniel), NOT Conversión (Pablo García)
+   
+3. FM as RATE not threshold:
+   - FM timing varies by market cycle
+   - Measure velocity (registration→FM speed), not fixed windows
+   
+4. Reactivation Priority:
+   - 500K+ inactive users to target
+   - Personalized email approach + offer
+   
+5. DCA Strategy:
+   - Users with DCA: 60-70% less churn
+   - Validate internally + incorporate into LC Activation
+   
+6. Growth Strategy Weekly: Postponed until LC + Paid running well
+
+7. Life Sync: CANCELLED (Feb 24) - Daily at 9:45am instead
+
+CORE PHILOSOPHY (Pablo):
+"El error en la empresa: creer que el dinero viene de adquisición. El dinero viene del Life Cycle."
+Translation: Company error is believing revenue comes from acquisition; revenue actually comes from Lifecycle.
+
+================================================================================
+SECTION 8: KEY PEOPLE & RESPONSIBILITIES
+================================================================================
+
+GROWTH TEAM STRUCTURE (Post-Feb 12 Restructure):
+1. Adquisición: Patri Gargallo (lead), Luis Ramirez, Consuelo Morcillo (Paid)
+2. Conversión: Pablo Garcia
+3. Ciclo de Vida: Daniel Ferraro (lead), Màxim Agusti, Salvia, Álvaro Muñoz
+
+NEW ASSIGNMENTS & UPDATES:
+- Joan Creixell Canals: Confirmed on ADQ (Feb 23), not LC support
+- Álvaro Muñoz De Dios De Paz: Introduced for LC area management
+- André Huidobro Chicoma: Out 15+ days (broken arm accident Feb 17)
+- Katy Gildemeister: CleverTap CRM campaigns executor
+- Diego Barreira: Legal brief gatekeeper for all CRM messages
+- Juan Fornell: Weekly Monday analysis + proposals (Brokerage/Product)
+- Pablo Paredes: Poly agent development + B2Moments (market events)
+- David Sales: Validates metrics (LTV, Churn, LT empresa)
+- Marta del Olmo: LC MVP owner, specific weekly analysis requests
+
+================================================================================
+SECTION 9: KEY METRICS SNAPSHOT (Feb 24, 2026)
+================================================================================
+
+USER BASE & FM:
+- Total España users: 435,598 (L0-L5 segmented)
+- FM Global: 184,672 usuarios
+- FM Rate España: 44.4%
+- New users last week: 8,000
+
+SEGMENT BREAKDOWN:
+- L0 (No KYC): 49.1%, 213,863 users
+- L1 (KYC'd, no FM): 29,010 users (primary T1 test target)
+- L2 (FM sin retención): 36,866 users, €26M+ potential
+- L3 (Activo con valor): 50,416 users (core revenue, T2 test target)
+- L4 (Dormido con saldo): 4,414 users, €3.1M+ potential
+- L5 (Churneado >180d, balance=0): 101,029 users
+
+REVENUE & METRICS:
+- Revenue España 2025: €11,795,882 (89.8% global)
+- LC share of revenue: ~96% of total
+- M1 Retention REAL: ~0.12% (Coinbase benchmark ~25%, gap 200x)
+- Exchange volume W18feb: -52% (market contraction)
+
+ACQUISITION:
+- Portugal W24feb: 160 registrations → 27 purchases (16.9%)
+- Funnel W8: Reg→Data 53.25% / Data→Verif 43.90% / Verif→Compra 50.00%
+- B2B TAU (12m): 1,028 usuarios
+- B2B ARPU Annual: €1,581.78
+
+TRACEABILITY STATUS:
+- Brokerage: 80%
+- ERN: 50%
+- Loan: 60% (Growth blocking until ≥80%)
+- Funding: 40%
+- Verification/Login/Churn: 0%
+
+MARKET CONDITIONS:
+- W07 B2C funnel (crisis week): Registros -18%, Verif -33%, FM -47%, Revenue -74%
+- W06 was anomalously high (market rally)
+- W05 = correct baseline
+- Fear & Greed Index: Standardized 1 slide max in Council
+
+================================================================================
+SECTION 10: CRITICAL ACTION ITEMS & DEADLINES
+================================================================================
+
+DUE IMMEDIATELY:
+- Feb 24 5pm: Loan test segments delivery (Daniel Ferraro)
+- Feb 24: Marta del Olmo weekly specific analysis requests
+- Feb 24: Growth Strategy Weekly completed
+
+THIS WEEK (Feb 24-28):
+- T1 + T2 A/B tests launched (Feb 20 - status ongoing)
+- T3 preparation (L4 inactive holders push test)
+- Juan Fornell: Monday analysis + proposals
+- Landing page migration to block-based tool continuation
+
+NEXT WEEKS:
+- LC Daily Syncs: Fix timing (Salvia can't do 8:30am, moved to 9:45am)
+- Loan Journey: 1-month implementation plan
+- Flash Diario Growth: 4-dashboard daily report setup
+- BigQuery Gold Layer: Target < March 2026
+- Proyecto Dora: DORA compliance, deadline late April/May 2026
+
+ONGOING COMMITMENTS:
+- Marta del Olmo: Directed by Daniel weekly analysis requests
+- Màxim Agusti: Daily 8:30/8:45 operational LC/CleverTap work
+- Katy Gildemeister: Daily 12:30 CRM campaigns coordination
+- Salvia: Co-owner LC Daily, manages churned users backlog BBDD
+- Pablo Paredes: Poly agent development updates
+- Juan Fornell: Weekly Monday Brokerage analysis
+
+================================================================================
+SECTION 11: PRODUCT & TOOL DEVELOPMENT
+================================================================================
+
+POLY AI AGENT (Pablo Paredes - In Development)
+- Technology Stack: Claude, Anthropic research, Replit
+- Current Schema: 5,000 lines of code, table relationships defined
+- Tools Identified: 12 specific tools for business queries
+- Status: Awaiting API connection for data integration
+- Features: Dynamic dashboard modification, relationship traversal
+- Vision: Resolve questions without consulting multiple sources
+- Comparison Benchmark: Factorial's "One" agent
+- Priority Research: Anthropic orchestration patterns for cost optimization
+
+SPACE CENTER (Referral/Rewards Platform)
+- Status: Replacing legacy system (mentioned multiple times)
+- Owner: Not explicitly detailed in transcripts
+- Priority: Medium (supporting referral campaigns)
+
+N8N AUTOMATION (Roadmap)
+- Purpose: Reports automation with BigQuery
+- Status: Planned, space exists, on Pablo's roadmap
+- Target: End-goal for operational efficiency
+
+QLIK DASHBOARDS (Current)
+- Council Dashboard: c338af75-3b20-4c2e-81b5-0681d06bd740
+- LC Dashboard: fe70dd0c-9a75-45bb-8f65-450927bb55e0
+- Brokerage activity: 2ccb8cdb-99fe-4d0c-ba03-2c14617a0b87
+- Balance: f1834ad1-c032-4ecc-8b73-f5350c9a3c8c
+- Builder: Pablo Talamantes + Iris Perez Villar
+- LC section: Still pending Feb 24
+
+================================================================================
+SECTION 12: STRATEGIC PRIORITIES & THEMES
+================================================================================
+
+THEME 1: DATA AS FOUNDATION
+- Problem: "Datos dispersos" (dispersed data)
+- Solution: Weekly analysis reviews, clear temporal dimensions
+- Tool: Poly agent for dynamic querying
+- Owner: Juan Fornell (weekly), Pablo Paredes (Poly)
+- Timeline: Urgent; blocking multiple strategic initiatives
+
+THEME 2: LIFECYCLE → REVENUE
+- Shift: From acquisition focus to lifetime value focus
+- Implication: All revenue responsibility to LC team
+- Reframe: ADQ focuses on speed + quality; Conversión on binary conversion
+- Owner: Daniel Ferraro (strategy), Pablo Campos (directive)
+
+THEME 3: EXPERIMENTATION VELOCITY
+- Goal: Multiple A/B tests per week
+- Target: 1 test this week, 2 next, establish cadence
+- Owners: Daniel (LC), Consuelo (ADQ), Juan Luis (B2B)
+- Dependencies: Data clarity, segments, legal approval (Diego)
+
+THEME 4: PRODUCT TRACEABILITY
+- Blocker: Pro product (Brokerage) lacks definition for metrics
+- Impact: Prevents effective test measurement
+- Leverage: Using as motivation for UX team alignment
+- Timeline: Urgent (blocking Growth actions)
+
+THEME 5: REACTIVATION AS REVENUE ENGINE
+- Opportunity: 500K+ inactive users
+- Approach: Personalized + offers
+- Economics: Reactivation CAC << acquisition CAC
+- Owner: LC team (Daniel)
+- Status: Strategic priority approved by Pablo Campos
+
+THEME 6: LOAN PRODUCT MONETIZATION
+- Priority: High (after LC framework)
+- Approach: Target existing users with crypto collateral
+- Channels: Email + Push + In-app
+- Segments: Users with BTC, ETH, SOL, XRP above minimum
+- Owner: Growth (Patri + Daniel)
+- Timeline: Test segments Feb 24
+
+================================================================================
+SECTION 13: COMPETITIVE & MARKET CONTEXT
+================================================================================
+
+REFERRAL BENCHMARK (Binance):
+- Reward structure: Up to €100 per referred user
+- Complexity: Hidden conditions on redemption (fiat requirements, etc.)
+- Gap: Bit2Me opportunity to offer clearer, simpler conditions
+
+DCA (DOLLAR COST AVERAGING) INSIGHT:
+- User behavior: DCA configured users churn 60-70% LESS
+- Strategic value: High-priority retention feature
+- Validation: Internal data required, not industry benchmarks
+- Implementation: LC Activation strategy
+
+MARKET CYCLE CORRELATION:
+- FM timing: Varies with market cycles (NOT fixed windows)
+- Measurement: Velocity (speed to FM) vs. fixed threshold
+- Context: Fear & Greed index correlation tracked
+- W07 crisis: Revenue -74% (Registros -18%, Verif -33%, FM -47%)
+
+PRODUCT SURVEY:
+- User willingness to use Stocks: 51.6%
+- Blockage: CNMV regulation (Bit2Me Stocks / Inversiones)
+- Timeline: Blocked indefinitely pending regulatory approval
+
+================================================================================
+END OF COMPREHENSIVE STRATEGIC EXTRACTION
+================================================================================
+Generated: February 24, 2026
+Content Length: 241,188 characters from 6 source files
+All strategic insights, decisions, action items, metrics, and key content extracted.
+
+================================================================================
