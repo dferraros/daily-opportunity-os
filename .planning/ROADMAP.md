@@ -23,7 +23,7 @@ Milestone 2 (Launch) operationalizes the system: real signals, real reports, aut
 - [x] **Phase 01: Bootstrap** -- deps installed, dirs created, sample data verified (3 opps loading)
 - [x] **Phase 02: First Real Scout** -- 13 signals, 12 scored, 1 killed, 3 reports generated (2026-04-01)
 - [ ] **Phase 03: Automation** -- daily scheduled task running at 09:00
-- [ ] **Phase 04: First Validation** -- top 2-3 opportunities through Stage 2 validation-runner skill
+- [x] **Phase 04: First Validation** -- all 3 top VE opportunities through Stage 2 validation-runner (2026-04-01)
 
 ## Phase Details: Milestone 2
 
@@ -72,8 +72,8 @@ Plans:
   3. At least 1 opportunity with validation_status=passed or failed
 
 Plans:
-- [ ] 04-01: Run /validation-runner on top 2 opportunities from first real scout
-- [ ] 04-02: Document first conviction area in STATE.md
+- [x] 04-01: Ran validation-runner on top 3 VE opportunities -- all PROCEED verdicts
+- [x] 04-02: First conviction area: Venezuelan USDT commerce infrastructure (see STATE.md)
 
 ## Progress
 
@@ -82,5 +82,5 @@ Plans:
 | Build | 1-6 (all) | Complete |
 | Launch | 01 Bootstrap | Complete |
 | Launch | 02 First Real Scout | Complete |
-| Launch | 03 Automation | Pending |
-| Launch | 04 First Validation | Pending |
+| Launch | 03 Automation | Complete (Task Scheduler setup) |
+| Launch | 04 First Validation | Complete |
