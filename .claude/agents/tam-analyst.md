@@ -69,3 +69,8 @@ Before running any TAM analysis, invoke these skills via the Skill tool:
 5. **`startup-financial-modeling`** — when estimating SOM and path to first $1M ARR. Show the math explicitly.
 
 **VE/LATAM rule:** never apply US revenue multiples to VE TAM. Use VE pricing ceiling ($3-15/mo SaaS) and WTP (0.25x US).
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`tam-estimator`** — PRIMARY skill. Run this first. Applies all 4 TAM methods and picks the most conservative. Enforces VE/LATAM pricing rules.
+- **`benchmark-mapper`** — after TAM. Cross-checks market size using competitor revenue estimates. Assigns business archetype.
+- **`opportunity-scorer`** — after TAM and benchmark. Applies 18-criteria weighted scoring model to produce final_score.

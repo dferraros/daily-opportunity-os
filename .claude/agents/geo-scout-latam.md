@@ -65,3 +65,11 @@ Before any research in this agent, invoke these skills via the Skill tool:
 
 **Channel mapping:** invoke `revops` skill when mapping distribution channels per country.
 **After scouting:** invoke `latam-venezuela-lens` skill to apply regional adjustments.
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`signal-harvester`** — FIRST skill every session. Harvests raw signals from web sources.
+- **`latam-venezuela-lens`** — AFTER initial scoring. Re-scores through LATAM market reality (WTP 0.40x, payment rails by country).
+- **`tam-estimator`** — before scoring. Runs TAM with country-specific pricing and WTP multipliers.
+- **`benchmark-mapper`** — maps each opportunity to one of 8 archetypes (local_clone, regional_wedge, workflow_unbundling, etc.).
+- **`pain-library-mapper`** — maps discovered pain to existing clusters or creates new ones.
+- **`customer-language-miner`** — extracts exact complaint phrases in Spanish before writing problem statements.

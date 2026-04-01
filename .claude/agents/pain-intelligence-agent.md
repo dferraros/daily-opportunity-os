@@ -155,3 +155,8 @@ Before mining pain signals, invoke these skills via the Skill tool:
 
 **Quality gate:** only assign pain_validation_score >= 7 if you found 2+ independent sources with similar Spanish-language complaint phrases.
 **Output:** write enriched fields back to opportunities.jsonl and update pain_library.jsonl.
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`customer-pain-miner`** — PRIMARY skill. Runs the full pain mining workflow (7 steps). Use this for systematic pain research.
+- **`customer-language-miner`** — extracts exact Spanish-language complaint phrases. Run after pain-miner to get copy-ready output.
+- **`pain-library-mapper`** — maps confirmed pain clusters to data/pain_library.jsonl. Always run after pain research to persist findings.

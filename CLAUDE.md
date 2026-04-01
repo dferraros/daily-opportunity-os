@@ -191,6 +191,43 @@ An opportunity is only strong if it has:
 | KPI dashboard design | `kpi-dashboard-design` |
 | Internal comms / Slack memo | `internal-comms` |
 
+### Full Skill Execution Chain
+This is the exact order skills fire in the daily pipeline:
+
+```
+SESSION START
+  └─ signal-harvester          ← harvest raw signals (30-50/week target)
+
+RESEARCH PHASE (per opportunity)
+  ├─ deep-research              ← global: multi-source research with citations
+  ├─ market-sizing-analysis     ← global: TAM/SAM/SOM bottom-up
+  ├─ customer-research          ← global: JTBD, buyer characterization
+  ├─ competitive-landscape      ← global: Porter's Five Forces, positioning map
+  └─ fact-checker               ← global: verify claims before writing
+
+ENRICHMENT PHASE
+  ├─ tam-estimator              ← project: 4 TAM methods, VE/LATAM pricing
+  ├─ benchmark-mapper           ← project: archetype + competitor whitespace
+  ├─ latam-venezuela-lens       ← project: regional pricing/distribution adjustments
+  ├─ customer-pain-miner        ← project: pain OS (top 5 opps, daily)
+  ├─ customer-language-miner    ← project: exact Spanish complaint phrases
+  └─ pain-library-mapper        ← project: persist pain clusters
+
+SCORING PHASE
+  └─ opportunity-scorer         ← project: 18-criteria weighted scoring → ranked list
+
+PROMOTION PHASE (shortlisted only)
+  ├─ deep-dive-builder          ← project: full thesis for now/soon opportunities
+  ├─ decision-memo-builder      ← project: 1-page memo
+  ├─ validation-runner          ← project: Stage 2 validation workflow
+  └─ strategy-advisor           ← global: final options + recommendation
+
+WEEKLY RITUAL (every Friday)
+  ├─ weekly-review              ← project: 4 mandatory outputs
+  ├─ data-storytelling          ← global: conviction memo narrative
+  └─ notion-packager            ← project: export to Notion
+```
+
 ## Working Style
 - Use web research aggressively via native Claude Code web search
 - Use subagents for scoped research (geo, TAM, competitive)

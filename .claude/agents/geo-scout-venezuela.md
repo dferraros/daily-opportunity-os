@@ -82,3 +82,10 @@ Before any research in this agent, invoke these skills via the Skill tool:
 
 **Signal harvesting:** invoke `signal-harvester` skill first on every new session.
 **After scouting:** invoke `latam-venezuela-lens` skill to apply VE pricing and distribution adjustments.
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`signal-harvester`** — FIRST skill every session. Harvests raw signals from web sources before any analysis.
+- **`latam-venezuela-lens`** — AFTER initial scoring. Re-scores through VE market reality (WTP 0.25x, WhatsApp-first, USDT rails).
+- **`tam-estimator`** — before scoring any opportunity. Generates TAM/SAM/SOM with VE pricing ceiling.
+- **`pain-library-mapper`** — after finding pain signals. Maps to existing clusters in data/pain_library.jsonl.
+- **`customer-language-miner`** — before writing any opportunity copy. Extracts exact Spanish-language complaint phrases.
