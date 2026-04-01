@@ -222,6 +222,58 @@ class PortfolioLaneAssigner:
         opp.portfolio_lane = "soon"
         return "soon"
 
+    def assign_from_dict(self, opp_dict: dict) -> str:
+        """
+        Compute and return the portfolio lane for a raw dict (not an Opportunity object).
+
+        Mirrors the same priority rules as assign() but operates on plain dicts,
+        as used by the daily_run pipeline where opportunities flow as dicts after
+        scoring and geo adjustment.
+
+        Rules (same priority order as assign):
+        1. "no"         — kill_decision is True
+        2. "now"        — bucket is fast_cash AND path_to_first_revenue is non-empty
+                          AND time_to_mvp is non-empty
+        3. "strategic"  — bucket is venture_scale AND tam >= STRATEGIC_TAM_THRESHOLD
+        4. "soon"       — all surviving opportunities not matched above
+
+        Args:
+            opp_dict: Plain dict representation of an opportunity.
+
+        Returns:
+            One of: "no", "now", "soon", "strategic"
+        """
+        # Rule 1 — Killed
+        if opp_dict.get("kill_decision"):
+            return "no"
+
+        bucket = opp_dict.get("bucket", "")
+        path_to_rev = opp_dict.get("path_to_first_revenue")
+        time_to_mvp = opp_dict.get("time_to_mvp")
+
+        # Rule 2 — Now (fast cash with clear execution path)
+        if (
+            bucket == "fast_cash"
+            and path_to_rev is not None
+            and str(path_to_rev).strip()
+            and str(path_to_rev).strip().upper() != "TBD"
+            and time_to_mvp is not None
+            and str(time_to_mvp).strip()
+        ):
+            return "now"
+
+        # Rule 3 — Strategic (venture scale with large market)
+        tam = opp_dict.get("tam") or opp_dict.get("tam_usd_estimate")
+        if bucket == "venture_scale" and tam is not None:
+            try:
+                if float(tam) >= self.STRATEGIC_TAM_THRESHOLD:
+                    return "strategic"
+            except (TypeError, ValueError):
+                pass
+
+        # Rule 4 — Soon (default for anything that survives)
+        return "soon"
+
 
 # ─── Pipeline Orchestrator ────────────────────────────────────────────────────
 
