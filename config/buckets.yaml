@@ -1,0 +1,24 @@
+buckets:
+  fast_cash:
+    description: "Low capital, service or software-enabled, first revenue < 90 days"
+    criteria:
+      capital_intensity_max: 3
+      time_to_mvp_max: "6 weeks"
+      path_to_first_revenue_max: "90 days"
+    examples: ["productized service", "done_for_you", "concierge_first", "AI wrapper with clear niche"]
+
+  venture_scale:
+    description: "Large upside, slower validation, TAM > $100M, potentially fundable"
+    criteria:
+      tam_min: 100000000
+      defensibility_min: 7
+      probability_10M_ARR_min: 6
+    examples: ["marketplace", "vertical SaaS", "infrastructure", "data platform"]
+
+  latam_asymmetry:
+    description: "Market friction creates edge others ignore — especially Venezuela and LATAM"
+    criteria:
+      geography: ["venezuela", "latam"]
+      regional_fit_min: 8
+      distribution_advantage_potential_min: 7
+    examples: ["trust layer", "payment rail", "diaspora bridge", "SMB OS for informal operators"]

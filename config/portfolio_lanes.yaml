@@ -1,0 +1,30 @@
+lanes:
+  now:
+    description: "Test in 14-30 days — fast cash, service or software-enabled"
+    time_horizon: "14-30 days"
+    action: "Start validation immediately"
+    weekly_minimum: 1
+
+  soon:
+    description: "Attractive but needs more proof — 60-90 day horizon"
+    time_horizon: "60-90 days"
+    action: "Define next proof point, set 4-week checkpoint"
+    weekly_minimum: 2
+
+  strategic:
+    description: "Big play, slower, high upside — 6-18 month horizon"
+    time_horizon: "6-18 months"
+    action: "Track signal changes, revisit monthly"
+    weekly_minimum: 1
+
+  no:
+    description: "Rejected — reason logged, never just dropped"
+    time_horizon: "N/A"
+    action: "Log kill reason explicitly, archive"
+    weekly_minimum: 3  # force rejection of weak ideas
+
+weekly_quota_per_lane:
+  now: 1
+  soon: 2
+  strategic: 1
+  no: 3  # if you're not killing 3/week, the bar is too low
