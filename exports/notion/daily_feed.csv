@@ -1,0 +1,14 @@
+id,name,geography,vertical,bucket,portfolio_lane,final_score,attractiveness_score,tam_usd_estimate,kill_decision,stage,first_seen,last_updated
+opp_20260401_ven_c8b00def,USDT Accounting Tool for Venezuelan Informal SMBs,venezuela,fintech,latam_asymmetry,soon,78%,78%,Unknown,False,validation,2026-04-01 22:14:34.400141,2026-04-01T22:37:07.463604
+opp_20260401_ven_4854f1ee,Venezuelan P2P Rate Optimization Tool for Merchants,venezuela,fintech,latam_asymmetry,soon,78%,74%,Unknown,False,validation,2026-04-01 22:14:34.400196,2026-04-01T22:37:07.463631
+opp_20260401_ven_7596d353,WhatsApp-Native Order Management for Venezuelan Retail SMBs,venezuela,smb_software,latam_asymmetry,soon,78%,70%,Unknown,False,validation,2026-04-01 22:14:34.400170,2026-04-01T22:37:07.463628
+opp_20260401_lat_7ba08e2e,Vertical SaaS OS for Informal LATAM Retail SMBs,latam,smb_software,latam_asymmetry,soon,73%,75%,Unknown,False,scout,2026-04-01 22:14:34.400057,2026-04-01T22:14:34.576704
+opp_20260401_lat_beb91823,LATAM B2B Stablecoin Settlement with Accounting Integration,latam,fintech,latam_asymmetry,soon,71%,76%,Unknown,False,scout,2026-04-01 22:14:34.400111,2026-04-01T22:14:34.669254
+opp_20260401_lat_b674b824,Spanish-Language Creator Monetization Stack,latam,creator_economy,latam_asymmetry,soon,71%,74%,Unknown,False,scout,2026-04-01 22:14:34.400084,2026-04-01T22:14:34.634410
+opp_20260401_lat_c56a832f,Embedded Credit for Informal LATAM SMBs via SaaS,latam,fintech,latam_asymmetry,soon,71%,83%,Unknown,False,scout,2026-04-01 22:14:34.400026,2026-04-01T22:14:34.544877
+opp_20260401_glo_080bfaa4,ESG Compliance SaaS for Mid-Market,global,b2b_saas,venture_scale,strategic,69%,80%,Unknown,False,scout,2026-04-01 22:14:34.399919,2026-04-01T22:14:34.464985
+opp_20260401_glo_f1cebc01,B2B Payment Reconciliation SaaS,global,fintech,venture_scale,strategic,67%,79%,Unknown,False,scout,2026-04-01 22:14:34.399635,2026-04-01T22:14:34.405175
+opp_20260401_ven_5efbbb72,Venezuelan Diaspora Remittance-to-Investment Platform,venezuela,fintech,latam_asymmetry,soon,65%,68%,Unknown,False,scout,2026-04-01 22:14:34.400222,2026-04-01T22:14:34.770654
+opp_20260401_glo_8a530cee,Skilled Trades Vertical Recruiting Platform,global,b2b_saas,venture_scale,strategic,64%,68%,Unknown,False,scout,2026-04-01 22:14:34.399960,2026-04-01T22:14:34.489138
+opp_20260401_glo_db37150c,SMB Last-Mile Logistics Integration Layer,global,logistics,venture_scale,strategic,64%,70%,Unknown,False,scout,2026-04-01 22:14:34.399857,2026-04-01T22:14:34.434726
+opp_20260401_glo_cc5115d3,AI Relationship Manager for Community Banks,global,fintech,venture_scale,no,,,Unknown,True,killed,2026-04-01 22:14:34.399995,2026-04-01T22:14:34.517005
