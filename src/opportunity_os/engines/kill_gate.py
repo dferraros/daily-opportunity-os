@@ -198,5 +198,4 @@ def format_kill_report(result: KillGateResult) -> str:
                 lines.append(f"  {cid} | {c['question']}")
                 lines.append(f"       | Rationale: {c['rationale']}")
 
-    return "
-".join(lines)
+    return "\n".join(lines)
