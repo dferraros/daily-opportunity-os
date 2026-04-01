@@ -1,0 +1,46 @@
+# Daily Opportunity Report — {{ date }}
+
+> {{ run_stats.total_scored | default(0) }} scored · {{ run_stats.total_killed | default(0) }} killed · {{ run_stats.total_today | default(0) }} total today
+
+---
+
+## Top Opportunities
+
+{% for opp in opportunities[:top_n] %}
+### {{ loop.index }}. {{ opp.name }} · {{ opp.geography | upper }} · {{ opp.final_score | default(0) | round(1) }}/10
+
+**Bucket:** `{{ opp.bucket | default('unclassified') }}` | **Lane:** `{{ opp.portfolio_lane | default('unassigned') }}` | **Archetype:** {{ opp.benchmark_archetype | default('unknown') }}
+
+{{ opp.problem_statement | default('No problem statement.') }}
+
+| TAM | First Revenue | Speed to MVP | Wedge Score |
+|-----|--------------|--------------|-------------|
+| {{ opp.tam_usd_estimate if opp.tam_usd_estimate else 'Unknown' }} | {{ opp.path_to_first_revenue_description | default('TBD') }} | {{ opp.speed_to_mvp | default('?') }}/10 | {{ opp.daniels_wedge_score | default(0) }}/6 |
+
+{% if opp.first_revenue_path %}
+**First €1,000 path:** {{ opp.first_revenue_path.first_offer | default('') }} → {{ opp.first_revenue_path.first_sales_channel | default('') }} @ {{ opp.first_revenue_path.first_price_point | default('') }}
+{% endif %}
+
+{% if opp.venezuela_wedge_category %}
+🇻🇪 Venezuela wedge: `{{ opp.venezuela_wedge_category }}`
+{% endif %}
+
+---
+{% endfor %}
+
+## Rising Signals
+{% if rising %}
+{% for r in rising %}
+- **{{ r.name }}** ({{ r.geography }}) — score {{ r.prev_score | round(1) }} → {{ r.final_score | round(1) }} (+{{ (r.final_score - r.prev_score) | round(1) }})
+{% endfor %}
+{% else %}
+No score changes today.
+{% endif %}
+
+## Kill List — {{ kills | length }} Rejected Today
+{% for k in kills %}
+- ~~{{ k.name }}~~ ({{ k.geography }}) — {{ k.kill_reason | default('Failed kill gate') }}
+{% endfor %}
+
+---
+*Generated {{ date }} by opportunity-os*
