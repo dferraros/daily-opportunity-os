@@ -8,4 +8,4 @@ cd "$PROJECT_ROOT"
 source .venv/bin/activate 2>/dev/null || true
 export PYTHONPATH="$PROJECT_ROOT/src"
 echo "Running daily opportunity scout -- $(date '+%Y-%m-%d %H:%M')"
-python3 -m opportunity_os.main daily "$@"
+uv run python -m opportunity_os.main daily "$@"

@@ -21,7 +21,7 @@ Milestone 2 (Launch) operationalizes the system: real signals, real reports, aut
 **Status:** In progress | Started 2026-04-01
 
 - [x] **Phase 01: Bootstrap** -- deps installed, dirs created, sample data verified (3 opps loading)
-- [ ] **Phase 02: First Real Scout** -- feed real signals, run first daily pipeline, verify 3 reports generated
+- [x] **Phase 02: First Real Scout** -- 13 signals, 12 scored, 1 killed, 3 reports generated (2026-04-01)
 - [ ] **Phase 03: Automation** -- daily scheduled task running at 09:00
 - [ ] **Phase 04: First Validation** -- top 2-3 opportunities through Stage 2 validation-runner skill
 
@@ -47,9 +47,9 @@ Plans:
   5. exports/notion/daily_feed.csv updated
 
 Plans:
-- [ ] 02-01: Run signal-harvester skill to gather 5-10 real signals
-- [ ] 02-02: Run `opp-os daily` and verify all 3 reports generated
-- [ ] 02-03: Check Notion CSV export quality
+- [x] 02-01: Run signal-harvester skill -- 13 real signals (5 global, 4 LATAM, 4 VE)
+- [x] 02-02: Run `opp-os daily` -- 12 scored, 1 killed, 3 reports generated
+- [x] 02-03: Check Notion CSV -- daily_feed.csv + opportunity_database.csv generated
 
 ### Phase 03: Automation
 **Goal:** Daily 09:00 run without manual intervention
@@ -81,6 +81,6 @@ Plans:
 |-----------|-------|--------|
 | Build | 1-6 (all) | Complete |
 | Launch | 01 Bootstrap | Complete |
-| Launch | 02 First Real Scout | Pending |
+| Launch | 02 First Real Scout | Complete |
 | Launch | 03 Automation | Pending |
 | Launch | 04 First Validation | Pending |
