@@ -75,3 +75,8 @@ Before competitive research, invoke these skills via the Skill tool:
 5. **`fact-checker`** — verify competitor revenue/size claims. Job posts are the most reliable signal of growth stage.
 
 **VE/LATAM lens:** for every global competitor, explicitly answer: "Are they serving Venezuela? If not, why not?" The answer is often the opportunity.
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`benchmark-mapper`** — PRIMARY skill. Maps every competitor to an archetype. Identifies which archetypes are crowded vs. underserved.
+- **`customer-language-miner`** — extracts exact complaint phrases from competitor reviews (1-star G2, Trustpilot). This is the clearest signal of competitor weakness.
+- **`opportunity-scorer`** — after competitive analysis, re-run scoring with updated competition_intensity field (lower competition = higher score).

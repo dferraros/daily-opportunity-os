@@ -63,3 +63,11 @@ Before synthesizing, invoke these skills via the Skill tool:
 
 **Output:** produce the 4 mandatory weekly outputs (top 3 validate, top 3 kill, top 3 rising, 1 conviction area). Never skip any of the 4.
 **After synthesis:** invoke `notion-packager` skill to push to Notion.
+
+### Project Skills (this repo — invoke with Skill tool)
+- **`opportunity-scorer`** — FIRST. Produces final ranked list with all scoring dimensions before synthesis begins.
+- **`deep-dive-builder`** — for each opportunity in portfolio_lane="now". Generates comprehensive thesis before weekly report.
+- **`decision-memo-builder`** — for each opportunity promoted to validation stage. Generates 1-page memo.
+- **`validation-runner`** — runs Stage 2 validation (customer pain check, landing page test hypothesis, pricing test, demand interview script, competitor weakness analysis, distribution hypothesis).
+- **`weekly-review`** — MANDATORY skill every Friday. Produces exactly 4 outputs: top 3 validate, top 3 kill, top 3 rising, 1 conviction area.
+- **`notion-packager`** — FINAL step. Exports ranked list + deep dives to Notion. Always run after weekly-review.
