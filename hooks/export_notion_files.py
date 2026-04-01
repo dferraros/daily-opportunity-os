@@ -1,3 +1,9 @@
+# SYNC STRATEGY:
+# - In-session (Claude Code active): notion_sync.py uses MCP tools directly
+# - Out-of-session (scheduled cron): this hook writes CSVs for manual Notion import
+# - Future: implement Notion API direct calls for fully automated sync
+# Both approaches are valid — CSVs are the reliable fallback.
+
 """
 export_notion_files.py — SubagentStop hook
 Rebuilds Notion-ready CSV exports after each subagent completes.

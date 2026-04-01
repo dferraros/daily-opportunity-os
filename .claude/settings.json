@@ -30,7 +30,8 @@
     "Stop": [
       {"matcher": "", "hooks": [
         {"type": "command", "command": "python hooks/ensure_venezuela_section.py"},
-        {"type": "command", "command": "python hooks/track_machine_metrics.py"}
+        {"type": "command", "command": "python hooks/track_machine_metrics.py"},
+        {"type": "command", "command": "python hooks/check_interview_quota.py"}
       ]}
     ],
     "SessionEnd": [
