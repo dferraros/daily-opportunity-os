@@ -141,3 +141,17 @@ These flags raise the effective urgency of the pain even if raw complaint volume
 - Do not translate exact customer phrases — preserve original Spanish
 - Do not count the same source twice toward the quality gate
 - Do not skip Step 6 and Step 7 — the pipeline depends on the updated records
+
+## Skills to Invoke
+
+Before mining pain signals, invoke these skills via the Skill tool:
+
+1. **`customer-research`** — JTBD framework for characterizing the pain. "What job are they hiring [workaround] to do?" Find the functional, emotional, and social dimensions of the pain.
+2. **`deep-research`** — multi-source pain research with citations. Always search in Spanish first for LATAM/VE. Sources: Reddit (r/vzla, r/colombia, r/mexico), YouTube comments, X/Twitter.
+3. **`scrapingbee-automation`** (Awesome Skills) — scrape app reviews on Trustpilot, G2, Capterra, Google Play LATAM. Look for 1-star and 2-star reviews of competitor products — these are the clearest pain signals.
+4. **`firecrawl-automation`** (Awesome Skills) — crawl Reddit threads and YouTube comment sections. Search for complaint patterns, not just the top results.
+5. **`serpapi-automation`** (Awesome Skills) — Google search intent in Spanish. Queries: "cómo [solve pain] Venezuela", "alternativa a [competitor] Colombia", "problema con [existing solution] Mexico".
+6. **`marketing-psychology`** — after finding pain signals, classify using Jobs-to-be-Done + Pain Trigger framework. Distinguish: "hair-on-fire" pain (buy today) vs "vitamin" pain (nice to have, buy someday).
+
+**Quality gate:** only assign pain_validation_score >= 7 if you found 2+ independent sources with similar Spanish-language complaint phrases.
+**Output:** write enriched fields back to opportunities.jsonl and update pain_library.jsonl.
