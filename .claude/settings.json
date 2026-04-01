@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/skill_router.py"}]}
+    ],
+    "InstructionsLoaded": [
+      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/inject_market_context.py"}]}
+    ],
+    "PreToolUse": [
+      {"matcher": "Write|Edit", "hooks": [{"type": "command", "command": "python hooks/validate_required_fields.py"}]}
+    ],
+    "PostToolUse": [
+      {"matcher": "Write|Edit", "hooks": [
+        {"type": "command", "command": "python hooks/dedupe_opportunities.py"},
+        {"type": "command", "command": "python hooks/append_score_history.py"}
+      ]}
+    ],
+    "SubagentStart": [
+      {"matcher": "geo-scout-.*", "hooks": [{"type": "command", "command": "python hooks/preload_geo_context.py"}]}
+    ],
+    "SubagentStop": [
+      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/export_notion_files.py"}]}
+    ],
+    "PreCompact": [
+      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/save_session_state.py"}]}
+    ],
+    "FileChanged": [
+      {"matcher": "data/opportunities/opportunities.jsonl", "hooks": [{"type": "command", "command": "python hooks/auto_rescore.py"}]}
+    ],
+    "Stop": [
+      {"matcher": "", "hooks": [
+        {"type": "command", "command": "python hooks/ensure_venezuela_section.py"},
+        {"type": "command", "command": "python hooks/track_machine_metrics.py"}
+      ]}
+    ],
+    "SessionEnd": [
+      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/auto_save_session.py"}]}
+    ]
+  }
+}
