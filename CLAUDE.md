@@ -134,10 +134,67 @@ An opportunity is only strong if it has:
 - A feasible MVP path
 - Distribution clarity
 
+## Skills Invocation Guide
+**Rule: invoke the matching skill BEFORE doing any research, analysis, or specialized task. Always use the Skill tool.**
+
+### Daily Pipeline — exact skill per step
+| Pipeline step | Invoke this skill |
+|--------------|------------------|
+| Harvest raw signals (30-50/week) | `signal-harvester` |
+| Research Venezuela opportunities | `latam-venezuela-lens` |
+| Research LATAM opportunities | `latam-venezuela-lens` |
+| Estimate TAM/SAM/SOM | `tam-estimator` |
+| Deep market research with citations | `deep-research` ← global skill |
+| Competitor mapping + pricing | `benchmark-mapper` |
+| Score and rank opportunities | `opportunity-scorer` |
+| Mine customer pain signals | `customer-pain-miner` |
+| Map distribution channels + CAC | (distribution-mapper — Phase 7B) |
+| Deep dive on shortlisted opp | `deep-dive-builder` |
+| Weekly ritual (4 mandatory outputs) | `weekly-review` |
+| Export to Notion | `notion-packager` |
+| Run validation on top opp | `validation-runner` |
+| Map pain to pain library | `pain-library-mapper` |
+| Write decision memo (1-pager) | `decision-memo-builder` |
+| Extract exact customer language | `customer-language-miner` |
+
+### Research — exact global skill per task
+| Research task | Invoke this skill |
+|--------------|------------------|
+| Multi-source research with citations | `deep-research` |
+| Perplexity / academic lookup | `research-lookup` |
+| Market sizing (TAM/SAM/SOM) | `market-sizing-analysis` |
+| Competitive analysis (Porter's, positioning maps) | `competitive-landscape` |
+| Strategy options + recommendation | `strategy-advisor` |
+| Customer interviews + JTBD | `customer-research` |
+| Unit economics (CAC/LTV/burn) | `startup-metrics-framework` |
+| Financial modeling + projections | `startup-financial-modeling` |
+| Fact-checking claims | `fact-checker` |
+| Growth loops analysis | `growth-loops` |
+| North star metric identification | `north-star-framework` |
+
+### Scraping + Signals (Awesome Skills — require API keys in .env)
+| Task | Invoke this skill |
+|------|------------------|
+| Scrape app reviews, Trustpilot, G2 | `scrapingbee-automation` |
+| Crawl Reddit, YouTube comments | `firecrawl-automation` |
+| Google search intent signals | `serpapi-automation` |
+| Competitor ad library extraction | `competitive-ads-extractor` |
+| First 10 customer identification | `lead-research-assistant` |
+| Research with citations | `content-research-writer` |
+| Google Ads CAC benchmarks | `googleads-automation` |
+| X/Twitter content optimization | `twitter-algorithm-optimizer` |
+
+### Reporting + Output
+| Output type | Invoke this skill |
+|------------|------------------|
+| Data narrative for weekly memo | `data-storytelling` |
+| KPI dashboard design | `kpi-dashboard-design` |
+| Internal comms / Slack memo | `internal-comms` |
+
 ## Working Style
 - Use web research aggressively via native Claude Code web search
 - Use subagents for scoped research (geo, TAM, competitive)
-- Use skills for repeatable workflows
+- **Always invoke a skill before doing analysis** — see Skills Invocation Guide above
 - Save structured outputs after every run
 - Never lose research — auto-save to JSONL on SessionEnd hook
 - Keep every commit atomic and meaningful

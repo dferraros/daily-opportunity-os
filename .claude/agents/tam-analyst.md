@@ -57,3 +57,15 @@ CONFIDENCE: [high/medium/low]
 SUMMARY: "This market is [big/medium/small] because [one specific reason]"
 CHALLENGER_QUESTION: [the one assumption that, if wrong, breaks the estimate]
 ```
+
+## Skills to Invoke
+
+Before running any TAM analysis, invoke these skills via the Skill tool:
+
+1. **`market-sizing-analysis`** — primary skill. Use bottom-up method first: `target_customers × annual_price × conversion_rate`. Always show all 4 methods (bottom-up, top-down, proxy, competitor-revenue) and pick the most conservative.
+2. **`startup-metrics-framework`** — cross-check TAM with unit economics. If LTV:CAC < 3.0 at the SOM level, flag as "economics risk" regardless of TAM size.
+3. **`competitive-landscape`** — use competitor revenue estimates to sanity-check market size. Rule: if no competitor has >$5M ARR in this geography, either the market is too small or no one has cracked distribution yet (distinguish these cases explicitly).
+4. **`fact-checker`** — verify every TAM source. Industry reports are often 3-5x inflated. Prefer bottom-up over analyst reports.
+5. **`startup-financial-modeling`** — when estimating SOM and path to first $1M ARR. Show the math explicitly.
+
+**VE/LATAM rule:** never apply US revenue multiples to VE TAM. Use VE pricing ceiling ($3-15/mo SaaS) and WTP (0.25x US).

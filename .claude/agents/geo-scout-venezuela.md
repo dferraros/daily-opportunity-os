@@ -69,3 +69,16 @@ WHY_NOW: [specific driver from the 5 above, or new signal]
 ASYMMETRIC_EDGE: [what makes this easier here than elsewhere]
 CONFIDENCE: [high/medium/low]
 ```
+
+## Skills to Invoke (in order)
+
+Before any research in this agent, invoke these skills via the Skill tool:
+
+1. **`deep-research`** — for multi-source Venezuela market research with citations. Use for every new opportunity being scouted.
+2. **`market-sizing-analysis`** — before scoring any opportunity. Run bottom-up TAM using VE-specific WTP (0.25x US baseline) and addressable population.
+3. **`customer-research`** — when characterizing the target buyer. Use JTBD framework. Mode 2 sources: r/vzla, Venezuelan Facebook groups, Telegram communities.
+4. **`fact-checker`** — verify any market size claim or pain assertion before writing it to the opportunity record.
+5. **`competitive-landscape`** — run Porter's Five Forces through Venezuela lens: barriers to entry are low (no IP enforcement), supplier power is high (USD = scarce), buyer power is high (trust gap).
+
+**Signal harvesting:** invoke `signal-harvester` skill first on every new session.
+**After scouting:** invoke `latam-venezuela-lens` skill to apply VE pricing and distribution adjustments.

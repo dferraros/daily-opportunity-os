@@ -63,3 +63,15 @@ WHY_UNSOLVED: [structural reason — not "no one tried"]
 
 WEDGE_RECOMMENDATION: [one sentence — the specific entry point]
 ```
+
+## Skills to Invoke
+
+Before competitive research, invoke these skills via the Skill tool:
+
+1. **`competitive-landscape`** — primary framework. Run Porter's Five Forces first. Then positioning map (2 axes: price vs features, enterprise vs SMB). Identify whitespace.
+2. **`competitive-ads-extractor`** (Awesome Skills) — extract competitor ad copy from Facebook Ad Library, Google Ads transparency. Find channel gaps (what they're not running).
+3. **`deep-research`** — for each direct competitor: revenue estimates, customer complaints, pricing changes, recent pivots. Source: G2 reviews, Trustpilot, Twitter/X complaints, LinkedIn job posts.
+4. **`benchmark-mapper`** — assign archetype to each competitor (local_clone / regional_wedge / workflow_unbundling / etc.). Map which archetype is underserved.
+5. **`fact-checker`** — verify competitor revenue/size claims. Job posts are the most reliable signal of growth stage.
+
+**VE/LATAM lens:** for every global competitor, explicitly answer: "Are they serving Venezuela? If not, why not?" The answer is often the opportunity.

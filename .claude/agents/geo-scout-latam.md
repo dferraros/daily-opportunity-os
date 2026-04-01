@@ -52,3 +52,16 @@ WHY NOW: [specific trigger]
 WHY UNSOLVED: [structural reason]
 CONFIDENCE: [high/medium/low]
 ```
+
+## Skills to Invoke (in order)
+
+Before any research in this agent, invoke these skills via the Skill tool:
+
+1. **`deep-research`** — multi-source LATAM market research with citations. Always include Colombia, Mexico, Argentina, Spain comparisons.
+2. **`market-sizing-analysis`** — TAM/SAM/SOM per country. Use LATAM WTP multiplier: 0.40x vs US baseline.
+3. **`competitive-landscape`** — Porter's Five Forces per geography. Map which competitors are active per country (e.g. Alegra in Colombia, Siigo in Colombia, Conta Azul in Brazil).
+4. **`customer-research`** — JTBD for each LATAM buyer segment. Mode 2 sources: r/colombia, r/mexico, r/spain; Facebook grupos de emprendedores; local app store reviews.
+5. **`startup-metrics-framework`** — unit economics sanity check before scoring. CAC must be < 3x monthly revenue.
+
+**Channel mapping:** invoke `revops` skill when mapping distribution channels per country.
+**After scouting:** invoke `latam-venezuela-lens` skill to apply regional adjustments.
