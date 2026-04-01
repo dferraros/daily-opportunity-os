@@ -44,8 +44,26 @@ Paste this into a new session to restore full context instantly:
 | Notion workspace | LIVE (13 opportunities, 3 deep dives) |
 | Weekly review 2026-W14 | COMPLETE — signals 13/50 ⚠️, deep dives 0/3 ⚠️ |
 | Morning automation | Cron registered (session-scoped). Permanent: run `scripts/task-scheduler-setup.ps1` |
-| Parallel systems design | APPROVED — doc at `docs/plans/2026-04-01-parallel-systems-design.md` |
-| Phase A build | NOT STARTED |
+| Parallel systems design | COMPLETE — `docs/plans/2026-04-01-parallel-systems-design.md` |
+| Phase 7A — Customer Pain OS | COMPLETE — pain_intelligence.py + agent + skill + customer-pain-miner |
+| Phase 7B — Distribution OS | COMPLETE — distribution_intelligence.py + agent + distribution-mapper skill |
+| Phase 7C — Pipeline integration | COMPLETE — steps 10-13 wired into daily_run.py, notion_sync.py updated |
+| Feedback loop | COMPLETE — outcome_tracking.py + interview_tracker.py + check_interview_quota hook |
+| Skills wiring | COMPLETE — all 6 agents have global + project skills listed, CLAUDE.md has full execution chain |
+| Phase 7D — Awesome Skills expansion | NOT STARTED (slackbot, calendar, bigquery, reporter) |
+| Customer interviews | 0/15 done — deadline 2026-04-08 ⚠️ |
+
+## WHAT TO BUILD NEXT
+
+**Phase 7D** (Week 3-4):
+- `hooks/session_briefing_slack.py` — slackbot-automation: top-3 daily to Slack
+- `hooks/auto_calendar_interviews.py` — googlecalendar-automation: schedule interviews
+- `src/opportunity_os/bigquery_sync.py` — push machine metrics to BigQuery
+- `.claude/skills/opportunity-reporter/SKILL.md` — artifacts-builder + internal-comms rich HTML reports
+
+**OR: Run the system on real signals (highest priority)**
+The pipeline has never processed real signals. Before building more, run:
+`signal-harvester` skill → harvest 30+ real signals → `opportunity-scorer` → check output quality
 
 ## Key File Paths
 
