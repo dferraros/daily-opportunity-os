@@ -215,6 +215,21 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     print(
         f"   Reports: {', '.join(os.path.basename(r) for r in summary['reports_written'])}"
     )
+
+    # Step 11: Track interview quota
+    from opportunity_os.interview_tracker import get_interview_quota_status
+    quota = get_interview_quota_status()
+    if not quota["on_track"]:
+        print(f"WARNING  Interview quota behind: {quota['completed']}/{quota['total_required']} done, {quota['days_remaining']} days left")
+
+    # Step 12: Outcome calibration check (weekly)
+    from opportunity_os.outcome_tracking import get_calibration_report
+    # Only show if we have tracked outcomes
+    if os.path.exists(os.path.join(_get_project_root(), "data", "outcome_tracking.jsonl")):
+        report = get_calibration_report()
+        if report["total_tracked"] > 0:
+            print(f"Score accuracy: {report['score_accuracy']:.0%} ({report['total_tracked']} tracked outcomes)")
+
     return summary
 
 
