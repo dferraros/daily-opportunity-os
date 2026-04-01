@@ -176,6 +176,22 @@ class Opportunity(BaseModel):
     ai_leverage_potential: Optional[int] = Field(None, ge=1, le=10)
     distribution_advantage_potential: Optional[int] = Field(None, ge=1, le=10)
 
+    # ── Scoring Dimensions (used by scoring_engine) ───────────────────────────
+    pain_severity: Optional[int] = Field(None, ge=1, le=10)
+    market_size: Optional[int] = Field(None, ge=1, le=10)
+    timing_tailwind: Optional[int] = Field(None, ge=1, le=10)
+    monetization_clarity: Optional[int] = Field(None, ge=1, le=10)
+    speed_to_mvp: Optional[int] = Field(None, ge=1, le=10)
+    capital_efficiency: Optional[int] = Field(None, ge=1, le=10)
+    distribution_accessibility: Optional[int] = Field(None, ge=1, le=10)
+    competition_intensity: Optional[int] = Field(None, ge=1, le=10)
+    defensibility: Optional[int] = Field(None, ge=1, le=10)
+    regional_fit: Optional[int] = Field(None, ge=1, le=10)
+    founder_fit: Optional[int] = Field(None, ge=1, le=10)
+    ai_leverage: Optional[int] = Field(None, ge=1, le=10)
+    operational_simplicity: Optional[int] = Field(None, ge=1, le=10)
+    regulatory_simplicity: Optional[int] = Field(None, ge=1, le=10)
+
     # ── TAM ──────────────────────────────────────────────────────────────────
     tam: Optional[float] = None   # Total Addressable Market in USD
     sam: Optional[float] = None   # Serviceable Addressable Market
