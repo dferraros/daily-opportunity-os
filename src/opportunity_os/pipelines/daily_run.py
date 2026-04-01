@@ -225,9 +225,10 @@ def _infer_kill_answers(opp_dict: dict) -> dict:
     answers: dict = {}
     answers["KG-01"] = bool(opp_dict.get("problem_statement"))
     answers["KG-02"] = bool(opp_dict.get("target_customer"))
-    answers["KG-03"] = opp_dict.get("distribution_accessibility", 5) >= 5
-    answers["KG-04"] = opp_dict.get("path_to_first_revenue", 5) >= 5
-    answers["KG-05"] = opp_dict.get("speed_to_mvp", 5) >= 5
+    answers["KG-03"] = (opp_dict.get("distribution_accessibility") or 5) >= 5
+    pfr = opp_dict.get("path_to_first_revenue")
+    answers["KG-04"] = bool(pfr) if isinstance(pfr, str) else (pfr or 5) >= 5
+    answers["KG-05"] = (opp_dict.get("speed_to_mvp") or 5) >= 5
     tam = opp_dict.get("tam_usd_estimate")
     answers["KG-06"] = bool(tam and float(tam) >= 10_000_000)
     answers["KG-07"] = opp_dict.get("defensibility", 5) >= 5 or bool(

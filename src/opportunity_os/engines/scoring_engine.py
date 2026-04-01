@@ -145,11 +145,14 @@ def score_layer(opp_fields: dict, field_list: list, weights: dict) -> float:
         if w == 0.0:
             continue
 
-        # Invert competition_intensity: lower competition = higher score
-        if field == "competition_intensity":
-            effective_value = 10.0 - float(value)
-        else:
-            effective_value = float(value)
+        try:
+            # Invert competition_intensity: lower competition = higher score
+            if field == "competition_intensity":
+                effective_value = 10.0 - float(value)
+            else:
+                effective_value = float(value)
+        except (TypeError, ValueError):
+            continue  # skip non-numeric field values
 
         total_weighted_score += effective_value * w
         total_weight += w
