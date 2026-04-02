@@ -22,6 +22,8 @@ OPPORTUNITY_DB_PAGE_ID = "69aed397-3a99-4fd8-99cb-61d32435e4f5"
 OPPORTUNITY_DB_COLLECTION_ID = "ad158a23-902c-4fed-9503-a8cffab29754"
 DAILY_FEED_PAGE_ID = "a27f4787-07d0-4a07-a6c4-e39dc3f0e75a"
 DAILY_FEED_COLLECTION_ID = "243c2636-188c-4e7b-a9b2-520ca82b3834"
+DEEP_DIVES_PAGE_ID = "0bcd4caa79aa43a9b39f2d2dc059d8ff"
+DEEP_DIVES_COLLECTION_ID = "e8079401-811e-4e9b-a43a-234bc03cce7b"
 
 # Legacy alias kept for backward compat
 NOTION_COLLECTION_IDS = {
@@ -115,10 +117,31 @@ def build_scout_row_properties(run_stats: dict, date: str) -> dict:
     return props
 
 
+def build_validation_properties(opp: dict, package: dict) -> dict:
+    """
+    Build Notion page properties for one Deep Dives validation entry.
+
+    opp: the opportunity dict
+    package: the dict returned by validation_engine.run_validation()
+    """
+    return {
+        "Name": {"title": [{"text": {"content": _safe_str(opp.get("name") or "", 100)}}]},
+        "Opportunity ID": {"rich_text": [{"text": {"content": _safe_str(opp.get("id") or "")}}]},
+        "Score At Validation": {"number": round(float(opp.get("final_score") or 0), 4)},
+        "Validation Date": {"date": {"start": package.get("validation_start_date", "")}},
+        "Auto Triggered": {"checkbox": package.get("_mode", "auto") == "auto"},
+        "Decision": {"select": {"name": "Validate"}},
+        "Geography": {"select": {"name": opp.get("geography") or "global"}},
+        "Vertical": {"rich_text": [{"text": {"content": _safe_str(opp.get("vertical") or "")}}]},
+        "Deadline": {"date": {"start": package.get("validation_deadline", "")}},
+    }
+
+
 def build_sync_payload(
     opportunities: list,
     run_stats: dict,
     date: str,
+    validation_packages: list = None,
 ) -> dict:
     """
     Build the full Notion sync payload for a daily run.
@@ -150,6 +173,16 @@ def build_sync_payload(
         "properties": build_scout_row_properties(run_stats, date),
     }
 
+    validated_opps = []
+    if validation_packages:
+        for opp, package in validation_packages:
+            validated_opps.append({
+                "parent": {"database_id": DEEP_DIVES_PAGE_ID},
+                "properties": build_validation_properties(opp, package),
+                "_opp_id": str(opp.get("id") or ""),
+                "_opp_name": str(opp.get("name") or ""),
+            })
+
     return {
         "date": date,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -157,6 +190,7 @@ def build_sync_payload(
         "scout_row": scout_row,
         "run_stats": run_stats,
         "main_page_id": MAIN_PAGE_ID,
+        "validation_packages": validated_opps,
     }
 
 
