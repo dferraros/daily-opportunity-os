@@ -81,18 +81,31 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     for err in failed:
         summary["errors"].append(f"Normalization failed: {err.get('errors', [])}")
 
+    # Step 2.5: AI dimension scoring
+    print(f"Step 2.5: AI dimension scoring ({len(valid_opps)} opportunities)...")
+    try:
+        from opportunity_os.ai_scorer import score_dimensions_with_ai
+        valid_opps_dicts = []
+        for opp in valid_opps:
+            opp_dict = opp.model_dump()
+            opp_dict = score_dimensions_with_ai(opp_dict)
+            valid_opps_dicts.append(opp_dict)
+        print(f"  AI scoring complete: {sum(1 for o in valid_opps_dicts if o.get('ai_scored_at'))} scored by AI, "
+              f"{sum(1 for o in valid_opps_dicts if not o.get('ai_scored_at'))} used heuristic fallback")
+    except Exception as exc:
+        print(f"WARNING  AI scorer unavailable ({exc}) — using raw opportunity dicts")
+        valid_opps_dicts = [opp.model_dump() for opp in valid_opps]
+
     # Steps 3-8: Process each opportunity
     lane_assigner = PortfolioLaneAssigner()
     scored_opps = []
     killed_opps = []
 
-    for opp in valid_opps:
-        opp_dict = opp.model_dump()
+    for opp_dict in valid_opps_dicts:
 
         # Step 3: Dedupe
         dup_id = dedupe_check(opp_dict.get("name", ""), opp_dict.get("geography", ""))
         if dup_id:
-            print(f"Duplicate skipped: {opp_dict.get('name')} (existing: {dup_id})")
             continue
 
         # Step 4: Kill gate (if kill_decision not already set)
