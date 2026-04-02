@@ -66,6 +66,22 @@ def deep_dive(opp_id, dry_run):
 
 
 @cli.command()
+@click.argument("opp_id")
+@click.option("--dry-run", is_flag=True, help="Preview output without writing files")
+def validate(opp_id, dry_run):
+    """Run full 8-section validation package on a specific opportunity ID."""
+    from opportunity_os.pipelines.validation_run import run_validation_pipeline
+
+    result = run_validation_pipeline(opp_id=opp_id, dry_run=dry_run)
+    if "error" in result:
+        click.echo(f"Error: {result['error']}", err=True)
+        sys.exit(1)
+    click.echo(f"Validation complete: {result['opp_name']}")
+    click.echo(f"  Report: {result['path']}")
+    click.echo(f"  Notion sync: {result['notion_sync_path']}")
+
+
+@cli.command()
 @click.argument("query")
 @click.option("--min-score", default=0.0, help="Minimum score filter.")
 @click.option("--geo", default=None, help="Filter by geography.")
