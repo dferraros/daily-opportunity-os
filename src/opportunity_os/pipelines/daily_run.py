@@ -170,7 +170,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             dist_result = run_distribution_intelligence(opp)
             opp.update({k: v for k, v in dist_result.items() if not k.startswith("_")})
             channels = dist_result.get("_recommended_channels", [])
-            print(f"  Distribution mapped for: {opp.get('name', 'unknown')} → top channel: {channels[0] if channels else 'unknown'}")
+            print(f"  Distribution mapped for: {opp.get('name', 'unknown')} -> top channel: {channels[0] if channels else 'unknown'}")
     except ImportError as e:
         print(f"WARNING  Distribution intelligence module not available: {e}")
     except Exception as e:
@@ -186,7 +186,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             opps_path = os.path.join(_get_project_root(), "data", "opportunities", "opportunities.jsonl")
             with open(opps_path, "w", encoding="utf-8") as f:
                 for o in updated_opps:
-                    f.write(json.dumps(o) + "\n")
+                    f.write(json.dumps(o, default=str) + "\n")
             print(f"  Saved {len(top_5)} enriched records")
         except Exception as e:
             print(f"WARNING  Save enriched records error (non-blocking): {e}")
