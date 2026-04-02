@@ -1,0 +1,18 @@
+.env
+*.pyc
+__pycache__/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.DS_Store
+data/raw/
+data/processed/
+data/opportunities/
+.worktrees/
+
+# Generated reports and exports (committed selectively, not on every run)
+reports/daily/*.json
+reports/daily/*.md
+exports/
