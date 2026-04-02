@@ -1,0 +1,149 @@
+{
+  "date": "2026-04-02",
+  "generated_at": "2026-04-02T12:51:30.169669+00:00",
+  "upsert_opps": [],
+  "scout_row": {
+    "parent": {
+      "database_id": "a27f4787-07d0-4a07-a6c4-e39dc3f0e75a"
+    },
+    "properties": {
+      "Name": {
+        "title": [
+          {
+            "text": {
+              "content": "Scout \u2014 2026-04-02"
+            }
+          }
+        ]
+      },
+      "Date": {
+        "date": {
+          "start": "2026-04-02"
+        }
+      },
+      "Signals": {
+        "number": 0
+      },
+      "New Opps": {
+        "number": 0
+      },
+      "Killed": {
+        "number": 0
+      },
+      "Top Score": {
+        "number": 0.0
+      },
+      "Score Range": {
+        "rich_text": [
+          {
+            "text": {
+              "content": "N/A"
+            }
+          }
+        ]
+      },
+      "VE Signals": {
+        "number": 0
+      },
+      "LATAM Signals": {
+        "number": 0
+      },
+      "Global Signals": {
+        "number": 0
+      },
+      "Top Opportunity": {
+        "rich_text": [
+          {
+            "text": {
+              "content": "B2B Payment Reconciliation SaaS"
+            }
+          }
+        ]
+      },
+      "Notes": {
+        "rich_text": [
+          {
+            "text": {
+              "content": "Manual validation run"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "run_stats": {
+    "signals_total": 0,
+    "new_opps": 0,
+    "killed": 0,
+    "top_score": 0,
+    "score_range": "N/A",
+    "by_geo": {},
+    "top_opportunity": "B2B Payment Reconciliation SaaS",
+    "notes": "Manual validation run"
+  },
+  "main_page_id": "335adfa8-5ce2-810c-a3d7-d89674b77e9f",
+  "validation_packages": [
+    {
+      "parent": {
+        "database_id": "0bcd4caa79aa43a9b39f2d2dc059d8ff"
+      },
+      "properties": {
+        "Name": {
+          "title": [
+            {
+              "text": {
+                "content": "B2B Payment Reconciliation SaaS"
+              }
+            }
+          ]
+        },
+        "Opportunity ID": {
+          "rich_text": [
+            {
+              "text": {
+                "content": "opp_20260401_glo_f1cebc01"
+              }
+            }
+          ]
+        },
+        "Score At Validation": {
+          "number": 6.6898
+        },
+        "Validation Date": {
+          "date": {
+            "start": "2026-04-02"
+          }
+        },
+        "Auto Triggered": {
+          "checkbox": false
+        },
+        "Decision": {
+          "select": {
+            "name": "Validate"
+          }
+        },
+        "Geography": {
+          "select": {
+            "name": "global"
+          }
+        },
+        "Vertical": {
+          "rich_text": [
+            {
+              "text": {
+                "content": "fintech"
+              }
+            }
+          ]
+        },
+        "Deadline": {
+          "date": {
+            "start": "2026-04-09"
+          }
+        }
+      },
+      "_opp_id": "opp_20260401_glo_f1cebc01",
+      "_opp_name": "B2B Payment Reconciliation SaaS"
+    }
+  ]
+}
