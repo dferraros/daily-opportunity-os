@@ -191,6 +191,36 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         except Exception as e:
             print(f"WARNING  Save enriched records error (non-blocking): {e}")
 
+    # ─── Step 14 (pre-collect): Identify auto-validation candidates ─────────────
+    validation_packages_for_sync = []
+    try:
+        from opportunity_os.validation_engine import run_validation, AUTO_VALIDATION_THRESHOLD
+        import yaml
+
+        config_path = os.path.join(_get_project_root(), "config", "scoring_weights.yaml")
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f)
+            threshold = cfg.get("thresholds", {}).get("auto_validation", AUTO_VALIDATION_THRESHOLD)
+        except Exception:
+            threshold = AUTO_VALIDATION_THRESHOLD
+
+        validation_candidates = [
+            o for o in all_opps_sorted
+            if float(o.get("final_score", 0)) >= threshold
+            and not o.get("kill_decision")
+            and o.get("stage") == "scout"
+        ]
+        for opp in validation_candidates:
+            package = run_validation(opp, mode="auto")
+            opp.update({k: v for k, v in package.items() if not k.startswith("_")})
+            validation_packages_for_sync.append((opp, package))
+    except ImportError:
+        validation_candidates = []
+    except Exception as e:
+        print(f"WARNING  Step 14 pre-collect error (non-blocking): {e}")
+        validation_candidates = []
+
     # ─── Step 13: Build Notion sync payload (JSON for Claude Code to execute) ───
     print("Step 13: Building Notion sync payload...")
     try:
@@ -215,13 +245,35 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                 f"{sum(1 for o in all_opps_sorted if o.get('portfolio_lane') == 'now')} now-lane candidates."
             ),
         }
-        sync_payload = build_sync_payload(all_opps_sorted[:20], run_stats, date)
+        sync_payload = build_sync_payload(all_opps_sorted[:20], run_stats, date, validation_packages=validation_packages_for_sync)
         sync_path = os.path.join(_get_project_root(), "reports", "daily", f"{date}-notion-sync.json")
         with open(sync_path, "w", encoding="utf-8") as f:
             json.dump(sync_payload, f, indent=2, default=str)
         print(f"  Notion sync payload ready: {len(sync_payload['upsert_opps'])} opps to upsert -> {sync_path}")
     except Exception as e:
         print(f"WARNING  Notion sync payload error (non-blocking): {e}")
+
+    # ─── Step 14: Write validation markdown files for auto-promoted opps ────────
+    print("Step 14: Auto-validating high-scoring scouts...")
+    try:
+        if validation_packages_for_sync:
+            ensure_report_dirs()
+            for opp, package in validation_packages_for_sync:
+                if not dry_run:
+                    safe_id = str(opp.get("id", "unknown"))[:40]
+                    md_path = os.path.join(
+                        _get_project_root(), "reports", "validation",
+                        f"{date}-{safe_id}-validation.md",
+                    )
+                    with open(md_path, "w", encoding="utf-8") as f:
+                        f.write(package["_validation_markdown"])
+                print(f"  Validated: {opp.get('name', 'unknown')} (score {opp.get('final_score', 0):.2f})")
+            print(f"  {len(validation_packages_for_sync)} opp(s) promoted to validation stage")
+        else:
+            threshold_display = AUTO_VALIDATION_THRESHOLD if "AUTO_VALIDATION_THRESHOLD" in dir() else 7.0
+            print(f"  No scouts above threshold {threshold_display} — no auto-validation triggered")
+    except Exception as e:
+        print(f"WARNING  Step 14 error (non-blocking): {e}")
 
     # Render reports
     context = {
