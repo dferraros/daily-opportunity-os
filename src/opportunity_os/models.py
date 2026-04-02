@@ -192,6 +192,28 @@ class Opportunity(BaseModel):
     operational_simplicity: Optional[int] = Field(None, ge=1, le=10)
     regulatory_simplicity: Optional[int] = Field(None, ge=1, le=10)
 
+    # ── AI Scorer Metadata ────────────────────────────────────────────────────
+    ai_scored_at: Optional[str] = None           # ISO date, e.g. "2026-04-02"
+    ai_scorer_version: Optional[str] = None      # model ID used for scoring
+
+    # ── Scoring Dimension Reasons (populated by ai_scorer.py) ─────────────────
+    pain_severity_reason: Optional[str] = None
+    market_size_reason: Optional[str] = None
+    timing_tailwind_reason: Optional[str] = None
+    willingness_to_pay_reason: Optional[str] = None
+    monetization_clarity_reason: Optional[str] = None
+    speed_to_mvp_reason: Optional[str] = None
+    capital_efficiency_reason: Optional[str] = None
+    distribution_accessibility_reason: Optional[str] = None
+    competition_intensity_reason: Optional[str] = None
+    defensibility_reason: Optional[str] = None
+    regional_fit_reason: Optional[str] = None
+    founder_fit_reason: Optional[str] = None
+    ai_leverage_reason: Optional[str] = None
+    operational_simplicity_reason: Optional[str] = None
+    regulatory_simplicity_reason: Optional[str] = None
+    path_to_first_revenue_reason: Optional[str] = None
+
     # ── TAM ──────────────────────────────────────────────────────────────────
     tam: Optional[float] = None   # Total Addressable Market in USD
     sam: Optional[float] = None   # Serviceable Addressable Market
