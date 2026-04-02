@@ -30,7 +30,7 @@ DIMENSIONS = [
     "ai_leverage",
     "operational_simplicity",
     "regulatory_simplicity",
-    "path_to_first_revenue",
+    "revenue_speed_score",
 ]
 
 RUBRIC = """
@@ -161,7 +161,7 @@ DIMENSION RUBRICS:
     LATAM bonus: +2 base (informal market = less scrutiny)
     Fintech penalty: -1 (always more regulated)
 
-16. path_to_first_revenue (1-10)
+16. revenue_speed_score (1-10)
     10: First revenue in <7 days. Service business, existing customer, immediate payment.
     7-9: First revenue in 7-30 days. Direct outreach + quick close.
     5-6: First revenue in 30-90 days. Need product, some sales cycle.
@@ -434,13 +434,13 @@ def _heuristic_fallback(opp: dict) -> dict:
     if has(r"license", r"regulated", r"compliance"): rs -= 1
     dims["regulatory_simplicity"] = clamp(rs)
 
-    # path_to_first_revenue
+    # revenue_speed_score (numeric 1-10 — how fast first revenue arrives)
     pr = 5
     if has(r"service", r"consulting", r"done for you"): pr += 2
     if has(r"whatsapp", r"direct outreach"): pr += 1
     if bucket == "fast_cash": pr += 2
     if geo == "venezuela": pr += 1
-    dims["path_to_first_revenue"] = clamp(pr)
+    dims["revenue_speed_score"] = clamp(pr)
 
     for k, v in dims.items():
         if not opp.get(k):

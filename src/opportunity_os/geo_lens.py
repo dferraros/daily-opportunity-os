@@ -79,6 +79,31 @@ VENEZUELA_WEDGE_CATEGORIES = [
     "ai_labor_replacement_tools",
 ]
 
+# Map vertical values to the most fitting Venezuela wedge category.
+# Used as fallback when venezuela_wedge_category is not set by AI scoring.
+VERTICAL_TO_WEDGE_CATEGORY: dict[str, str] = {
+    "fintech": "payments_and_collections",
+    "payments": "payments_and_collections",
+    "remittances": "remittances_and_diaspora_finance",
+    "diaspora": "diaspora_finance_and_commerce",
+    "smb_software": "smb_software_informal_operators",
+    "b2b_saas": "smb_software_informal_operators",
+    "saas": "smb_software_informal_operators",
+    "ecommerce": "commerce_trust_layers",
+    "marketplace": "commerce_trust_layers",
+    "retail": "retail_inventory_working_capital",
+    "inventory": "retail_inventory_working_capital",
+    "logistics": "logistics_coordination",
+    "delivery": "logistics_coordination",
+    "creator": "creator_monetization",
+    "media": "creator_monetization",
+    "content": "creator_monetization",
+    "cross_border": "cross_border_service_businesses",
+    "services": "cross_border_service_businesses",
+    "ai": "ai_labor_replacement_tools",
+    "automation": "ai_labor_replacement_tools",
+}
+
 
 def apply_geo_adjustments(opp_dict: dict) -> dict:
     """Apply regional adjustments to a raw opportunity dict.
@@ -100,6 +125,17 @@ def apply_geo_adjustments(opp_dict: dict) -> dict:
 
         # Add payment rail context
         opp["payment_rail_context"] = get_payment_rail_context(geo)
+
+        # Infer venezuela_wedge_category from vertical if not already set
+        if not opp.get("venezuela_wedge_category"):
+            vertical = (opp.get("vertical") or "").lower().strip()
+            inferred = VERTICAL_TO_WEDGE_CATEGORY.get(vertical)
+            if inferred:
+                opp["venezuela_wedge_category"] = inferred
+
+        # Bucket fallback: Venezuela records default to latam_asymmetry
+        if not opp.get("bucket"):
+            opp["bucket"] = "latam_asymmetry"
 
         # Apply regional_fit bonus if wedge category is set
         category = opp.get("venezuela_wedge_category") or opp.get("category")
