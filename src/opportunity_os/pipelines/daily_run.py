@@ -191,17 +191,37 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         except Exception as e:
             print(f"WARNING  Save enriched records error (non-blocking): {e}")
 
-    # ─── Step 13: Notion sync instructions ───
-    print("Step 13: Generating Notion sync instructions...")
+    # ─── Step 13: Build Notion sync payload (JSON for Claude Code to execute) ───
+    print("Step 13: Building Notion sync payload...")
     try:
-        from opportunity_os.notion_sync import get_sync_instructions
-        sync_instructions = get_sync_instructions(top_5)
-        sync_path = os.path.join(_get_project_root(), "reports", "daily", f"{date}-notion-sync.md")
+        from opportunity_os.notion_sync import build_sync_payload
+        from collections import Counter
+        raw_geo = Counter(s.get("geography", "global") for s in raw_signals)
+        today_scores = [float(o.get("final_score", 0)) for o in valid_opps_dicts if o.get("final_score")]
+        run_stats = {
+            "signals_total": len(raw_signals),
+            "new_opps": summary["scored"],
+            "killed": summary["killed"],
+            "top_score": round(max(today_scores), 2) if today_scores else 0,
+            "score_range": f"{min(today_scores):.2f} - {max(today_scores):.2f}" if today_scores else "N/A",
+            "by_geo": {
+                "venezuela": raw_geo.get("venezuela", 0),
+                "latam": raw_geo.get("latam", 0),
+                "global": raw_geo.get("global", 0),
+            },
+            "top_opportunity": all_opps_sorted[0].get("name", "") if all_opps_sorted else "",
+            "notes": (
+                f"Heuristic scoring. "
+                f"{sum(1 for o in all_opps_sorted if o.get('portfolio_lane') == 'now')} now-lane candidates."
+            ),
+        }
+        sync_payload = build_sync_payload(all_opps_sorted[:20], run_stats, date)
+        sync_path = os.path.join(_get_project_root(), "reports", "daily", f"{date}-notion-sync.json")
         with open(sync_path, "w", encoding="utf-8") as f:
-            f.write(sync_instructions)
-        print(f"  Notion sync instructions written to {sync_path}")
+            json.dump(sync_payload, f, indent=2, default=str)
+        print(f"  Notion sync payload ready: {len(sync_payload['upsert_opps'])} opps to upsert -> {sync_path}")
     except Exception as e:
-        print(f"WARNING  Notion sync instructions error (non-blocking): {e}")
+        print(f"WARNING  Notion sync payload error (non-blocking): {e}")
 
     # Render reports
     context = {
