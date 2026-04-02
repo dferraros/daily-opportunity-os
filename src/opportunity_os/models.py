@@ -191,6 +191,7 @@ class Opportunity(BaseModel):
     ai_leverage: Optional[int] = Field(None, ge=1, le=10)
     operational_simplicity: Optional[int] = Field(None, ge=1, le=10)
     regulatory_simplicity: Optional[int] = Field(None, ge=1, le=10)
+    revenue_speed_score: Optional[int] = Field(None, ge=1, le=10)  # numeric 1-10: how fast first revenue arrives
 
     # ── AI Scorer Metadata ────────────────────────────────────────────────────
     ai_scored_at: Optional[str] = None           # ISO date, e.g. "2026-04-02"
@@ -213,6 +214,7 @@ class Opportunity(BaseModel):
     operational_simplicity_reason: Optional[str] = None
     regulatory_simplicity_reason: Optional[str] = None
     path_to_first_revenue_reason: Optional[str] = None
+    revenue_speed_score_reason: Optional[str] = None
 
     # ── TAM ──────────────────────────────────────────────────────────────────
     tam: Optional[float] = None   # Total Addressable Market in USD

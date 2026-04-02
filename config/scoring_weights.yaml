@@ -16,7 +16,7 @@ weights:
   ai_leverage: 0.04
   operational_simplicity: 0.05
   regulatory_simplicity: 0.04
-  path_to_first_revenue: 0.04
+  revenue_speed_score: 0.04
 
 # Bonus modifiers applied after base score
 modifiers:

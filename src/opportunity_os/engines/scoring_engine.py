@@ -50,7 +50,7 @@ EXECUTABILITY_FIELDS = [
     "capital_efficiency",
     "distribution_accessibility",
     "operational_simplicity",
-    "path_to_first_revenue",
+    "revenue_speed_score",
 ]
 
 STRATEGIC_VALUE_FIELDS = [
@@ -82,7 +82,7 @@ DEFAULT_WEIGHTS = {
         "ai_leverage": 0.04,
         "operational_simplicity": 0.05,
         "regulatory_simplicity": 0.04,
-        "path_to_first_revenue": 0.04,
+        "revenue_speed_score": 0.04,
     },
     "modifiers": {
         "venezuela_wedge_match": 1.5,
