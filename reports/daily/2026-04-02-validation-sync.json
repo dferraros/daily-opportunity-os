@@ -1,6 +1,6 @@
 {
   "date": "2026-04-02",
-  "generated_at": "2026-04-02T12:51:30.169669+00:00",
+  "generated_at": "2026-04-02T14:33:22.646675+00:00",
   "upsert_opps": [],
   "scout_row": {
     "parent": {
@@ -55,7 +55,7 @@
         "rich_text": [
           {
             "text": {
-              "content": "B2B Payment Reconciliation SaaS"
+              "content": "Embedded Credit for Informal LATAM SMBs via SaaS"
             }
           }
         ]
@@ -78,7 +78,7 @@
     "top_score": 0,
     "score_range": "N/A",
     "by_geo": {},
-    "top_opportunity": "B2B Payment Reconciliation SaaS",
+    "top_opportunity": "Embedded Credit for Informal LATAM SMBs via SaaS",
     "notes": "Manual validation run"
   },
   "main_page_id": "335adfa8-5ce2-810c-a3d7-d89674b77e9f",
@@ -92,7 +92,7 @@
           "title": [
             {
               "text": {
-                "content": "B2B Payment Reconciliation SaaS"
+                "content": "Embedded Credit for Informal LATAM SMBs via SaaS"
               }
             }
           ]
@@ -101,13 +101,13 @@
           "rich_text": [
             {
               "text": {
-                "content": "opp_20260401_glo_f1cebc01"
+                "content": "opp_20260401_lat_c56a832f"
               }
             }
           ]
         },
         "Score At Validation": {
-          "number": 6.6898
+          "number": 7.0901
         },
         "Validation Date": {
           "date": {
@@ -124,7 +124,7 @@
         },
         "Geography": {
           "select": {
-            "name": "global"
+            "name": "latam"
           }
         },
         "Vertical": {
@@ -142,8 +142,8 @@
           }
         }
       },
-      "_opp_id": "opp_20260401_glo_f1cebc01",
-      "_opp_name": "B2B Payment Reconciliation SaaS"
+      "_opp_id": "opp_20260401_lat_c56a832f",
+      "_opp_name": "Embedded Credit for Informal LATAM SMBs via SaaS"
     }
   ]
 }
