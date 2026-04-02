@@ -103,6 +103,37 @@ def normalize_geography(raw: dict) -> dict:
     return raw
 
 
+def infer_missing_fields(raw: dict) -> dict:
+    """
+    Infer required narrative fields from available signal fields.
+    Allows harvested signals to omit problem_statement/target_customer/trigger_signal
+    while still passing validation.
+    """
+    raw = dict(raw)
+
+    # problem_statement <- description if missing
+    if not raw.get("problem_statement") and raw.get("description"):
+        raw["problem_statement"] = raw["description"]
+
+    # trigger_signal <- raw_notes (or description) if missing
+    if not raw.get("trigger_signal"):
+        if raw.get("raw_notes"):
+            raw["trigger_signal"] = raw["raw_notes"][:300]
+        elif raw.get("description"):
+            raw["trigger_signal"] = raw["description"][:300]
+
+    # target_customer <- infer from vertical + geography if missing
+    if not raw.get("target_customer"):
+        vertical = raw.get("vertical", "")
+        geo = raw.get("geography", "global")
+        geo_label = {"venezuela": "Venezuelan", "latam": "LATAM", "spain": "Spanish",
+                     "colombia": "Colombian", "mexico": "Mexican", "global": "global"}.get(geo, geo.capitalize())
+        vertical_label = vertical.replace("_", " ").title() if vertical else "business"
+        raw["target_customer"] = f"{geo_label} {vertical_label} operators and founders"
+
+    return raw
+
+
 def fill_defaults(raw: dict) -> dict:
     """
     Fill in computable defaults before validation:
@@ -171,8 +202,9 @@ def normalize_signal(raw: dict) -> tuple:
     """
     step1 = normalize_field_names(raw)
     step2 = normalize_geography(step1)
-    step3 = fill_defaults(step2)
-    return validate_opportunity(step3)
+    step3 = infer_missing_fields(step2)
+    step4 = fill_defaults(step3)
+    return validate_opportunity(step4)
 
 
 def normalize_signals_batch(raws: list) -> tuple:
