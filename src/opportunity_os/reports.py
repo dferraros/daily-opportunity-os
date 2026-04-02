@@ -103,6 +103,8 @@ def report_path(report_type: str, report_date: Optional[str] = None) -> str:
         return os.path.join(root, "reports", "weekly", f"{week}-summary.md")
     elif report_type == "deep-dive":
         return os.path.join(root, "reports", "deep-dives", f"{report_date}-deep-dive.md")
+    elif report_type == "validation":
+        return os.path.join(root, "reports", "validation", f"{report_date}-validation.md")
     else:
         filename = f"{report_date}-{report_type}.md"
         return os.path.join(root, "reports", "daily", filename)
@@ -115,6 +117,7 @@ def ensure_report_dirs():
         os.path.join(root, "reports", "daily"),
         os.path.join(root, "reports", "weekly"),
         os.path.join(root, "reports", "deep-dives"),
+        os.path.join(root, "reports", "validation"),
         os.path.join(root, "exports", "notion"),
         os.path.join(root, "data", "opportunities"),
         os.path.join(root, "data", "raw"),

@@ -28,3 +28,7 @@ modifiers:
 caps:
   kill_decision_true: 0.0        # killed opportunities score 0 regardless
   decision_filter_2_failed: 5.0  # capped at 5.0 if 2+ decision filters fail
+
+# Promotion thresholds
+thresholds:
+  auto_validation: 7.0   # opps scoring >= this are auto-promoted in daily Step 14
