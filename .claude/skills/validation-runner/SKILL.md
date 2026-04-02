@@ -5,6 +5,10 @@ tools: [WebSearch, WebFetch, Read, Write]
 ---
 # Validation Runner
 
+> **Engineering note:** The template scaffolding for all 8 sections is implemented in
+> `src/opportunity_os/validation_engine.py`. Run `opp-os validate <opp-id>` to generate
+> a package automatically. This skill is for agent-driven enrichment on top of that output.
+
 ## Purpose
 Stage 2 is the bridge between intelligence and action. It takes the top 3-5 opportunities from the weekly review and generates specific, falsifiable validation experiments. The output is not more research — it is a set of concrete tests that produce a yes/no signal within 7 days.
 
@@ -113,8 +117,31 @@ Must name:
 - **Time to first paid customer**: X days from starting outreach
 - **Fallback if this channel fails**: what is the Plan B channel?
 
+### Step 7: MVP Scope + 7-Day Sprint
+Define the minimum buildable artifact that tests the core value proposition.
+
+Must include:
+- **MVP type**: no-code / lightweight webapp / coded tool (choose one based on `speed_to_mvp` score)
+- **Build estimate**: specific days (e.g. "3-5 days")
+- **Capital intensity**: estimated cost to build and test MVP
+- **AI leverage note**: where Claude/GPT can replace custom code (reduces build time)
+- **First proof point needed**: what specific outcome confirms the value prop is real?
+
+**7-day sprint** (required — do not skip):
+- Day 1-2: 5 customer interviews (use Step 3 script)
+- Day 3: Synthesize interviews. Kill or continue decision.
+- Day 4-5: Build MVP (if continue)
+- Day 6: Launch landing page (Step 2). Send 50 outreach messages (Step 6).
+- Day 7: Tally results against kill criteria (Step 4). Decide: build / pivot / kill.
+
+**Day 7 kill criteria checklist:**
+- [ ] 5 interviews completed with real pain confirmation
+- [ ] 15+ landing page CTA clicks
+- [ ] At least 2 verbal WTP signals at target price
+- [ ] At least 1 "when can I use this?" response
+
 ## Output Spec
-- `reports/validation/YYYY-MM-DD-{opp-id}-validation.md` with all 6 sections
+- `reports/validation/YYYY-MM-DD-{opp-id}-validation.md` with all 7 sections (8 if manual mode)
 - Update opportunity record: set `stage=validation`, `validation_status=in_progress`, `validation_start_date=YYYY-MM-DD`
 - Set `validation_deadline` = today + 7 days
 
