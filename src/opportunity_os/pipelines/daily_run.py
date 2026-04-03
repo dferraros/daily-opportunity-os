@@ -222,6 +222,21 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         print(f"WARNING  Research executor error (non-blocking): {e}")
 
+    # ─── Step 11.8: Pain Library — persist pain clusters from researched opps ───
+    print("Step 11.8: Updating pain library with researched opportunities...")
+    try:
+        from opportunity_os.pain_library import upsert_pain_cluster
+        written = 0
+        for opp in top_5:
+            if opp.get("research_executed_at") and opp.get("pain_validation_score") is not None:
+                if upsert_pain_cluster(opp):
+                    written += 1
+        print(f"  Pain library updated: {written} clusters upserted")
+    except ImportError as e:
+        print(f"WARNING  Pain library not available: {e}")
+    except Exception as e:
+        print(f"WARNING  Pain library error (non-blocking): {e}")
+
     # ─── Step 12: Save enriched records back to JSONL ───
     print("Step 12: Saving enriched opportunity records...")
     if not dry_run:
