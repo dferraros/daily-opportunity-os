@@ -172,5 +172,13 @@ def stats():
         click.echo(" No opportunities yet. Run 'opp-os daily' to start.")
 
 
+
+@cli.command()
+def audit():
+    """Show pipeline failure audit -- failure rates by step and error type."""
+    from opportunity_os.pipeline_monitor import audit_report
+    click.echo(audit_report())
+
+
 if __name__ == "__main__":
     cli()
