@@ -43,6 +43,7 @@ def main():
     parser = argparse.ArgumentParser(description="Research backfill for all opportunities")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true", help="Re-run even if research_executed_at exists")
+    parser.add_argument("--batch", type=int, default=20, help="Max number of opportunities to research (default: 20)")
     args = parser.parse_args()
 
     from opportunity_os.storage import read_all_opportunities, update_opportunity
@@ -55,12 +56,15 @@ def main():
     total = len(opps)
 
     if args.force:
-        targets = opps
-        print(f"FORCE mode: researching all {total} opportunities")
+        targets = opps[:args.batch]
+        print(f"FORCE mode: researching up to {args.batch} opportunities ({total} total)")
     else:
-        targets = [o for o in opps if not o.get("research_executed_at")]
-        already_done = total - len(targets)
-        print(f"Found {len(targets)} unresearched opportunities ({already_done} already done, {total} total)")
+        unresearched = [o for o in opps if not o.get("research_executed_at")]
+        already_done = total - len(unresearched)
+        targets = unresearched[:args.batch]
+        print(f"Found {len(unresearched)} unresearched opportunities ({already_done} already done, {total} total)")
+        if len(unresearched) > args.batch:
+            print(f"Batch limit: processing first {args.batch} of {len(unresearched)} (use --batch N to change)")
 
     if not targets:
         print("Nothing to backfill. All opportunities already have research_executed_at.")
@@ -93,7 +97,7 @@ def main():
     for i, opp in enumerate(targets, 1):
         name = opp.get("name", "?")[:55]
         geo = opp.get("geography", "?")
-        print(f"[{i:2}/{len(targets)}] {name} [{geo}]")
+        print(f"Backfill {i}/{len(targets)}: {name} [{geo}]")
 
         # Build query templates (fast, no API calls)
         try:
