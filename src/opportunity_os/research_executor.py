@@ -25,7 +25,7 @@ from typing import Optional
 from opportunity_os.pipeline_monitor import log_failure
 
 MODEL = "claude-haiku-4-5-20251001"
-MAX_SEARCH_USES = 3
+MAX_SEARCH_USES = 1  # 1 search per call — web_search is $10/1000 searches, keep costs minimal
 
 
 def run_research_executor(opp: dict) -> dict:
