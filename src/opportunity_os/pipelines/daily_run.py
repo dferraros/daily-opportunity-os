@@ -17,6 +17,7 @@ Steps:
 from datetime import datetime
 import json
 import os
+from opportunity_os.pipeline_monitor import log_failure
 
 
 def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> dict:
@@ -68,6 +69,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                     try:
                         raw_signals.append(json.loads(line))
                     except json.JSONDecodeError as exc:
+                        log_failure("signal_parse", exc)
                         summary["errors"].append(f"JSON parse error: {exc}")
 
     if not raw_signals:
@@ -93,7 +95,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         print(f"  AI scoring complete: {sum(1 for o in valid_opps_dicts if o.get('ai_scored_at'))} scored by AI, "
               f"{sum(1 for o in valid_opps_dicts if not o.get('ai_scored_at'))} used heuristic fallback")
     except Exception as exc:
-        print(f"WARNING  AI scorer unavailable ({exc}) — using raw opportunity dicts")
+        log_failure("ai_scoring", exc)
         valid_opps_dicts = [opp.model_dump() for opp in valid_opps]
 
     # Steps 3-8: Process each opportunity
@@ -161,7 +163,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  TAM engine not available: {e}")
     except Exception as e:
-        print(f"WARNING  TAM estimation error (non-blocking): {e}")
+        log_failure("tam_estimation", e)
 
     # ─── Step 9.7: Benchmark Mapping — map top 30 to archetypes ───
     print("Step 9.7: Running Benchmark Mapper on top 30 opportunities...")
@@ -177,7 +179,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  Benchmark engine not available: {e}")
     except Exception as e:
-        print(f"WARNING  Benchmark mapping error (non-blocking): {e}")
+        log_failure("benchmark_mapping", e)
 
     # ─── Step 10: Customer Pain OS — enrich top 20 scored opportunities ───
     print("Step 10: Running Customer Pain OS on top 20 opportunities...")
@@ -191,7 +193,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  Pain intelligence module not available: {e}")
     except Exception as e:
-        print(f"WARNING  Pain OS error (non-blocking): {e}")
+        log_failure("pain_os", e)
 
     # ─── Step 11: Distribution OS — map distribution reality for top 20 ───
     print("Step 11: Running Distribution OS on top 20 opportunities...")
@@ -205,7 +207,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  Distribution intelligence module not available: {e}")
     except Exception as e:
-        print(f"WARNING  Distribution OS error (non-blocking): {e}")
+        log_failure("distribution_os", e)
 
     # ─── Step 11.5: Research Executor — fire real web searches for pain + distribution ───
     print(f"Step 11.5: Running Research Executor on top {len(top_20)} opportunities...")
@@ -221,7 +223,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  Research executor not available: {e}")
     except Exception as e:
-        print(f"WARNING  Research executor error (non-blocking): {e}")
+        log_failure("research_executor", e)
 
     # ─── Step 11.8: Pain Library — persist pain clusters from researched opps ───
     print("Step 11.8: Updating pain library with researched opportunities...")
@@ -236,7 +238,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError as e:
         print(f"WARNING  Pain library not available: {e}")
     except Exception as e:
-        print(f"WARNING  Pain library error (non-blocking): {e}")
+        log_failure("pain_library", e)
 
     # ─── Step 12: Save enriched records back to JSONL ───
     print("Step 12: Saving enriched opportunity records...")
@@ -251,7 +253,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                     f.write(json.dumps(o, default=str) + "\n")
             print(f"  Saved {len(top_20)} enriched records")
         except Exception as e:
-            print(f"WARNING  Save enriched records error (non-blocking): {e}")
+            log_failure("save_enriched", e)
 
     # ─── Step 14 (pre-collect): Identify auto-validation candidates ─────────────
     validation_packages_for_sync = []
@@ -280,7 +282,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except ImportError:
         validation_candidates = []
     except Exception as e:
-        print(f"WARNING  Step 14 pre-collect error (non-blocking): {e}")
+        log_failure("validation_pre_collect", e)
         validation_candidates = []
 
     # ─── Step 13: Build Notion sync payload (JSON for Claude Code to execute) ───
@@ -314,7 +316,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         print(f"  Notion sync payload ready: {len(sync_payload['upsert_opps'])} opps to upsert -> {sync_path}")
         print(f"\n>>> NOTION SYNC READY: run `uv run python scripts/notion_push.py` or ask Claude to sync {sync_path}")
     except Exception as e:
-        print(f"WARNING  Notion sync payload error (non-blocking): {e}")
+        log_failure("notion_sync", e)
 
     # ─── Step 14: Write validation markdown files for auto-promoted opps ────────
     print("Step 14: Auto-validating high-scoring scouts...")
@@ -336,7 +338,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             threshold_display = AUTO_VALIDATION_THRESHOLD if "AUTO_VALIDATION_THRESHOLD" in dir() else 7.0
             print(f"  No scouts above threshold {threshold_display} — no auto-validation triggered")
     except Exception as e:
-        print(f"WARNING  Step 14 error (non-blocking): {e}")
+        log_failure("validation_write", e)
 
     # --- Step 14.5: Auto deep-dive on top scorer >= 8.0 ---
     print("Step 14.5: Checking for auto deep-dive candidates...")
