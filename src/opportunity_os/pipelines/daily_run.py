@@ -163,28 +163,28 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         print(f"WARNING  TAM estimation error (non-blocking): {e}")
 
-    # ─── Step 9.7: Benchmark Mapping — map top 10 to archetypes ───
-    print("Step 9.7: Running Benchmark Mapper on top 10 opportunities...")
-    top_10 = all_opps_sorted[:10]
+    # ─── Step 9.7: Benchmark Mapping — map top 30 to archetypes ───
+    print("Step 9.7: Running Benchmark Mapper on top 30 opportunities...")
+    top_30 = all_opps_sorted[:30]
     try:
         from opportunity_os.engines.benchmark_engine import run_benchmark
-        for opp in top_10:
+        for opp in top_30:
             if not opp.get("benchmark_archetype"):
                 result = run_benchmark(opp)
                 opp.update({k: v for k, v in result.items() if not k.startswith("_")})
-        bench_populated = sum(1 for o in top_10 if o.get("benchmark_archetype"))
-        print(f"  Benchmark archetypes populated for {bench_populated}/10 opportunities")
+        bench_populated = sum(1 for o in top_30 if o.get("benchmark_archetype"))
+        print(f"  Benchmark archetypes populated for {bench_populated}/{len(top_30)} opportunities")
     except ImportError as e:
         print(f"WARNING  Benchmark engine not available: {e}")
     except Exception as e:
         print(f"WARNING  Benchmark mapping error (non-blocking): {e}")
 
-    # ─── Step 10: Customer Pain OS — enrich top 5 scored opportunities ───
-    print("Step 10: Running Customer Pain OS on top 5 opportunities...")
-    top_5 = all_opps_sorted[:5]
+    # ─── Step 10: Customer Pain OS — enrich top 20 scored opportunities ───
+    print("Step 10: Running Customer Pain OS on top 20 opportunities...")
+    top_20 = all_opps_sorted[:20]
     try:
         from opportunity_os.pain_intelligence import run_pain_intelligence
-        for opp in top_5:
+        for opp in top_20:
             pain_result = run_pain_intelligence(opp)
             opp.update({k: v for k, v in pain_result.items() if not k.startswith("_")})
             print(f"  Pain queries built for: {opp.get('name', 'unknown')} ({len(pain_result.get('_pain_queries', []))} queries)")
@@ -193,11 +193,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         print(f"WARNING  Pain OS error (non-blocking): {e}")
 
-    # ─── Step 11: Distribution OS — map distribution reality for top 5 ───
-    print("Step 11: Running Distribution OS on top 5 opportunities...")
+    # ─── Step 11: Distribution OS — map distribution reality for top 20 ───
+    print("Step 11: Running Distribution OS on top 20 opportunities...")
     try:
         from opportunity_os.distribution_intelligence import run_distribution_intelligence
-        for opp in top_5:
+        for opp in top_20:
             dist_result = run_distribution_intelligence(opp)
             opp.update({k: v for k, v in dist_result.items() if not k.startswith("_")})
             channels = dist_result.get("_recommended_channels", [])
@@ -208,15 +208,16 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         print(f"WARNING  Distribution OS error (non-blocking): {e}")
 
     # ─── Step 11.5: Research Executor — fire real web searches for pain + distribution ───
-    print("Step 11.5: Running Research Executor on top 5 opportunities...")
+    print(f"Step 11.5: Running Research Executor on top {len(top_20)} opportunities...")
     try:
         from opportunity_os.research_executor import run_research_executor
-        for opp in top_5:
+        for i, opp in enumerate(top_20, 1):
             if not opp.get("research_executed_at"):
+                print(f"  Researching opp {i}/{len(top_20)}: {opp.get('name', 'unknown')[:50]}")
                 run_research_executor(opp)
                 print(f"  Research complete: {opp.get('name', 'unknown')[:50]}")
             else:
-                print(f"  Already researched: {opp.get('name', 'unknown')[:50]}")
+                print(f"  Already researched ({i}/{len(top_20)}): {opp.get('name', 'unknown')[:50]}")
     except ImportError as e:
         print(f"WARNING  Research executor not available: {e}")
     except Exception as e:
@@ -227,7 +228,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     try:
         from opportunity_os.pain_library import upsert_pain_cluster
         written = 0
-        for opp in top_5:
+        for opp in top_20:
             if opp.get("research_executed_at") and opp.get("pain_validation_score") is not None:
                 if upsert_pain_cluster(opp):
                     written += 1
@@ -242,13 +243,13 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     if not dry_run:
         try:
             all_stored_opps = read_all_opportunities()
-            enriched_ids = {o["id"]: o for o in top_5 if o.get("id")}
+            enriched_ids = {o["id"]: o for o in top_20 if o.get("id")}
             updated_opps = [enriched_ids.get(o.get("id"), o) for o in all_stored_opps]
             opps_path = os.path.join(_get_project_root(), "data", "opportunities", "opportunities.jsonl")
             with open(opps_path, "w", encoding="utf-8") as f:
                 for o in updated_opps:
                     f.write(json.dumps(o, default=str) + "\n")
-            print(f"  Saved {len(top_5)} enriched records")
+            print(f"  Saved {len(top_20)} enriched records")
         except Exception as e:
             print(f"WARNING  Save enriched records error (non-blocking): {e}")
 
@@ -336,6 +337,37 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             print(f"  No scouts above threshold {threshold_display} — no auto-validation triggered")
     except Exception as e:
         print(f"WARNING  Step 14 error (non-blocking): {e}")
+
+    # --- Step 14.5: Auto deep-dive on top scorer >= 8.0 ---
+    print("Step 14.5: Checking for auto deep-dive candidates...")
+    try:
+        from opportunity_os.pipelines.deep_dive import run_deep_dive
+        deep_dive_candidates = [
+            o for o in all_opps_sorted
+            if float(o.get("final_score", 0)) >= 8.0
+            and not o.get("kill_decision")
+        ][:1]  # top 1 only
+        for opp in deep_dive_candidates:
+            opp_id = opp.get("id", "unknown")
+            # Skip if deep dive already exists for this opp today
+            dd_path = os.path.join(
+                root, "reports", "deep-dives", f"{date}-{opp_id[:40]}-deep-dive.md"
+            )
+            if os.path.exists(dd_path):
+                print(f"  Deep dive already exists for {opp_id}, skipping")
+                continue
+            if not dry_run:
+                result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
+                if "error" not in result:
+                    print(f"  Auto deep-dive triggered: {opp.get('name', 'unknown')[:50]} (score {opp.get('final_score', 0):.1f})")
+                else:
+                    print(f"  Deep dive failed for {opp_id}: {result['error']}")
+            else:
+                print(f"  [dry-run] Would deep-dive: {opp.get('name', 'unknown')[:50]}")
+        if not deep_dive_candidates:
+            print("  No opportunities scored >= 8.0 -- no auto deep-dive")
+    except Exception as e:
+        print(f"WARNING  Step 14.5 auto deep-dive error (non-blocking): {e}")
 
     # Render reports
     context = {
