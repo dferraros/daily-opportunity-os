@@ -84,3 +84,13 @@ Plans:
 | Launch | 02 First Real Scout | Complete |
 | Launch | 03 Automation | Complete (Task Scheduler setup) |
 | Launch | 04 First Validation | Complete |
+
+### Phase 5: Intelligence Amplification — wire all 9 orphaned skills into automated pipeline, build research execution engine that runs WebSearch for all 64 opportunities, build Streamlit dashboard, auto-fire Notion MCP sync, automate weekly ritual
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
