@@ -17,6 +17,7 @@ Steps:
 from datetime import datetime
 import json
 import os
+import time
 from opportunity_os.pipeline_monitor import log_failure
 
 
@@ -171,6 +172,17 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     all_opps_sorted = sorted(
         scored_opps, key=lambda x: x.get("final_score", 0), reverse=True
     )
+
+    # Step 9.3: Normalize scores across today's portfolio (fixes AI clustering at 7-9)
+    # Only activates if >= 3 opps with spread > 0.1. Backs up raw to raw_final_score.
+    if len(all_opps_sorted) >= 3:
+        from opportunity_os.engines.scoring_engine import normalize_portfolio_scores
+        all_opps_sorted = normalize_portfolio_scores(all_opps_sorted)
+        live_scores = [o.get("final_score", 0) for o in all_opps_sorted if not o.get("kill_decision")]
+        if live_scores:
+            print(f"Step 9.3: Score normalization applied. Range: "
+                  f"{min(live_scores):.2f} - {max(live_scores):.2f} "
+                  f"(raw scores preserved in raw_final_score)")
 
     # ─── Step 9.5: TAM Estimation — estimate market size for all scored opps ───
     print(f"Step 9.5: Running TAM estimation on {len(all_opps_sorted)} scored opportunities...")
