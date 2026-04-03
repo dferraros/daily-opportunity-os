@@ -102,12 +102,12 @@ Plans:
 **Depends on:** Phase 5
 **Plans:** 8 plans
 
-Plans:
-- [ ] 06-01A-PLAN.md -- Schema Cleanup (remove 15 deprecated fields, add 4 missing)
-- [ ] 06-01B-PLAN.md -- Research Scope Expansion (top-5 to top-20)
-- [ ] 06-01C-PLAN.md -- Deep Dive Auto-Trigger (daily + weekly)
-- [ ] 06-01D-PLAN.md -- Pipeline Health Monitor (failure logging + audit CLI)
-- [ ] 06-02E-PLAN.md -- Firecrawl Integration (pain validation)
-- [ ] 06-02F-PLAN.md -- Venezuela Lens Auto-Run (Step 5.5)
-- [ ] 06-02G-PLAN.md -- Score History + Rising Signals fix
-- [ ] 06-02H-PLAN.md -- Quota Tracking from Config
+Plans: **COMPLETE (2026-04-03) — 10 commits**
+- [x] 06-01A-PLAN.md -- Schema Cleanup (15 deprecated fields removed, score_history + venezuela_lens_applied added)
+- [x] 06-01B-PLAN.md -- Research Scope Expansion (top-5→top-20, benchmark top-10→top-30)
+- [x] 06-01C-PLAN.md -- Deep Dive Auto-Trigger (top-1 >=8.0 daily, top-3 >=7.0 weekly)
+- [x] 06-01D-PLAN.md -- Pipeline Health Monitor (12 silent failures → logged, audit CLI)
+- [x] 06-02E-PLAN.md -- Firecrawl Integration (optional Reddit crawl, falls back to web_search)
+- [x] 06-02F-PLAN.md -- Venezuela Lens Auto-Run (Step 5.5 in daily pipeline)
+- [x] 06-02G-PLAN.md -- Score History + Rising Signals (fixed from always-empty to real delta tracking)
+- [x] 06-02H-PLAN.md -- Quota Tracking from Config (weekly_quotas.yaml wired to stats + pipeline)

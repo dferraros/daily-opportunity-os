@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Operationalize
 status: complete
-stopped_at: Milestone 2 complete -- all 4 phases done
+stopped_at: Phase 06 complete -- machine hardening done
 last_updated: "2026-04-03"
-last_activity: 2026-04-03 -- Phase 05 COMPLETE: all 8 commits. research_executor, dashboard.py, pain_library, TAM/benchmark wiring, notion_push.py, weekly ritual. Backfill pending.
+last_activity: 2026-04-03 -- Phase 06 COMPLETE: 10 commits. Schema cleanup (15 fields removed, 2 added), research scope top-5→top-20, deep dive auto-trigger, pipeline health monitor (12 silent failures → logged), Firecrawl client, VE lens auto-run Step 5.5, score history tracking, rising signals fixed, quota config wired.
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 17
   percent: 100
 ---
 
