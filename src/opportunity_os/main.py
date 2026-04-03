@@ -168,6 +168,56 @@ def stats():
         click.echo(f"   {lane:12} {count}")
     click.echo(f"{'='*50}\n")
 
+    # Weekly quota progress
+    try:
+        import yaml
+        import json
+        from pathlib import Path
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / "config" / "weekly_quotas.yaml"
+        metrics_path = project_root / "data" / "machine_metrics.jsonl"
+
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                quotas = yaml.safe_load(f).get("weekly_quotas", {})
+
+            from datetime import timedelta
+            week_start = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
+            week_signals = 0
+            week_opps = 0
+            week_deep_dives = 0
+            week_validations = 0
+
+            if metrics_path.exists():
+                with open(metrics_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            m = json.loads(line)
+                            if m.get("date", "") >= week_start:
+                                week_signals += m.get("signals_ingested", 0)
+                                week_opps += m.get("opportunities_scored", 0)
+                                week_deep_dives += m.get("deep_dives_produced", 0)
+                                week_validations += m.get("validations_run", 0)
+                        except json.JSONDecodeError:
+                            continue
+
+            sig_target = quotas.get("signals_ingested", {}).get("target", 40)
+            opp_target = quotas.get("structured_opportunities", {}).get("target", 10)
+            dd_target = quotas.get("deep_dives_produced", {}).get("target", 3)
+            val_target = quotas.get("validations_run", {}).get("target", 2)
+
+            click.echo(f" Weekly quotas (since {week_start}):")
+            click.echo(f"   Signals:     {week_signals}/{sig_target}")
+            click.echo(f"   Opps scored: {week_opps}/{opp_target}")
+            click.echo(f"   Deep dives:  {week_deep_dives}/{dd_target}")
+            click.echo(f"   Validations: {week_validations}/{val_target}")
+            click.echo("")
+    except Exception:
+        pass  # quota display is non-critical
+
     if not all_opps:
         click.echo(" No opportunities yet. Run 'opp-os daily' to start.")
 
