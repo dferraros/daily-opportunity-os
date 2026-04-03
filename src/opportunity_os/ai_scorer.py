@@ -243,8 +243,11 @@ Return ONLY this JSON (no prose, no markdown, no code block):
             model=MODEL,
             max_tokens=2000,
             system=(
-                "You are a business opportunity scoring analyst. Score opportunities on 16 dimensions "
-                "using the rubrics provided. Use the FULL 1-10 range — do not cluster around 5-6. "
+                "You are a hard-nosed business opportunity scoring analyst. Score on 16 dimensions. "
+                "DISTRIBUTION RULE: 30% of scores must be <= 5 (real weaknesses), 40% in 5-7 (neutral), "
+                "30% above 7 (genuine strengths). DO NOT cluster at 7-9. A new business idea has MANY weaknesses. "
+                "Score 3-4 means this dimension is a real headwind. Score 8-9 means exceptional edge. "
+                "Score 5 means neutral/unknown. When uncertain, score 5, not 7. "
                 "Return ONLY valid JSON with exactly the fields requested."
             ),
             messages=[{"role": "user", "content": prompt}],
@@ -327,7 +330,7 @@ def _heuristic_fallback(opp: dict) -> dict:
 
     dims = {}
 
-    # pain_severity
+    # pain_severity — baseline 2 (not 5); must earn higher score
     pain_s = sum([
         has(r"no tool", r"no software", r"excel", r"manual", r"paper"),
         has(r"daily", r"every day", r"urgent"),
@@ -335,24 +338,24 @@ def _heuristic_fallback(opp: dict) -> dict:
         geo == "venezuela",
         has(r"forum", r"complaint", r"frustrated"),
     ])
-    dims["pain_severity"] = clamp(5 + pain_s)
+    dims["pain_severity"] = clamp(2 + pain_s)
 
-    # market_size
-    ms = 5
+    # market_size — baseline 3 (not 5)
+    ms = 3
     if has(r"\$[0-9]+b", r"billion"): ms = 8
-    elif has(r"\$[0-9]+m", r"million"): ms = 6
+    elif has(r"\$[0-9]+m", r"million"): ms = 5
     if bucket == "venture_scale": ms += 1
     dims["market_size"] = clamp(ms)
 
-    # timing_tailwind
-    tt = 5
-    if has(r"regulation", r"mandator", r"new law"): tt += 2
+    # timing_tailwind — baseline 3 (not 5)
+    tt = 3
+    if has(r"regulation", r"mandator", r"new law"): tt += 3
     if has(r"growing fast", r"2025", r"2026"): tt += 1
     if geo == "venezuela": tt += 1
     dims["timing_tailwind"] = clamp(tt)
 
-    # willingness_to_pay
-    wtp_base = 4 if geo == "venezuela" else 5
+    # willingness_to_pay — Venezuela baseline 2 (was 4); global baseline 3 (was 5)
+    wtp_base = 2 if geo == "venezuela" else 3
     wtp_s = sum([
         has(r"pay", r"subscription", r"pricing"),
         has(r"currently paying", r"already pay"),
@@ -360,54 +363,54 @@ def _heuristic_fallback(opp: dict) -> dict:
     ])
     dims["willingness_to_pay"] = clamp(wtp_base + wtp_s)
 
-    # monetization_clarity
-    mc = 5
-    if has(r"subscription", r"saas", r"per month", r"per user"): mc += 1
-    if has(r"take rate", r"commission", r"transaction fee"): mc += 2
+    # monetization_clarity — baseline 3 (not 5)
+    mc = 3
+    if has(r"subscription", r"saas", r"per month", r"per user"): mc += 2
+    if has(r"take rate", r"commission", r"transaction fee"): mc += 3
     if bucket in ("fast_cash", "latam_asymmetry"): mc += 1
     dims["monetization_clarity"] = clamp(mc)
 
-    # speed_to_mvp
-    sm = 5
-    if has(r"whatsapp", r"bot", r"zapier", r"no-code"): sm += 2
+    # speed_to_mvp — baseline 3 (not 5)
+    sm = 3
+    if has(r"whatsapp", r"bot", r"zapier", r"no-code"): sm += 3
     if has(r"simple", r"lightweight", r"minimal"): sm += 1
     if bucket == "fast_cash": sm += 1
     dims["speed_to_mvp"] = clamp(sm)
 
-    # capital_efficiency
-    ce = 6
-    if has(r"bootstrap", r"no inventory", r"software only"): ce += 1
+    # capital_efficiency — baseline 4 (not 6)
+    ce = 4
+    if has(r"bootstrap", r"no inventory", r"software only"): ce += 2
     if bucket in ("fast_cash", "latam_asymmetry"): ce += 1
     dims["capital_efficiency"] = clamp(ce)
 
-    # distribution_accessibility
-    da = 5
-    if has(r"whatsapp", r"community", r"referral"): da += 2
+    # distribution_accessibility — baseline 3 (not 5)
+    da = 3
+    if has(r"whatsapp", r"community", r"referral"): da += 3
     if geo in ("venezuela", "latam"): da += 1
     dims["distribution_accessibility"] = clamp(da)
 
-    # competition_intensity (inverted — higher = less competition = better)
-    ci = 6
-    if has(r"fragmented", r"no leader", r"no direct"): ci += 1
+    # competition_intensity (inverted — higher = less competition = better) — baseline 4 (not 6)
+    ci = 4
+    if has(r"fragmented", r"no leader", r"no direct"): ci += 2
     if geo == "venezuela": ci += 2
     if bucket == "latam_asymmetry": ci += 1
     dims["competition_intensity"] = clamp(ci)
 
-    # defensibility
-    de = 5
-    if has(r"data moat", r"network effect", r"switching cost"): de += 2
+    # defensibility — baseline 3 (not 5)
+    de = 3
+    if has(r"data moat", r"network effect", r"switching cost"): de += 3
     if has(r"first mover", r"brand trust"): de += 1
     dims["defensibility"] = clamp(de)
 
-    # regional_fit
-    rf = 5
+    # regional_fit — baseline 3 (not 5)
+    rf = 3
     if geo == "venezuela": rf += 3
     elif geo == "latam": rf += 2
     if bucket == "latam_asymmetry": rf += 1
     if has(r"usdt", r"bolivar", r"zelle", r"informal"): rf += 1
     dims["regional_fit"] = clamp(rf)
 
-    # founder_fit
+    # founder_fit — stays formula-based (4 + wedges); min 4 is intentional
     ff = 4
     if has(r"growth", r"crm", r"lifecycle", r"a/b", r"paid ads"): ff += 1
     if has(r"latam", r"venezuela", r"spain", r"spanish"): ff += 1
@@ -415,27 +418,27 @@ def _heuristic_fallback(opp: dict) -> dict:
     if has(r"whatsapp", r"referral", r"distribution"): ff += 1
     dims["founder_fit"] = clamp(ff)
 
-    # ai_leverage
-    al = 5
-    if has(r"ai", r"automation", r"machine learning", r"nlp"): al += 2
+    # ai_leverage — baseline 3 (not 5)
+    al = 3
+    if has(r"ai", r"automation", r"machine learning", r"nlp"): al += 3
     if has(r"manual", r"human in the loop"): al += 1
     dims["ai_leverage"] = clamp(al)
 
-    # operational_simplicity
-    os_score = 6
-    if has(r"async", r"automated", r"self-service"): os_score += 1
+    # operational_simplicity — baseline 4 (not 6)
+    os_score = 4
+    if has(r"async", r"automated", r"self-service"): os_score += 2
     if has(r"physical", r"local team", r"warehouse"): os_score -= 2
     dims["operational_simplicity"] = clamp(os_score)
 
-    # regulatory_simplicity
-    rs = 6
+    # regulatory_simplicity — baseline 4 (not 6)
+    rs = 4
     if geo in ("venezuela", "latam") and bucket == "latam_asymmetry": rs += 2
     if has(r"fintech", r"banking", r"insurance", r"securities"): rs -= 2
     if has(r"license", r"regulated", r"compliance"): rs -= 1
     dims["regulatory_simplicity"] = clamp(rs)
 
-    # revenue_speed_score (numeric 1-10 — how fast first revenue arrives)
-    pr = 5
+    # revenue_speed_score — baseline 3 (not 5)
+    pr = 3
     if has(r"service", r"consulting", r"done for you"): pr += 2
     if has(r"whatsapp", r"direct outreach"): pr += 1
     if bucket == "fast_cash": pr += 2
