@@ -228,6 +228,23 @@ WEEKLY RITUAL (every Friday)
   └─ notion-packager            ← project: export to Notion
 ```
 
+## Free Research Sources (zero cost — use before paid APIs)
+
+Before using any paid API for research, check these free sources:
+
+| Source | How to use | Good for |
+|--------|-----------|---------|
+| `jina_search(query)` | `from opportunity_os.free_research import jina_search` | Web search, no key |
+| `search_hn(query)` | `from opportunity_os.free_research import search_hn` | Startup/tech signals |
+| `search_reddit(query, geo)` | `from opportunity_os.free_research import search_reddit` | Pain complaints in Spanish |
+| `get_google_trends(keywords)` | `from opportunity_os.free_research import get_google_trends` | Demand trends |
+| Brave Search MCP | Via Claude Code native (MCP installed) | General web search |
+| Tavily MCP | Via Claude Code native (MCP installed) | Research with citations |
+| Perplexity MCP | Via Claude Code native (MCP installed) | Cited academic/news |
+
+**Cost rule:** Never fire `research_executor.py` manually or in bulk. It uses paid Anthropic web_search.
+Research executor runs automatically on top-3 new opps per daily run only (~$0.06/day max).
+
 ## Working Style
 - Use web research aggressively via native Claude Code web search
 - Use subagents for scoped research (geo, TAM, competitive)
