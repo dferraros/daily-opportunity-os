@@ -156,6 +156,14 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         if not dry_run:
             append_opportunity(opp_dict)
 
+            # Step 8.5: Record score history
+            try:
+                final_score = float(opp_dict.get("final_score", 0))
+                if final_score > 0:
+                    append_opp_score_history(opp_dict["id"], final_score)
+            except Exception as e:
+                log_failure("score_history_append", e, opp_id=opp_dict.get("id", "unknown"))
+
     if ve_lens_count > 0:
         print(f"Step 5.5: Venezuela lens applied to {ve_lens_count} opportunities")
 
