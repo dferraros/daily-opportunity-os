@@ -78,11 +78,11 @@
     },
     "research-powerpack": {
       "command": "npx",
-      "args": ["-y", "research-powerpack-mcp"]
+      "args": ["-y", "mcp-researchpowerpack"]
     },
     "perplexity": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-perplexity-ask"],
+      "args": ["-y", "perplexity-mcp"],
       "env": {
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
       }
