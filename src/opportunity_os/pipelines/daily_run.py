@@ -488,6 +488,35 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         if report["total_tracked"] > 0:
             print(f"Score accuracy: {report['score_accuracy']:.0%} ({report['total_tracked']} tracked outcomes)")
 
+    # Step 15: Track quota progress from config
+    try:
+        import yaml
+        config_path = os.path.join(root, "config", "weekly_quotas.yaml")
+        with open(config_path, "r", encoding="utf-8") as f:
+            quotas_config = yaml.safe_load(f)
+        quotas = quotas_config.get("weekly_quotas", {})
+
+        from opportunity_os.storage import append_machine_metrics
+        metrics = {
+            "date": date,
+            "run_type": "daily",
+            "signals_ingested": len(raw_signals),
+            "opportunities_scored": summary["scored"],
+            "opportunities_killed": summary["killed"],
+            "deep_dives_produced": 0,  # counted separately via deep-dive command
+            "validations_run": len(validation_packages_for_sync) if validation_packages_for_sync else 0,
+            "quota_targets": {
+                "signals": quotas.get("signals_ingested", {}).get("target", 40),
+                "opps": quotas.get("structured_opportunities", {}).get("target", 10),
+                "deep_dives": quotas.get("deep_dives_produced", {}).get("target", 3),
+                "validations": quotas.get("validations_run", {}).get("target", 2),
+            },
+        }
+        append_machine_metrics(metrics)
+        print(f"Step 15: Quota progress tracked (signals: {metrics['signals_ingested']}, opps: {metrics['opportunities_scored']})")
+    except Exception as e:
+        log_failure("quota_tracking", e)
+
     return summary
 
 
