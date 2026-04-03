@@ -29,6 +29,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         read_all_opportunities,
         append_opportunity,
         dedupe_check,
+        append_opp_score_history,
     )
     from opportunity_os.normalization import normalize_signals_batch
     from opportunity_os.engines.kill_gate import evaluate_kill_gate
@@ -102,6 +103,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     lane_assigner = PortfolioLaneAssigner()
     scored_opps = []
     killed_opps = []
+    ve_lens_count = 0
 
     for opp_dict in valid_opps_dicts:
 
@@ -131,6 +133,15 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         # Step 5: Score
         opp_dict = score_opportunity(opp_dict)
 
+        # Step 5.5: Extra Venezuela lens pass for VE opps
+        if opp_dict.get("geography") == "venezuela":
+            try:
+                opp_dict = apply_geo_adjustments(opp_dict)
+                opp_dict["venezuela_lens_applied"] = True
+                ve_lens_count += 1
+            except Exception as e:
+                log_failure("venezuela_lens_auto", e, opp_id=opp_dict.get("id", "unknown"))
+
         # Step 6: Geo adjustments
         opp_dict = apply_geo_adjustments(opp_dict)
 
@@ -144,6 +155,9 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         # Step 8: Persist
         if not dry_run:
             append_opportunity(opp_dict)
+
+    if ve_lens_count > 0:
+        print(f"Step 5.5: Venezuela lens applied to {ve_lens_count} opportunities")
 
     # Step 9: Rank scored opportunities
     all_opps_sorted = sorted(
