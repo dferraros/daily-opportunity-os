@@ -205,6 +205,35 @@ def append_score_history(
         f.write(json.dumps(record) + "\n")
 
 
+def append_opp_score_history(opp_id: str, new_score: float, path: str = None) -> bool:
+    """
+    Append a score entry to the opportunity's own score_history list field.
+
+    Format: {"date": "YYYY-MM-DD", "score": float, "delta": float}
+    Delta = new_score - previous score. First entry delta = 0.
+
+    Returns True if updated, False if opp not found.
+    """
+    opp = get_opportunity_by_id(opp_id, path)
+    if not opp:
+        return False
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    history = opp.get("score_history") or []
+
+    # Skip if already recorded today
+    if history and history[-1].get("date") == today:
+        return True
+
+    prev_score = history[-1]["score"] if history else new_score
+    delta = round(new_score - prev_score, 4)
+
+    entry = {"date": today, "score": round(new_score, 4), "delta": delta}
+    history.append(entry)
+
+    return update_opportunity(opp_id, {"score_history": history}, path)
+
+
 # -- Deduplication ------------------------------------------------------------
 
 def dedupe_check(
