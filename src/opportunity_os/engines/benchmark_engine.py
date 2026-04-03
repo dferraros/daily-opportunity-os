@@ -359,3 +359,32 @@ def score_benchmark_fit(opp_dict: dict) -> float:
 
 # Known geos set (mirrors GEO_TAM_MULTIPLIERS from tam_engine)
 GEO_KNOWN = {"venezuela", "colombia", "mexico", "argentina", "spain", "latam", "global"}
+
+
+# ---------------------------------------------------------------------------
+# Pipeline adapter — single-dict interface used by daily_run.py
+# ---------------------------------------------------------------------------
+
+def run_benchmark(opp: dict) -> dict:
+    """
+    Pipeline adapter: accepts an opportunity dict and returns benchmark enrichment.
+
+    Returns a flat dict suitable for opp.update():
+      benchmark_archetype, benchmark_archetype_description,
+      analog_benchmarks, whitespace, benchmark_fit_score
+    """
+    archetype = classify_archetype(opp)
+    archetype_desc = BENCHMARK_ARCHETYPES.get(archetype, "")
+    vertical = opp.get("vertical", "")
+    geography = opp.get("geography", "global")
+    analogs = get_analog_benchmarks(vertical, geography)
+    whitespace = detect_whitespace(opp)
+    fit_score = score_benchmark_fit(opp)
+
+    return {
+        "benchmark_archetype": archetype,
+        "benchmark_archetype_description": archetype_desc,
+        "analog_benchmarks": analogs,
+        "whitespace": whitespace,
+        "benchmark_fit_score": fit_score,
+    }
