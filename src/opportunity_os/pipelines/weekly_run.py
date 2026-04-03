@@ -42,6 +42,42 @@ def run_weekly(dry_run: bool = False) -> dict:
         key=lambda x: x.get("final_score", 0),
     )[:3]
 
+    # Auto deep-dive on top 3 with score >= 7.0
+    print("Running auto deep-dive on top 3 weekly candidates (score >= 7.0)...")
+    try:
+        from opportunity_os.pipelines.deep_dive import run_deep_dive
+        from opportunity_os.reports import get_project_root
+        _root = get_project_root()
+        deep_dive_candidates = [
+            o for o in scored
+            if float(o.get("final_score", 0)) >= 7.0
+        ][:3]
+        for opp in deep_dive_candidates:
+            opp_id = opp.get("id", "unknown")
+            # Check if deep dive exists this week (any file matching opp_id with date >= week_start)
+            dd_dir = os.path.join(_root, "reports", "deep-dives")
+            already_exists = False
+            if os.path.exists(dd_dir):
+                for fname in os.listdir(dd_dir):
+                    if opp_id[:40] in fname and fname[:10] >= str(week_start):
+                        already_exists = True
+                        break
+            if already_exists:
+                print(f"  Deep dive already exists this week for {opp_id}, skipping")
+                continue
+            if not dry_run:
+                result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
+                if "error" not in result:
+                    print(f"  Auto deep-dive: {opp.get('name', 'unknown')[:50]} (score {opp.get('final_score', 0):.1f})")
+                else:
+                    print(f"  Deep dive failed: {result.get('error')}")
+            else:
+                print(f"  [dry-run] Would deep-dive: {opp.get('name', 'unknown')[:50]}")
+        if not deep_dive_candidates:
+            print("  No weekly candidates scored >= 7.0")
+    except Exception as e:
+        print(f"WARNING  Weekly auto deep-dive error (non-blocking): {e}")
+
     # Quota check
     quota_status = {
         "signals": len(all_opps),
