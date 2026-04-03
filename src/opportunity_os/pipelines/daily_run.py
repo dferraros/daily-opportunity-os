@@ -176,6 +176,21 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         print(f"WARNING  Distribution OS error (non-blocking): {e}")
 
+    # ─── Step 11.5: Research Executor — fire real web searches for pain + distribution ───
+    print("Step 11.5: Running Research Executor on top 5 opportunities...")
+    try:
+        from opportunity_os.research_executor import run_research_executor
+        for opp in top_5:
+            if not opp.get("research_executed_at"):
+                run_research_executor(opp)
+                print(f"  Research complete: {opp.get('name', 'unknown')[:50]}")
+            else:
+                print(f"  Already researched: {opp.get('name', 'unknown')[:50]}")
+    except ImportError as e:
+        print(f"WARNING  Research executor not available: {e}")
+    except Exception as e:
+        print(f"WARNING  Research executor error (non-blocking): {e}")
+
     # ─── Step 12: Save enriched records back to JSONL ───
     print("Step 12: Saving enriched opportunity records...")
     if not dry_run:
