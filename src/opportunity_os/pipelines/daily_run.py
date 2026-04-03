@@ -148,6 +148,37 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         scored_opps, key=lambda x: x.get("final_score", 0), reverse=True
     )
 
+    # ─── Step 9.5: TAM Estimation — estimate market size for all scored opps ───
+    print(f"Step 9.5: Running TAM estimation on {len(all_opps_sorted)} scored opportunities...")
+    try:
+        from opportunity_os.engines.tam_engine import estimate_tam_from_opp
+        for opp in all_opps_sorted:
+            if not opp.get("tam") and not opp.get("tam_usd_estimate"):
+                result = estimate_tam_from_opp(opp)
+                opp.update({k: v for k, v in result.items() if not k.startswith("_")})
+        tam_populated = sum(1 for o in all_opps_sorted if o.get("tam") or o.get("tam_usd_estimate"))
+        print(f"  TAM populated for {tam_populated}/{len(all_opps_sorted)} opportunities")
+    except ImportError as e:
+        print(f"WARNING  TAM engine not available: {e}")
+    except Exception as e:
+        print(f"WARNING  TAM estimation error (non-blocking): {e}")
+
+    # ─── Step 9.7: Benchmark Mapping — map top 10 to archetypes ───
+    print("Step 9.7: Running Benchmark Mapper on top 10 opportunities...")
+    top_10 = all_opps_sorted[:10]
+    try:
+        from opportunity_os.engines.benchmark_engine import run_benchmark
+        for opp in top_10:
+            if not opp.get("benchmark_archetype"):
+                result = run_benchmark(opp)
+                opp.update({k: v for k, v in result.items() if not k.startswith("_")})
+        bench_populated = sum(1 for o in top_10 if o.get("benchmark_archetype"))
+        print(f"  Benchmark archetypes populated for {bench_populated}/10 opportunities")
+    except ImportError as e:
+        print(f"WARNING  Benchmark engine not available: {e}")
+    except Exception as e:
+        print(f"WARNING  Benchmark mapping error (non-blocking): {e}")
+
     # ─── Step 10: Customer Pain OS — enrich top 5 scored opportunities ───
     print("Step 10: Running Customer Pain OS on top 5 opportunities...")
     top_5 = all_opps_sorted[:5]
@@ -265,6 +296,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         with open(sync_path, "w", encoding="utf-8") as f:
             json.dump(sync_payload, f, indent=2, default=str)
         print(f"  Notion sync payload ready: {len(sync_payload['upsert_opps'])} opps to upsert -> {sync_path}")
+        print(f"\n>>> NOTION SYNC READY: run `uv run python scripts/notion_push.py` or ask Claude to sync {sync_path}")
     except Exception as e:
         print(f"WARNING  Notion sync payload error (non-blocking): {e}")
 
