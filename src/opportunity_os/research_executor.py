@@ -22,6 +22,8 @@ import time
 from datetime import datetime
 from typing import Optional
 
+from opportunity_os.pipeline_monitor import log_failure
+
 MODEL = "claude-haiku-4-5-20251001"
 MAX_SEARCH_USES = 3
 
@@ -52,6 +54,21 @@ def run_research_executor(opp: dict) -> dict:
         opp.update(dist_result)
     except Exception as exc:
         print(f"  [research_executor] Distribution research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
+
+    # Firecrawl pain evidence enrichment (optional, guarded)
+    try:
+        from opportunity_os.firecrawl_client import crawl_pain_evidence
+        query = opp.get("problem_statement", opp.get("name", ""))[:100]
+        geo = opp.get("geography", "global")
+        firecrawl_phrases = crawl_pain_evidence(query, geography=geo)
+        if firecrawl_phrases:
+            existing = opp.get("exact_customer_phrases") or []
+            # Merge, dedupe, cap at 5
+            combined = list(dict.fromkeys(existing + firecrawl_phrases))[:5]
+            opp["exact_customer_phrases"] = combined
+            print(f"  Firecrawl: {len(firecrawl_phrases)} pain phrases found for {opp.get('name', '')[:40]}")
+    except Exception as e:
+        log_failure("firecrawl_pain_evidence", e, opp_id=opp.get("id", "unknown"))
 
     opp["research_executed_at"] = datetime.now().isoformat()
     print(f"  [research_executor] Research complete: {name[:50]}")
