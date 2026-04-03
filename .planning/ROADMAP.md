@@ -38,7 +38,7 @@ Plans:
 
 ### Phase 02: First Real Scout
 **Goal:** First daily run with real opportunity signals producing 3 reports
-**Status:** PENDING
+**Status:** COMPLETE (2026-04-01)
 **Success criteria:**
   1. data/raw/2026-04-01-signals.jsonl exists with 5+ real signals
   2. `opp-os daily` completes without errors
@@ -65,7 +65,7 @@ Plans:
 
 ### Phase 04: First Validation
 **Goal:** Top opportunities through Stage 2 validation (validation-runner skill)
-**Status:** PENDING -- requires Phase 02 to produce real scored opportunities first
+**Status:** COMPLETE (2026-04-01)
 **Success criteria:**
   1. 2-3 opportunities promoted to stage=validation
   2. validation_report.md generated for each
@@ -94,3 +94,20 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 5 to break down)
+
+### Phase 6: Machine Hardening + Intelligence Depth
+
+**Goal:** Harden the machine: remove schema rot, expand research from top-5 to top-20, add pipeline failure monitoring, auto-trigger deep dives, fix broken rising signals, auto-apply Venezuela lens on VE opps, read quota config from file. Zero silent failures. Full intelligence coverage.
+**Requirements**: Derived from parallel audit (skills-gap, data-model, pipeline-health, ecosystem)
+**Depends on:** Phase 5
+**Plans:** 8 plans
+
+Plans:
+- [ ] 06-01A-PLAN.md -- Schema Cleanup (remove 15 deprecated fields, add 4 missing)
+- [ ] 06-01B-PLAN.md -- Research Scope Expansion (top-5 to top-20)
+- [ ] 06-01C-PLAN.md -- Deep Dive Auto-Trigger (daily + weekly)
+- [ ] 06-01D-PLAN.md -- Pipeline Health Monitor (failure logging + audit CLI)
+- [ ] 06-02E-PLAN.md -- Firecrawl Integration (pain validation)
+- [ ] 06-02F-PLAN.md -- Venezuela Lens Auto-Run (Step 5.5)
+- [ ] 06-02G-PLAN.md -- Score History + Rising Signals fix
+- [ ] 06-02H-PLAN.md -- Quota Tracking from Config
