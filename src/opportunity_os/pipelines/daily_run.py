@@ -231,17 +231,16 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         log_failure("distribution_os", e)
 
-    # ─── Step 11.5: Research Executor — fire real web searches for pain + distribution ───
-    print(f"Step 11.5: Running Research Executor on top {len(top_20)} opportunities...")
+    # ─── Step 11.5: Research Executor — fire real web searches (top 3 ONLY — API costs $) ───
+    # Cost: ~$0.08-0.15 per opp with web_search. Top 3 = ~$0.50/day max.
+    # Never increase this without checking Anthropic billing first.
+    top_3_research = [o for o in all_opps_sorted[:3] if not o.get("research_executed_at")]
+    print(f"Step 11.5: Running Research Executor on top 3 new opportunities ({len(top_3_research)} unresearched)...")
     try:
         from opportunity_os.research_executor import run_research_executor
-        for i, opp in enumerate(top_20, 1):
-            if not opp.get("research_executed_at"):
-                print(f"  Researching opp {i}/{len(top_20)}: {opp.get('name', 'unknown')[:50]}")
-                run_research_executor(opp)
-                print(f"  Research complete: {opp.get('name', 'unknown')[:50]}")
-            else:
-                print(f"  Already researched ({i}/{len(top_20)}): {opp.get('name', 'unknown')[:50]}")
+        for i, opp in enumerate(top_3_research, 1):
+            print(f"  Researching {i}/{len(top_3_research)}: {opp.get('name', 'unknown')[:50]}")
+            run_research_executor(opp)
     except ImportError as e:
         print(f"WARNING  Research executor not available: {e}")
     except Exception as e:

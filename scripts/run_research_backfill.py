@@ -43,7 +43,7 @@ def main():
     parser = argparse.ArgumentParser(description="Research backfill for all opportunities")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true", help="Re-run even if research_executed_at exists")
-    parser.add_argument("--batch", type=int, default=20, help="Max number of opportunities to research (default: 20)")
+    parser.add_argument("--batch", type=int, default=5, help="Max opportunities to research (default: 5 — web_search costs $10/1000 searches)")
     args = parser.parse_args()
 
     from opportunity_os.storage import read_all_opportunities, update_opportunity
