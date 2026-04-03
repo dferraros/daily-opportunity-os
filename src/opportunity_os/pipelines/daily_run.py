@@ -246,6 +246,23 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         log_failure("research_executor", e)
 
+    # ─── Step 11.6: Free Research — Jina + HN + Reddit for opps 4-20 ───
+    # Zero cost. Covers what the paid API executor skips.
+    print("Step 11.6: Running free research (Jina + HN + Reddit) on top 20...")
+    try:
+        from opportunity_os.free_research import research_opportunity_free
+        free_researched = 0
+        for opp in all_opps_sorted[:20]:
+            if not opp.get("research_executed_at") and not opp.get("free_research_at"):
+                updates = research_opportunity_free(opp)
+                if updates:
+                    opp.update(updates)
+                    free_researched += 1
+                time.sleep(0.5)
+        print(f"  Free research complete: {free_researched} opps enriched")
+    except Exception as e:
+        log_failure("free_research", e)
+
     # ─── Step 11.8: Pain Library — persist pain clusters from researched opps ───
     print("Step 11.8: Updating pain library with researched opportunities...")
     try:
