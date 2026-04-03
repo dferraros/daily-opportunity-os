@@ -215,6 +215,51 @@ def apply_caps(score: float, opp: dict, weights: dict) -> float:
     return score
 
 
+def normalize_portfolio_scores(
+    opps: list,
+    raw_field: str = "final_score",
+    output_field: str = "final_score",
+    raw_backup_field: str = "raw_final_score",
+    output_min: float = 2.0,
+    output_max: float = 10.0,
+) -> list:
+    """Remap final_score across a portfolio to use the full output range.
+
+    Problem: AI scorer clusters all post-kill-gate opps at 7-9 (they passed the gate).
+    Solution: Normalize so the weakest survivor → output_min, strongest → output_max.
+
+    Only operates on non-killed, scored opps.
+    Backs up original score to raw_backup_field before overwriting.
+    Returns the same list with scores updated in-place.
+    Requires >= 3 opps with spread > 0.1 to activate; otherwise returns unchanged.
+    """
+    live = [
+        o for o in opps
+        if o.get(raw_field) is not None and not o.get("kill_decision")
+    ]
+    if len(live) < 3:
+        return opps
+
+    scores = [float(o[raw_field]) for o in live]
+    min_s, max_s = min(scores), max(scores)
+    spread = max_s - min_s
+
+    if spread < 0.1:  # All scores identical — skip
+        return opps
+
+    output_spread = output_max - output_min
+
+    for opp in opps:
+        raw = opp.get(raw_field)
+        if raw is None or opp.get("kill_decision"):
+            continue
+        opp[raw_backup_field] = round(float(raw), 4)
+        normalized = ((float(raw) - min_s) / spread) * output_spread + output_min
+        opp[output_field] = round(max(output_min, min(output_max, normalized)), 4)
+
+    return opps
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
