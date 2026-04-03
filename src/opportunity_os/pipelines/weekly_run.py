@@ -4,6 +4,37 @@ from datetime import datetime, timedelta
 import os
 
 
+def _get_rising_signals(all_opps: list, days: int = 7) -> list:
+    """
+    Find opportunities whose score increased by >= 0.5 in the last `days` days.
+    Returns top 3 sorted by delta descending.
+    """
+    from datetime import datetime, timedelta
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    risers = []
+    for opp in all_opps:
+        history = opp.get("score_history") or []
+        if len(history) < 2:
+            continue
+        # Find oldest entry within the window
+        recent = [h for h in history if h.get("date", "") >= cutoff]
+        if len(recent) < 2:
+            continue
+        first_in_window = recent[0]["score"]
+        latest = recent[-1]["score"]
+        delta = latest - first_in_window
+        if delta >= 0.5:
+            risers.append({
+                "name": opp.get("name", "Unknown"),
+                "id": opp.get("id", ""),
+                "score": latest,
+                "delta": round(delta, 2),
+                "geography": opp.get("geography", ""),
+            })
+    risers.sort(key=lambda x: x["delta"], reverse=True)
+    return risers[:3]
+
+
 def run_weekly(dry_run: bool = False) -> dict:
     """
     Run the weekly review pipeline.
@@ -95,7 +126,7 @@ def run_weekly(dry_run: bool = False) -> dict:
         "date_range": f"{week_start} – {today}",
         "promote": promote,
         "kill": to_kill,
-        "rising": [],  # TODO: compute from score history
+        "rising": _get_rising_signals(all_opps),
         "conviction_area": "Venezuela payments infrastructure",
         "quota_status": quota_status,
         "score_deltas": [],
