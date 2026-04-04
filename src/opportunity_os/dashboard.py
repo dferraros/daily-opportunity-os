@@ -686,7 +686,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                 annotations=[dict(text="GEO", x=0.5, y=0.5, showarrow=False,
                                   font=dict(size=11, color="#6B7280", family="JetBrains Mono"))],
             )
-            st.plotly_chart(fig_geo, width="stretch")
+            st.plotly_chart(fig_geo, width="stretch", key="cmd_geo_donut")
 
             # Lane horizontal bars
             lane_order = ["now", "soon", "strategic", "no"]
@@ -710,7 +710,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                 xaxis=dict(visible=False),
                 yaxis=dict(tickfont=dict(family="JetBrains Mono", size=10)),
             )
-            st.plotly_chart(fig_lane, width="stretch")
+            st.plotly_chart(fig_lane, width="stretch", key="cmd_lane_bars")
 
 
 # ─── Tab 2: All Opportunities ─────────────────────────────────────────────────
@@ -769,7 +769,7 @@ def tab_all_opportunities(opps, geo_filter, score_range):
         st.info("No opportunities match the current filters.")
         return
 
-    for o in filtered:
+    for opp_idx, o in enumerate(filtered):
         score = float(o.get(SCORE_FIELD) or 0)
         lane = o.get("portfolio_lane") or "—"
         geo = GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—"))
@@ -821,7 +821,7 @@ def tab_all_opportunities(opps, geo_filter, score_range):
 
                 has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
                 if has_dims:
-                    st.plotly_chart(radar_chart(o), width="stretch")
+                    st.plotly_chart(radar_chart(o), width="stretch", key=f"radar_all_{opp_idx}")
 
             # Distribution channels
             channels = o.get("top_distribution_channels")
@@ -954,7 +954,7 @@ def tab_pipeline_health():
         )
         fig.update_xaxes(gridcolor="#333")
         fig.update_yaxes(gridcolor="#333")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, width="stretch", key="pipeline_score_hist")
 
 
 # ─── Tab 4: Venezuela Focus ────────────────────────────────────────────────────
@@ -1020,7 +1020,7 @@ def tab_venezuela_focus(opps):
         )
         fig.update_xaxes(gridcolor="#333")
         fig.update_yaxes(gridcolor="#333")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, width="stretch", key="ve_wedge_bar")
 
     # ── Lane breakdown
     with col2:
@@ -1045,7 +1045,7 @@ def tab_venezuela_focus(opps):
             height=280,
             showlegend=False,
         )
-        st.plotly_chart(fig2, width="stretch")
+        st.plotly_chart(fig2, width="stretch", key="ve_lane_pie")
 
     st.divider()
 
@@ -1450,7 +1450,7 @@ def tab_deep_dive(opps: list):
         has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
         if has_dims:
             st.markdown("**Dimension Radar**")
-            st.plotly_chart(radar_chart(o), width="stretch")
+            st.plotly_chart(radar_chart(o), width="stretch", key=f"radar_dd_{opp_id}")
 
     with col_fields:
         st.markdown("**All Scored Fields**")
