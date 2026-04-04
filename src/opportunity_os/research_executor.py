@@ -61,7 +61,8 @@ def run_research_executor(opp: dict) -> dict:
                     f"{name} {geo_label} customers complaints demand",
                     f"{opp.get('vertical', '')} distribution channels {geo_label}",
                 ]
-            tavily_context = tavily_client.search_multi(all_queries)
+            # 2 results/query → ~$0.008 Tavily cost (down from $0.016 at 4 results)
+            tavily_context = tavily_client.search_multi(all_queries, max_results_per_query=2)
             if tavily_context:
                 print(f"  Tavily: {len(tavily_context)} chars of research context")
     except Exception as e:
@@ -231,7 +232,7 @@ Based on the research above, extract and return ONLY this JSON (no prose, no cod
     client = anthropic.Anthropic(api_key=api_key)
     response = client.messages.create(
         model=MODEL,
-        max_tokens=1200,
+        max_tokens=600,  # JSON output is ~300-400 tokens; 600 leaves headroom
         messages=[{"role": "user", "content": prompt}],
     )
 
