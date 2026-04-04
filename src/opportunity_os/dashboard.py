@@ -1239,6 +1239,229 @@ def tab_weekly_ritual(opps, quotas):
                     col.metric(label, value)
 
 
+# ─── Tab 6: Deep Dive (On-Demand Validation + Research) ──────────────────────
+
+def _run_subprocess(cmd: list, label: str) -> tuple[bool, str]:
+    """Run a subprocess command, return (success, output_text)."""
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=300,
+            encoding="utf-8",
+            errors="replace",
+        )
+        output = (result.stdout or "") + ("\n--- STDERR ---\n" + result.stderr if result.stderr else "")
+        return result.returncode == 0, output
+    except subprocess.TimeoutExpired:
+        return False, f"{label} timed out after 5 minutes."
+    except Exception as e:
+        return False, f"Could not run {label}: {e}"
+
+
+def _load_validation_report(opp_id: str) -> str | None:
+    """Find the most recent validation markdown for this opp_id."""
+    val_dir = PROJECT_ROOT / "reports" / "validation"
+    if not val_dir.exists():
+        return None
+    # Find files matching the opp_id (may have date prefix)
+    matches = sorted(val_dir.glob(f"*{opp_id[:20]}*-validation.md"), reverse=True)
+    if not matches:
+        # Fall back: any file containing the opp_id
+        matches = sorted(val_dir.glob("*-validation.md"), reverse=True)
+        matches = [m for m in matches if opp_id[:16] in m.name]
+    if matches:
+        try:
+            return matches[0].read_text(encoding="utf-8")
+        except Exception:
+            return None
+    return None
+
+
+def tab_deep_dive(opps: list):
+    st.header("Deep Dive")
+    st.caption("Select an opportunity and run automated validation + research expansion on-demand.")
+
+    active_opps = [o for o in opps if not o.get("kill_decision", False)]
+    if not active_opps:
+        st.info("No opportunities loaded. Run the daily pipeline first.")
+        return
+
+    sorted_opps = sorted(active_opps, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
+
+    # ── Opportunity selector
+    opp_labels = [
+        f"[{float(o.get(SCORE_FIELD) or 0):.1f}] {o.get('name', '—')[:60]}  ·  {(o.get('geography') or '').upper()}"
+        for o in sorted_opps
+    ]
+    selected_idx = st.selectbox(
+        "Select opportunity",
+        options=range(len(sorted_opps)),
+        format_func=lambda i: opp_labels[i],
+        index=0,
+        key="deep_dive_selector",
+    )
+
+    o = sorted_opps[selected_idx]
+    opp_id = o.get("id", "")
+    opp_name = o.get("name", "—")
+
+    # ── Selected opportunity summary card
+    st.markdown(hero_card(o, selected_idx + 1), unsafe_allow_html=True)
+
+    col_val, col_res = st.columns(2)
+
+    # ── Run Validation button
+    with col_val:
+        stage = o.get("stage") or "scout"
+        stage_color = {"validation": "#F59E0B", "validated": "#10B981", "killed": "#EF4444"}.get(stage, "#6B7280")
+        st.markdown(
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;'
+            f'color:{stage_color}">Current stage: {stage.upper()}</span>',
+            unsafe_allow_html=True,
+        )
+
+        run_val = st.button(
+            "▶ Run Validation Package",
+            key="btn_run_validation",
+            use_container_width=True,
+            help="Runs the full 8-section validation package for this opportunity",
+        )
+
+        if run_val:
+            if not opp_id:
+                st.error("Opportunity has no ID — cannot run validation.")
+            else:
+                with st.spinner(f"Running validation for: {opp_name[:40]}…"):
+                    ok, out = _run_subprocess(
+                        ["uv", "run", "--no-sync", "python", "-m", "opportunity_os.main", "validate", opp_id],
+                        "Validation",
+                    )
+                    st.session_state[f"val_result_{selected_idx}"] = (ok, out)
+                    st.cache_data.clear()
+
+        # Show validation result / existing report
+        if f"val_result_{selected_idx}" in st.session_state:
+            ok, out = st.session_state[f"val_result_{selected_idx}"]
+            if ok:
+                st.success("Validation completed.")
+            else:
+                st.warning("Validation run had errors — see output below.")
+            with st.expander("▸ Run output", expanded=False):
+                st.code(out[-3000:], language="text")
+
+        # Show existing validation report
+        val_md = _load_validation_report(opp_id)
+        if val_md:
+            with st.expander("▸ Latest validation report", expanded=True):
+                st.markdown(val_md[:6000])
+        else:
+            st.caption("No validation report found. Run validation above to generate one.")
+
+    # ── Expand Research button
+    with col_res:
+        research_fields = ["pain_validation_score", "exact_customer_phrases", "first_10_customer_path", "distribution_validated"]
+        has_research = any(o.get(f) for f in research_fields)
+        res_label = "✓ Research enriched" if has_research else "○ No research yet"
+        res_color = "#10B981" if has_research else "#6B7280"
+        st.markdown(
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;'
+            f'color:{res_color}">{res_label}</span>',
+            unsafe_allow_html=True,
+        )
+
+        run_res = st.button(
+            "▶ Expand Research (Pain + Distribution)",
+            key="btn_run_research",
+            use_container_width=True,
+            help="Runs combined pain + distribution research (1 API call, 1 web search)",
+        )
+
+        if run_res:
+            if not opp_id:
+                st.error("Opportunity has no ID.")
+            else:
+                with st.spinner(f"Running research for: {opp_name[:40]}…"):
+                    ok, out = _run_subprocess(
+                        ["uv", "run", "--no-sync", "python", "-m", "opportunity_os.main", "research", opp_id],
+                        "Research",
+                    )
+                    st.session_state[f"res_result_{selected_idx}"] = (ok, out)
+                    st.cache_data.clear()
+
+        if f"res_result_{selected_idx}" in st.session_state:
+            ok, out = st.session_state[f"res_result_{selected_idx}"]
+            if ok:
+                st.success("Research complete — reload to see updated fields.")
+            else:
+                st.warning("Research had errors.")
+            with st.expander("▸ Run output", expanded=False):
+                st.code(out[-3000:], language="text")
+
+        # Show current research data inline
+        if has_research:
+            with st.expander("▸ Current research data", expanded=True):
+                pvs = o.get("pain_validation_score")
+                if pvs is not None:
+                    st.metric("Pain Validation Score", f"{float(pvs):.1f} / 10")
+
+                phrases = o.get("exact_customer_phrases")
+                if phrases:
+                    st.markdown("**Customer phrases:**")
+                    for p in (phrases if isinstance(phrases, list) else [phrases])[:3]:
+                        st.markdown(f"> *{p}*")
+
+                workarounds = o.get("workarounds_found")
+                if workarounds:
+                    st.markdown("**Current workarounds:**")
+                    for w in (workarounds if isinstance(workarounds, list) else [workarounds])[:3]:
+                        st.markdown(f"- {w}")
+
+                dist_ok = o.get("distribution_validated")
+                if dist_ok is not None:
+                    st.markdown(f"**Distribution validated:** {'Yes' if dist_ok else 'No'}")
+
+                channels = o.get("top_distribution_channels")
+                if channels:
+                    ch_list = channels if isinstance(channels, list) else [channels]
+                    st.markdown("**Top channels:** " + " · ".join(str(c) for c in ch_list[:3]))
+
+                cac = o.get("estimated_cac_logic")
+                if cac:
+                    st.caption(f"CAC logic: {cac}")
+
+                path10 = o.get("first_10_customer_path")
+                if path10:
+                    st.markdown(f"**First 10 customers:** {str(path10)[:300]}")
+
+                trust = o.get("trust_mechanism_latam")
+                if trust:
+                    st.caption(f"Trust mechanism: {trust}")
+        else:
+            st.caption("No research data yet. Run 'Expand Research' above.")
+
+    st.divider()
+
+    # ── Radar chart + full field dump
+    col_chart, col_fields = st.columns([1, 1])
+    with col_chart:
+        has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
+        if has_dims:
+            st.markdown("**Dimension Radar**")
+            st.plotly_chart(radar_chart(o), use_container_width=True)
+
+    with col_fields:
+        st.markdown("**All Scored Fields**")
+        scored = {
+            k: v for k, v in o.items()
+            if isinstance(v, (int, float)) and k not in ("id",) and v is not None
+        }
+        for k, v in sorted(scored.items()):
+            st.caption(f"{k.replace('_', ' ').title()}: **{v}**")
+
+
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
@@ -1263,6 +1486,7 @@ def main():
         "Pipeline Health",
         "Venezuela Focus",
         "Weekly Ritual",
+        "Deep Dive",
     ])
 
     with tabs[0]:
@@ -1285,6 +1509,9 @@ def main():
 
     with tabs[4]:
         tab_weekly_ritual(all_opps, quotas)
+
+    with tabs[5]:
+        tab_deep_dive(all_opps)
 
 
 if __name__ == "__main__" or True:
