@@ -82,6 +82,39 @@ def validate(opp_id, dry_run):
 
 
 @cli.command()
+@click.argument("opp_id")
+def research(opp_id):
+    """Run combined pain + distribution research on a specific opportunity ID."""
+    from opportunity_os.storage import get_opportunity_by_id, update_opportunity
+    from opportunity_os.research_executor import run_research_executor
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    # Force re-run by clearing the research timestamp
+    opp.pop("research_executed_at", None)
+    click.echo(f"Running research for: {opp.get('name', opp_id)[:60]}")
+    enriched = run_research_executor(opp)
+    # Extract only the research fields to update (don't overwrite id/name/etc.)
+    research_fields = {
+        k: v for k, v in enriched.items()
+        if k in (
+            "pain_validation_score", "exact_customer_phrases", "pain_evidence_sources",
+            "workarounds_found", "distribution_validated", "top_distribution_channels",
+            "estimated_cac_logic", "first_10_customer_path", "trust_mechanism_latam",
+            "research_executed_at",
+        )
+    }
+    update_opportunity(opp_id, research_fields)
+    click.echo(f"  Pain score: {enriched.get('pain_validation_score', '—')}")
+    click.echo(f"  Distribution validated: {enriched.get('distribution_validated', '—')}")
+    click.echo(f"  First 10 path: {str(enriched.get('first_10_customer_path', '—'))[:80]}")
+    click.echo("Research complete.")
+
+
+@cli.command()
 @click.argument("query")
 @click.option("--min-score", default=0.0, help="Minimum score filter.")
 @click.option("--geo", default=None, help="Filter by geography.")
