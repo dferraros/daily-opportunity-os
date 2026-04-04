@@ -16,3 +16,4 @@ data/opportunities/
 reports/daily/*.json
 reports/daily/*.md
 exports/
+scripts/notion_matches.json
