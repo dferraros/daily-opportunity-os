@@ -77,8 +77,25 @@ h1, h2, h3, h4 {
     color: var(--text) !important;
 }
 
-p, span, div, li {
+/* Apply font only to actual text elements, not Streamlit internals */
+.stMarkdown p, .stMarkdown li, .stMarkdown span,
+.stText, .stCaption,
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] span,
+[data-testid="stWidgetLabel"] p,
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* Fix expander icon — Streamlit renders it as SVG, force-hide the text fallback */
+[data-testid="stExpander"] summary svg {
+    flex-shrink: 0 !important;
+}
+/* The expand arrow must inherit system fonts, not Plus Jakarta Sans */
+[data-testid="stExpander"] details > summary > div:first-child {
+    font-family: inherit !important;
 }
 
 /* ── Tab nav ── */
@@ -285,9 +302,14 @@ hr { border-color: var(--border) !important; }
 /* ── Main content ── */
 .stMainBlockContainer, [data-testid="stMainBlockContainer"],
 section[data-testid="stMain"] > div:first-child {
-    padding-top: 48px !important;
+    padding-top: 0px !important;
     padding-left: 32px !important;
     padding-right: 32px !important;
+}
+
+/* Push content below the fixed Streamlit header bar (~60px) */
+.stApp > section[data-testid="stMain"] {
+    padding-top: 60px !important;
 }
 </style>
 """
@@ -780,9 +802,8 @@ def render_sidebar(runs):
 
         auto_refresh = st.toggle("Auto-refresh (30s)", value=False)
         if auto_refresh:
-            import time
-            time.sleep(30)
-            st.rerun()
+            # Non-blocking: browser-level page reload every 30s
+            st.markdown('<meta http-equiv="refresh" content="30">', unsafe_allow_html=True)
 
         # Filters section
         st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
@@ -1012,7 +1033,7 @@ def tab_all_opportunities(opps, geo_filter, score_range):
         geo = GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—"))
         lane_color = LANE_COLORS.get(lane, "#888")
 
-        label = f"**{o.get('name', '—')}** · {geo} · Score: `{score:.2f}` · Lane: `{lane}` · Stage: `{o.get('stage', '—')}`"
+        label = f"{o.get('name', '—')}  ·  {geo}  ·  {score:.2f}/10  ·  {lane}  ·  {o.get('stage', 'scout')}"
 
         with st.expander(label, expanded=False):
             c1, c2 = st.columns([2, 1])
