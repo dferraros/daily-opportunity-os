@@ -1,0 +1,117 @@
+# Validation Package: B2B Credit Score Infrastructure for Informal LATAM Businesses
+
+**Generated:** 2026-04-04 | **Mode:** AUTO | **Score:** 8.27 | **Deadline:** 2026-04-11
+
+---
+## 1. Thesis
+
+**B2B Credit Score Infrastructure for Informal LATAM Businesses** | Score: 8.27 | Lane: SOON
+
+**Problem:** LATAM informal businesses (55%+ of SMBs) have no credit history accessible to lenders or B2B suppliers. A platform that ingests WhatsApp payment records, Zelle history, and supplier receipts to build alternative credit profiles for informal operators would unlock $50B+ in B2B credit currently locked out by formal scoring.
+
+**Why now:** Timing not specified
+
+**Pain evidence:** 55%+ informal SMBs shut out from credit. Daily suppliers demand upfront payment. Clear pain but not emergency.
+
+**Decision filters:**
+  - ⬜ Can sell fast — not yet scored
+  - ⬜ Can build lean — not yet scored
+  - ⬜ Can compound — not yet scored
+
+## 2. Customer + Pain
+
+**Target:** LATAM Payments And Collections operators and founders
+
+**Pain dimensions (1-10):**
+  - Severity: 8 | Urgency: None | Frequency: None | WTP: 7
+
+**Exact customer language:**
+  - Run pain intelligence agent to collect real customer language.
+
+**Current workarounds:**
+  - Not yet documented — ask in interviews.
+
+## 3. Interview Script
+
+**Target:** LATAM Payments And Collections operators — aim for 5 interviews in 7 days.
+
+**Logistics:** 20-minute call or WhatsApp voice. Record with permission. Focus on past behavior, not hypothetical intent.
+
+Q1. Tell me about the last time LATAM informal businesses (55%+ of SMBs) have no credit hist caused you a real headache — what happened?
+
+Q2. Walk me through how you currently handle LATAM informal businesses (55%+ of SMBs) have no credit hist day to day.
+
+Q3. How much time or money did you lose the last time LATAM informal businesses (55%+ of SMBs) have no credit hist went wrong?
+
+Q4. When did you last look for a solution to LATAM informal businesses (55%+ of SMBs) have no credit hist? What did you find?
+
+Q5. If B2B Credit Score Infrastructure for Informal LATAM Businesse existed today, what would your typical week look like?
+
+**After each interview:** Note exact words they use. Flag any kill signal immediately.
+
+## 4. Falsifiable Assumptions
+
+**A1 — Reachability:** We can identify and contact 10 LATAM Payments And Collections operators within 7 days via existing channels.
+
+**A2 — Pain is real:** At least 4 of 5 interviewees confirm the pain is severe enough that they have already tried to solve it.
+
+**A3 — WTP exists:** At least 2 of 5 interviewees express willingness to pay €49/mo or more.
+
+**Kill criteria (stop if any of these trigger):**
+1. Kill if: Cannot identify and contact 10 potential buyers within 7 days via direct outreach, WhatsApp, or existing network.
+2. Kill if: MVP requires more than 2 weeks of solo development OR costs more than $500 to test the core value proposition.
+3. Kill if: After 3 paying customers, there is no evidence of word-of-mouth, referral, data accumulation, or switching cost forming.
+
+
+## 5. Pricing Test
+
+**Model:** None
+**First offer:** None
+**Geography:** latam (adjust EUR/USD if needed)
+
+| Option | Price | Framing | Test signal |
+|--------|-------|---------|-------------|
+| **Option A — Anchor** | €122/mo | Premium tier, full feature set | Baseline willingness to pay |
+| **Option B — Target** | €49/mo | Standard access, core value | Primary conversion target |
+| **Option C — Entry** | €24/mo | Starter / first 10 customers discount | Remove price as objection |
+
+**Test method:** Present all three options in interviews. Ask: "If this existed tomorrow, which would you choose?" Note hesitation, not just answer.
+
+**Kill signal:** If Option C triggers "that's too expensive" → rethink unit economics.
+
+## 6. Landing Page Hypothesis
+
+**URL:** [create a simple Carrd or Notion page to test]
+
+**Headline:** The fastest way to solve LATAM informal businesses (55%+ of SMBs) have no credit hist
+
+**Subheadline:** Built for LATAM Payments And Collections operators and founders.
+
+**CTA:** Get early access
+
+**Conversion target:** 15% of visitors click CTA (cold traffic), 40%+ from outreach.
+
+**Traffic source:** Direct outreach to 50 targeted contacts. Do NOT run paid ads yet.
+
+**Pass condition:** 15+ people click CTA and leave their email within 7 days.
+
+**Kill signal:** Less than 5 clicks from 50 targeted outreach contacts → headline/framing is wrong, or the pain is not strong enough.
+
+## 7. Outreach Script
+
+**Primary channel:** LinkedIn
+**Trust note:** Mention a specific local reference or case. Lead with outcome in first message. WhatsApp preferred over email.
+
+**First message template:**
+> Hi [Name], I'm Daniel. I noticed you work in [CONTEXT]. I'm researching how LATAM Payments And Collections operators and founders handle LATAM informal businesses (55%+ of SMBs) have no c. Would you have 15 minutes this week to share your experience? Not a sales call — I'm trying to understand the problem.
+
+**List source:** LinkedIn Sales Navigator (filter: LATAM Payments And Collections operators and founders, LATAM) OR local community groups OR existing network.
+
+**Target:** 50 outreach messages → 10 replies → 5 interviews.
+
+**Expected response rate:** 10-20% (higher if warm intro, lower if cold).
+
+**Follow-up (48h no reply):**
+> "Quick follow-up — are you the right person to talk to about this, or should I reach out to someone else on your team?"
+
+**Kill signal:** Less than 5% reply rate from 30+ outreach messages → channel or target customer is wrong.
