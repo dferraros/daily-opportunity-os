@@ -19,7 +19,7 @@ st.set_page_config(
     page_title="Opportunity OS",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ─── Custom CSS — Intelligence Terminal Aesthetic ─────────────────────────────
@@ -43,12 +43,24 @@ CUSTOM_CSS = """
 /* ── Hide Streamlit chrome ── */
 #MainMenu {visibility: hidden !important;}
 footer {visibility: hidden !important;}
-[data-testid="stToolbar"] {display: none !important;}
 [data-testid="stDecoration"] {display: none !important;}
 [data-testid="stStatusWidget"] {display: none !important;}
-[data-testid="stHeader"] {display: none !important;}
 .stDeployButton {display: none !important;}
-header[data-testid="stHeader"] {display: none !important;}
+/* Keep header/toolbar visible for sidebar toggle — just make it blend */
+[data-testid="stHeader"] {
+    background: transparent !important;
+    border-bottom: none !important;
+}
+[data-testid="stToolbar"] {
+    background: transparent !important;
+}
+/* Style the sidebar collapse toggle button */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"] {
+    color: rgba(245,158,11,0.5) !important;
+    background: rgba(6,9,15,0.8) !important;
+    border: 1px solid rgba(245,158,11,0.15) !important;
+}
 
 .stApp {
     background: var(--bg) !important;
