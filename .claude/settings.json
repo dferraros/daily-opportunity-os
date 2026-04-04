@@ -64,6 +64,14 @@
               "PYTHONPATH": "src",
               "PYTHONIOENCODING": "utf-8"
             }
+          },
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/auto_rescore.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
           }
         ]
       }
@@ -105,21 +113,6 @@
           {
             "type": "command",
             "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/save_session_state.py",
-            "env": {
-              "PYTHONPATH": "src",
-              "PYTHONIOENCODING": "utf-8"
-            }
-          }
-        ]
-      }
-    ],
-    "FileChanged": [
-      {
-        "matcher": "data/opportunities/opportunities.jsonl",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/auto_rescore.py",
             "env": {
               "PYTHONPATH": "src",
               "PYTHONIOENCODING": "utf-8"
