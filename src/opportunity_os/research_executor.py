@@ -1,6 +1,10 @@
 """
-Research Executor — fires real Anthropic web_search_20250305 calls to validate
-pain and distribution fields for each opportunity.
+Research Executor — validates pain and distribution fields for each opportunity.
+
+Search strategy (in priority order):
+1. Tavily API  — primary, structured results, ~$0.004/search
+2. Firecrawl   — Reddit/forum crawl for exact customer phrases
+3. Anthropic web_search_20250305 — fallback if Tavily unavailable
 
 Follows ai_scorer.py patterns exactly:
 - _load_env_key() and _find_project_root() helpers
@@ -25,7 +29,7 @@ from typing import Optional
 from opportunity_os.pipeline_monitor import log_failure
 
 MODEL = "claude-haiku-4-5-20251001"
-MAX_SEARCH_USES = 1  # 1 search per call — web_search is $10/1000 searches, keep costs minimal
+MAX_SEARCH_USES = 1  # fallback: 1 search per call — web_search is $10/1000 searches
 
 
 def run_research_executor(opp: dict) -> dict:
@@ -43,27 +47,54 @@ def run_research_executor(opp: dict) -> dict:
 
     name = opp.get("name", "unknown")
 
-    # Combined pain + distribution in ONE API call with ONE web search (was 2 calls × 2 searches)
+    # Step 1: Tavily search (primary — structured results, cheap)
+    tavily_context = ""
     try:
-        combined = _execute_combined_research(opp, api_key)
-        opp.update(combined)
-    except Exception as exc:
-        print(f"  [research_executor] Combined research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
+        from opportunity_os import tavily_client
+        if tavily_client.is_available():
+            pain_queries = opp.get("_pain_queries") or []
+            dist_queries = opp.get("_distribution_queries") or []
+            all_queries = (pain_queries + dist_queries)[:3]
+            if not all_queries:
+                geo_label = "Venezuela" if opp.get("geography") == "venezuela" else (opp.get("geography") or "LATAM").upper()
+                all_queries = [
+                    f"{name} {geo_label} customers complaints demand",
+                    f"{opp.get('vertical', '')} distribution channels {geo_label}",
+                ]
+            tavily_context = tavily_client.search_multi(all_queries)
+            if tavily_context:
+                print(f"  Tavily: {len(tavily_context)} chars of research context")
+    except Exception as e:
+        log_failure("tavily_search", e, opp_id=opp.get("id", "unknown"))
 
-    # Firecrawl pain evidence enrichment (optional, guarded)
+    # Step 2: Firecrawl Reddit pain phrases (complements Tavily)
+    firecrawl_phrases = []
     try:
         from opportunity_os.firecrawl_client import crawl_pain_evidence
         query = opp.get("problem_statement", opp.get("name", ""))[:100]
         geo = opp.get("geography", "global")
-        firecrawl_phrases = crawl_pain_evidence(query, geography=geo)
-        if firecrawl_phrases:
-            existing = opp.get("exact_customer_phrases") or []
-            # Merge, dedupe, cap at 5
-            combined = list(dict.fromkeys(existing + firecrawl_phrases))[:5]
-            opp["exact_customer_phrases"] = combined
-            print(f"  Firecrawl: {len(firecrawl_phrases)} pain phrases found for {opp.get('name', '')[:40]}")
+        found = crawl_pain_evidence(query, geography=geo)
+        if found:
+            firecrawl_phrases = found
+            print(f"  Firecrawl: {len(found)} pain phrases found")
     except Exception as e:
         log_failure("firecrawl_pain_evidence", e, opp_id=opp.get("id", "unknown"))
+
+    # Step 3: Extract structured fields via Claude (with or without Tavily context)
+    try:
+        if tavily_context:
+            combined = _extract_from_tavily_results(opp, api_key, tavily_context)
+        else:
+            combined = _execute_combined_research(opp, api_key)
+        opp.update(combined)
+    except Exception as exc:
+        print(f"  [research_executor] Combined research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
+
+    # Merge Firecrawl phrases into exact_customer_phrases
+    if firecrawl_phrases:
+        existing = opp.get("exact_customer_phrases") or []
+        merged = list(dict.fromkeys(existing + firecrawl_phrases))[:5]
+        opp["exact_customer_phrases"] = merged
 
     opp["research_executed_at"] = datetime.now().isoformat()
     print(f"  [research_executor] Research complete: {name[:50]}")
@@ -155,6 +186,84 @@ After searching, return ONLY this JSON (no prose, no code block):
         ("pain_evidence_sources", 2, 300),
         ("workarounds_found", 2, 200),
         ("top_distribution_channels", 2, 100),
+    ]:
+        items = data.get(list_field)
+        if isinstance(items, list):
+            result[list_field] = [str(x)[:item_len] for x in items[:max_items] if x]
+
+    return result
+
+
+def _extract_from_tavily_results(opp: dict, api_key: str, tavily_context: str) -> dict:
+    """
+    Use Claude to extract structured fields from pre-fetched Tavily search results.
+    No web_search tool needed — Claude processes the context directly.
+    Cheaper: no tool-use overhead, just text input → JSON output.
+    """
+    import anthropic
+
+    name = opp.get("name", "")
+    problem = opp.get("problem_statement", "") or opp.get("description", "")
+    geography = opp.get("geography", "latam")
+    geo_label = "Venezuela" if geography == "venezuela" else geography.upper()
+
+    prompt = f"""You are analyzing research results for a business opportunity in {geo_label}.
+
+Opportunity: {name}
+Problem: {problem}
+
+RESEARCH RESULTS:
+{tavily_context[:3000]}
+
+Based on the research above, extract and return ONLY this JSON (no prose, no code block):
+{{
+  "pain_validation_score": <float 0-10, based on evidence of real demand>,
+  "exact_customer_phrases": [<up to 3 real complaint phrases from the results>],
+  "pain_evidence_sources": [<up to 2 source names/URLs from above>],
+  "workarounds_found": [<1-2 workarounds people currently use>],
+  "distribution_validated": <true if clear distribution channel found, else false>,
+  "top_distribution_channels": [<up to 3 channels with evidence>],
+  "estimated_cac_logic": "<channel + estimated CAC in one line>",
+  "first_10_customer_path": "<how to reach first 10 customers given this evidence, max 2 sentences>",
+  "trust_mechanism_latam": "<primary trust signal for {geo_label}>"
+}}"""
+
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=1200,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = response.content[0].text.strip() if response.content else ""
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        return {}
+
+    data = json.loads(match.group())
+    result = {}
+
+    for field, cast in [
+        ("pain_validation_score", lambda v: max(0.0, min(10.0, float(v)))),
+        ("distribution_validated", bool),
+        ("estimated_cac_logic", lambda v: str(v)[:300]),
+        ("first_10_customer_path", lambda v: str(v)[:500]),
+        ("trust_mechanism_latam", lambda v: str(v)[:300]),
+    ]:
+        val = data.get(field)
+        if val is not None:
+            try:
+                result[field] = cast(val)
+            except (ValueError, TypeError):
+                pass
+
+    for list_field, max_items, item_len in [
+        ("exact_customer_phrases", 3, 200),
+        ("pain_evidence_sources", 2, 300),
+        ("workarounds_found", 2, 200),
+        ("top_distribution_channels", 3, 100),
     ]:
         items = data.get(list_field)
         if isinstance(items, list):
