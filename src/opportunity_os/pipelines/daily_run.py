@@ -85,20 +85,28 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     for err in failed:
         summary["errors"].append(f"Normalization failed: {err.get('errors', [])}")
 
-    # Step 2.5: AI dimension scoring
-    print(f"Step 2.5: AI dimension scoring ({len(valid_opps)} opportunities)...")
-    try:
-        from opportunity_os.ai_scorer import score_dimensions_with_ai
-        valid_opps_dicts = []
-        for opp in valid_opps:
-            opp_dict = opp.model_dump()
-            opp_dict = score_dimensions_with_ai(opp_dict)
-            valid_opps_dicts.append(opp_dict)
-        print(f"  AI scoring complete: {sum(1 for o in valid_opps_dicts if o.get('ai_scored_at'))} scored by AI, "
-              f"{sum(1 for o in valid_opps_dicts if not o.get('ai_scored_at'))} used heuristic fallback")
-    except Exception as exc:
-        log_failure("ai_scoring", exc)
-        valid_opps_dicts = [opp.model_dump() for opp in valid_opps]
+    # Step 2.5: Heuristic pre-score → batch AI scoring (1 API call for survivors only)
+    # Cost strategy: heuristic first on all signals, then 1 batch AI call on top candidates.
+    # This replaces N individual API calls (1/opp) with at most 1 batch call for top 10.
+    from opportunity_os.ai_scorer import _heuristic_fallback, score_batch_with_ai
+    valid_opps_dicts = [_heuristic_fallback(opp.model_dump()) for opp in valid_opps]
+
+    # Only batch-score opps that look promising on heuristic (avoids scoring obvious throwaways)
+    candidates = [o for o in valid_opps_dicts if not o.get("ai_scored_at") and
+                  sum(o.get(d, 0) or 0 for d in ["pain_severity", "regional_fit", "market_size"]) >= 12][:10]
+    if candidates:
+        print(f"Step 2.5: Batch AI scoring {len(candidates)}/{len(valid_opps_dicts)} candidates (1 API call)...")
+        try:
+            scored = score_batch_with_ai(candidates)
+            scored_ids = {id(o) for o in candidates}
+            valid_opps_dicts = [o for o in valid_opps_dicts if id(o) not in scored_ids] + scored
+            ai_count = sum(1 for o in valid_opps_dicts if o.get("ai_scored_at"))
+            print(f"  AI scoring complete: {ai_count} scored by AI, "
+                  f"{len(valid_opps_dicts) - ai_count} used heuristic fallback")
+        except Exception as exc:
+            log_failure("ai_scoring", exc)
+    else:
+        print(f"Step 2.5: All {len(valid_opps_dicts)} opps scored by heuristic (no API call needed)")
 
     # Steps 3-8: Process each opportunity
     lane_assigner = PortfolioLaneAssigner()
