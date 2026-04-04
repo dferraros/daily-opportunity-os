@@ -528,14 +528,17 @@ def tab_command_center(opps, filtered_opps, quotas):
             top10 = sorted_opps[:10]
             rows = []
             for rank, o in enumerate(top10, 1):
+                tam = o.get("tam_usd_estimate") or o.get("tam")
+                tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
                 rows.append({
                     "Rank": rank,
                     "Name": o.get("name", "—"),
-                    "Geography": GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—")),
+                    "Geo": GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—")),
                     "Score": round(float(o.get(SCORE_FIELD) or 0), 2),
-                    "Raw Score": round(float(o.get("attractiveness_score") or 0), 2),
+                    "TAM": tam_str,
+                    "Bucket": (o.get("bucket") or "—").replace("_", " ").title(),
                     "Lane": (o.get("portfolio_lane") or "—").capitalize(),
-                    "Stage": (o.get("stage") or "—").capitalize(),
+                    "Wedge": str(o.get("daniels_wedge_score") or "—"),
                 })
 
             import pandas as pd
@@ -551,7 +554,6 @@ def tab_command_center(opps, filtered_opps, quotas):
                         max_value=10,
                         format="%.2f",
                     ),
-                    "Raw Score": st.column_config.NumberColumn(format="%.2f"),
                 },
             )
 
@@ -658,8 +660,42 @@ def tab_all_opportunities(opps, geo_filter, score_range):
                 st.markdown(f"**Problem Statement**  \n{o.get('problem_statement', '—')}")
                 st.markdown(f"**Target Customer**  \n{o.get('target_customer', '—')}")
                 if o.get("path_to_first_revenue"):
-                    st.markdown(f"**Path to First Revenue**  \n{o.get('path_to_first_revenue')}")
+                    st.markdown(f"**Path to First Revenue**  \n{str(o.get('path_to_first_revenue'))}")
+                if o.get("first_10_customer_path"):
+                    st.markdown(f"**First 10 Customers**  \n{str(o.get('first_10_customer_path'))[:300]}")
+                if o.get("exact_customer_phrases"):
+                    phrases = o.get("exact_customer_phrases")
+                    if isinstance(phrases, list):
+                        st.markdown("**Customer Language**")
+                        for p in phrases[:3]:
+                            st.markdown(f"> *{p}*")
+
+                # TAM section
+                tam = o.get("tam_usd_estimate") or o.get("tam")
+                sam = o.get("sam_usd_estimate")
+                som = o.get("som_usd_estimate")
+                if tam:
+                    tam_str = f"${float(tam)/1e6:.0f}M"
+                    sam_str = f"${float(sam)/1e6:.0f}M" if sam else "—"
+                    som_str = f"${float(som)/1e6:.0f}M" if som else "—"
+                    st.markdown(f"**TAM / SAM / SOM:** {tam_str} / {sam_str} / {som_str}")
+                    if o.get("tam_rationale"):
+                        st.caption(str(o.get("tam_rationale"))[:200])
+
             with c2:
+                # Intelligence scores
+                st.markdown("**Intelligence**")
+                intel = {
+                    "Thesis Fit": o.get("thesis_fit_score"),
+                    "Daniel Wedges": f"{o.get('daniels_wedge_score')}/6" if o.get('daniels_wedge_score') is not None else None,
+                    "Archetype": (o.get("benchmark_archetype") or "").replace("_", " ").title() or None,
+                    "Bucket": (o.get("bucket") or "").replace("_", " ").title() or None,
+                    "VE Wedge": (o.get("venezuela_wedge_category") or "").replace("_", " ").title() or None,
+                }
+                for k, v in intel.items():
+                    if v is not None:
+                        st.caption(f"{k}: **{v}**")
+
                 st.markdown("**Dimension Scores**")
                 dim_data = {
                     field.replace("_", " ").title(): o.get(field)
@@ -669,7 +705,16 @@ def tab_all_opportunities(opps, geo_filter, score_range):
                 if dim_data:
                     rows_dim = [{"Dimension": k, "Score": v} for k, v in dim_data.items()]
                     df_dim = pd.DataFrame(rows_dim)
-                    st.dataframe(df_dim, use_container_width=True, hide_index=True)
+                    st.dataframe(df_dim, use_container_width=True, hide_index=True,
+                                 column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=10, format="%d")})
+
+            # Distribution channels
+            channels = o.get("top_distribution_channels")
+            if channels:
+                if isinstance(channels, list):
+                    st.caption("Distribution: " + " · ".join(str(c) for c in channels[:3]))
+                else:
+                    st.caption(f"Distribution: {str(channels)[:150]}")
 
             # Kill info
             if o.get("kill_decision"):
