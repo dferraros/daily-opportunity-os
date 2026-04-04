@@ -147,26 +147,75 @@ h1, h2, h3 {
     color: var(--text) !important;
 }
 
-/* Sidebar */
+/* ── Sidebar base ── */
 [data-testid="stSidebar"] {
-    background: #080C16 !important;
-    border-right: 1px solid rgba(245,158,11,0.1) !important;
+    background: #06090F !important;
+    border-right: 1px solid rgba(245,158,11,0.12) !important;
 }
-[data-testid="stSidebar"] .stButton button {
-    background: rgba(245,158,11,0.1) !important;
-    border: 1px solid rgba(245,158,11,0.3) !important;
+[data-testid="stSidebar"] > div {
+    padding-top: 0 !important;
+}
+
+/* Sidebar widget labels */
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] .stWidgetLabel > label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9px !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: #4B5563 !important;
+}
+
+/* Sidebar button */
+[data-testid="stSidebar"] .stButton > button {
+    width: 100% !important;
+    background: transparent !important;
+    border: 1px solid rgba(245,158,11,0.35) !important;
     color: var(--amber) !important;
     font-family: 'JetBrains Mono', monospace !important;
-    letter-spacing: 1px !important;
+    font-size: 10px !important;
+    letter-spacing: 2px !important;
     text-transform: uppercase !important;
-    font-size: 11px !important;
+    padding: 10px 0 !important;
+    border-radius: 2px !important;
+    transition: all 0.2s ease !important;
 }
-[data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(245,158,11,0.2) !important;
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(245,158,11,0.08) !important;
     border-color: var(--amber) !important;
 }
 
-/* Select, slider */
+/* Sidebar selectbox */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+    background: rgba(13,20,32,0.8) !important;
+    border: 1px solid rgba(245,158,11,0.2) !important;
+    color: var(--text) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 11px !important;
+    border-radius: 2px !important;
+}
+
+/* Sidebar toggle */
+[data-testid="stSidebar"] [data-testid="stToggle"] p {
+    color: #4B5563 !important;
+}
+
+/* Sidebar slider track */
+[data-testid="stSidebar"] [data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+    background: var(--amber) !important;
+    border-color: var(--amber) !important;
+    box-shadow: 0 0 6px rgba(245,158,11,0.5) !important;
+}
+
+/* Sidebar caption */
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: #1F2937 !important;
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+}
+
+/* Global selectbox / multiselect */
 [data-testid="stSelectbox"] > div, [data-testid="stMultiSelect"] > div {
     background: var(--card) !important;
     border-color: rgba(245,158,11,0.2) !important;
@@ -214,6 +263,19 @@ hr {
     color: var(--text) !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 12px !important;
+}
+
+/* Main content area */
+.stMainBlockContainer, [data-testid="stMainBlockContainer"],
+section[data-testid="stMain"] > div:first-child {
+    padding-top: 24px !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+}
+
+/* Remove bottom padding from section blocks */
+[data-testid="stVerticalBlock"] > [data-testid="element-container"] {
+    margin-bottom: 0 !important;
 }
 
 @keyframes pulse {
@@ -553,26 +615,25 @@ def subsection(title: str) -> str:
 def render_sidebar(runs):
     with st.sidebar:
         last_ts = get_last_run_ts(runs)
+
+        # Header block
         st.markdown(f"""
-<div style="padding:16px 0 12px 0;border-bottom:1px solid rgba(245,158,11,0.2);margin-bottom:16px">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#F59E0B;
-       letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">// OPPORTUNITY OS</div>
-  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4B5563;
-       letter-spacing:1px">Last run: {fmt_ts(last_ts)}</div>
+<div style="padding:20px 16px 16px 16px;border-bottom:1px solid rgba(245,158,11,0.15);margin-bottom:20px;background:rgba(245,158,11,0.03)">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+       color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">
+    ◈ OPPORTUNITY OS
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#374151;
+       letter-spacing:1px;text-transform:uppercase">
+    {fmt_ts(last_ts)}
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
-        # Auto-refresh toggle
-        auto_refresh = st.toggle("Auto-refresh (30s)", value=False)
-        if auto_refresh:
-            st.caption("Refreshing every 30s...")
-            import time
-            time.sleep(30)
-            st.rerun()
+        # Actions section
+        st.markdown('<div style="padding:0 4px;font-family:JetBrains Mono,monospace;font-size:8px;color:#1F2937;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">ACTIONS</div>', unsafe_allow_html=True)
 
-        st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
-        # Run pipeline button
-        if st.button("▶ Run daily pipeline", use_container_width=True):
+        if st.button("▶  Run Daily Pipeline"):
             with st.spinner("Running pipeline…"):
                 try:
                     result = subprocess.run(
@@ -583,25 +644,30 @@ def render_sidebar(runs):
                         timeout=300,
                     )
                     if result.returncode == 0:
-                        st.success("Pipeline completed successfully.")
+                        st.success("Pipeline complete.")
                         st.cache_data.clear()
                     else:
                         st.error(f"Pipeline failed (exit {result.returncode})")
                         if result.stderr:
                             st.code(result.stderr[-2000:], language="text")
                 except subprocess.TimeoutExpired:
-                    st.error("Pipeline timed out after 5 minutes.")
+                    st.error("Timed out after 5 min.")
                 except Exception as e:
-                    st.error(f"Could not run pipeline: {e}")
+                    st.error(f"Error: {e}")
 
-        st.divider()
+        auto_refresh = st.toggle("Auto-refresh (30s)", value=False)
+        if auto_refresh:
+            import time
+            time.sleep(30)
+            st.rerun()
 
-        # Geography filter
-        
+        # Filters section
+        st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:0 4px;font-family:JetBrains Mono,monospace;font-size:8px;color:#1F2937;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;border-top:1px solid rgba(245,158,11,0.08);padding-top:16px">FILTERS</div>', unsafe_allow_html=True)
+
         geo_options = ["All", "Global", "LATAM", "Venezuela", "Spain", "US", "Other"]
-        geo_filter = st.selectbox("Geography", geo_options, index=0)
+        geo_filter = st.selectbox("Geography", geo_options, index=0, label_visibility="visible")
 
-        # Score range
         score_range = st.slider(
             "Score range",
             min_value=0.0,
@@ -610,8 +676,8 @@ def render_sidebar(runs):
             step=0.1,
         )
 
-        st.divider()
-        st.caption("Built with Streamlit · Opportunity OS v1")
+        # Footer
+        st.markdown('<div style="position:absolute;bottom:16px;left:16px;font-family:JetBrains Mono,monospace;font-size:8px;color:#1F2937;letter-spacing:1px">OPP-OS v1 · STREAMLIT</div>', unsafe_allow_html=True)
 
     return geo_filter, score_range
 
