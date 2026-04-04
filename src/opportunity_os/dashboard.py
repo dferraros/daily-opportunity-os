@@ -51,13 +51,7 @@ footer {visibility: hidden !important;}
 [data-testid="stStatusWidget"] {display: none !important;}
 .stDeployButton {display: none !important;}
 [data-testid="stHeader"] {
-    background: transparent !important;
-    border-bottom: none !important;
-    pointer-events: none !important;  /* don't intercept clicks on tabs below */
-}
-[data-testid="stToolbar"] {
-    background: transparent !important;
-    pointer-events: auto !important;  /* keep toolbar buttons (sidebar toggle) clickable */
+    display: none !important;
 }
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="collapsedControl"] {
