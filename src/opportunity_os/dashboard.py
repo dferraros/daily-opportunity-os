@@ -22,6 +22,197 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# ─── Custom CSS — Intelligence Terminal Aesthetic ─────────────────────────────
+
+CUSTOM_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --bg: #060A10;
+    --card: #0D1420;
+    --amber: #F59E0B;
+    --cyan: #22D3EE;
+    --green: #10B981;
+    --red: #EF4444;
+    --muted: #4B5563;
+    --text: #C9D1D9;
+    --text-dim: #6B7280;
+}
+
+.stApp {
+    background: var(--bg) !important;
+    background-image:
+        linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px) !important;
+    background-size: 40px 40px !important;
+    font-family: 'Syne', sans-serif !important;
+    color: var(--text) !important;
+}
+
+h1, h2, h3 {
+    font-family: 'Syne', sans-serif !important;
+    letter-spacing: -0.02em !important;
+    color: #F8FAFC !important;
+}
+
+/* Tab nav */
+.stTabs [data-baseweb="tab-list"] {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(245,158,11,0.2) !important;
+    gap: 0 !important;
+}
+.stTabs [data-baseweb="tab"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 11px !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: var(--muted) !important;
+    padding: 12px 20px !important;
+    background: transparent !important;
+    border: none !important;
+}
+.stTabs [aria-selected="true"] {
+    color: var(--amber) !important;
+    border-bottom: 2px solid var(--amber) !important;
+}
+
+/* Metrics */
+[data-testid="metric-container"] {
+    background: var(--card) !important;
+    border-left: 3px solid var(--amber) !important;
+    border-radius: 4px !important;
+    padding: 16px !important;
+}
+[data-testid="metric-container"] label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: var(--text-dim) !important;
+}
+[data-testid="metric-container"] [data-testid="stMetricValue"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 28px !important;
+    color: #F8FAFC !important;
+}
+[data-testid="metric-container"] [data-testid="stMetricDelta"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 11px !important;
+}
+
+/* DataFrames */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(245,158,11,0.15) !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+}
+[data-testid="stDataFrame"] table {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 12px !important;
+}
+[data-testid="stDataFrame"] th {
+    background: rgba(245,158,11,0.08) !important;
+    color: var(--amber) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+/* Expanders */
+[data-testid="stExpander"] {
+    border: none !important;
+    border-left: 3px solid rgba(245,158,11,0.3) !important;
+    background: var(--card) !important;
+    border-radius: 0 4px 4px 0 !important;
+    margin-bottom: 6px !important;
+}
+[data-testid="stExpander"]:hover {
+    border-left-color: var(--amber) !important;
+}
+[data-testid="stExpander"] summary {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 12px !important;
+    color: var(--text) !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: #080C16 !important;
+    border-right: 1px solid rgba(245,158,11,0.1) !important;
+}
+[data-testid="stSidebar"] .stButton button {
+    background: rgba(245,158,11,0.1) !important;
+    border: 1px solid rgba(245,158,11,0.3) !important;
+    color: var(--amber) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+}
+[data-testid="stSidebar"] .stButton button:hover {
+    background: rgba(245,158,11,0.2) !important;
+    border-color: var(--amber) !important;
+}
+
+/* Select, slider */
+[data-testid="stSelectbox"] > div, [data-testid="stMultiSelect"] > div {
+    background: var(--card) !important;
+    border-color: rgba(245,158,11,0.2) !important;
+}
+
+/* Divider */
+hr {
+    border-color: rgba(245,158,11,0.1) !important;
+}
+
+/* Alert boxes */
+[data-testid="stSuccess"] {
+    background: rgba(16,185,129,0.1) !important;
+    border-color: #10B981 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+[data-testid="stError"] {
+    background: rgba(239,68,68,0.1) !important;
+    border-color: #EF4444 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+[data-testid="stInfo"] {
+    background: rgba(34,211,238,0.07) !important;
+    border-color: #22D3EE !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+
+/* Caption */
+[data-testid="stCaptionContainer"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    color: var(--text-dim) !important;
+}
+
+/* Text input */
+[data-testid="stTextInput"] input {
+    background: var(--card) !important;
+    border-color: rgba(245,158,11,0.2) !important;
+    color: var(--text) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 12px !important;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px #F59E0B; }
+    50% { opacity: 0.4; box-shadow: 0 0 3px #F59E0B; }
+}
+</style>
+"""
+
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -190,6 +381,27 @@ def apply_filters(opps, geo_filter, score_min, score_max):
     return result
 
 
+def metric_card(label, value, delta_text=None, delta_ok=True, accent="#F59E0B"):
+    """Render a styled metric card as HTML for the intelligence terminal UI."""
+    delta_html = ""
+    if delta_text:
+        color = "#10B981" if delta_ok else "#EF4444"
+        delta_html = (
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+            f'color:{color};margin-top:4px">{delta_text}</div>'
+        )
+    return (
+        f'<div style="background:#0D1420;border-left:3px solid {accent};'
+        f'border-radius:4px;padding:16px 20px;margin:4px 0">'
+        f'<div style="font-family:Syne,sans-serif;font-size:11px;color:#6B7280;'
+        f'text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">{label}</div>'
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:28px;'
+        f'font-weight:500;color:#F8FAFC">{value}</div>'
+        f'{delta_html}'
+        f'</div>'
+    )
+
+
 # ─── Sidebar ─────────────────────────────────────────────────────────────────
 
 def render_sidebar(runs):
@@ -258,6 +470,12 @@ def render_sidebar(runs):
 # ─── Tab 1: Command Center ────────────────────────────────────────────────────
 
 def tab_command_center(opps, filtered_opps, quotas):
+    st.markdown("""
+<div style="display:flex;align-items:center;gap:16px;padding:8px 0 24px 0;border-bottom:1px solid rgba(245,158,11,0.2);margin-bottom:24px">
+  <div style="width:10px;height:10px;background:#F59E0B;border-radius:50%;box-shadow:0 0 8px #F59E0B;animation:pulse 2s infinite"></div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#F59E0B;letter-spacing:3px;text-transform:uppercase">OPPORTUNITY OS v1 &middot; LIVE &middot; {today}</span>
+</div>
+""".format(today=datetime.now().strftime("%Y-%m-%d %H:%M")), unsafe_allow_html=True)
     st.header("Command Center")
 
     active_opps = [o for o in filtered_opps if not o.get("kill_decision", False)]
@@ -282,20 +500,19 @@ def tab_command_center(opps, filtered_opps, quotas):
     # ── KPI Row
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.metric("Total Opportunities", len(active_opps))
+        st.markdown(metric_card("Total Opportunities", len(active_opps)), unsafe_allow_html=True)
     with c2:
-        st.metric("Top Score", f"{top_score:.2f}")
+        st.markdown(metric_card("Top Score", f"{top_score:.2f}", accent="#22D3EE"), unsafe_allow_html=True)
     with c3:
-        st.metric("VE Opportunities", len(ve_opps))
+        st.markdown(metric_card("VE Opportunities", len(ve_opps), accent="#F59E0B"), unsafe_allow_html=True)
     with c4:
-        quota_label = f"{recent_validations} / {interview_target}"
-        delta_color = "normal" if recent_validations > 0 else "inverse"
-        st.metric(
+        delta_ok = recent_validations >= interview_target
+        st.markdown(metric_card(
             "Validation Quota (7d)",
-            quota_label,
-            delta="On track" if recent_validations >= interview_target else "Behind",
-            delta_color=delta_color,
-        )
+            f"{recent_validations} / {interview_target}",
+            delta_text="ON TRACK" if delta_ok else "BEHIND TARGET",
+            delta_ok=delta_ok,
+        ), unsafe_allow_html=True)
 
     st.divider()
 
@@ -328,7 +545,12 @@ def tab_command_center(opps, filtered_opps, quotas):
                 use_container_width=True,
                 hide_index=True,
                 column_config={
-                    "Score": st.column_config.NumberColumn(format="%.2f"),
+                    "Score": st.column_config.ProgressColumn(
+                        "Score",
+                        min_value=0,
+                        max_value=10,
+                        format="%.2f",
+                    ),
                     "Raw Score": st.column_config.NumberColumn(format="%.2f"),
                 },
             )
@@ -860,6 +1082,9 @@ def tab_weekly_ritual(opps, quotas):
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
+    # Inject intelligence terminal CSS
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
     # Load data
     all_opps = load_opportunities()
     runs = load_automation_runs()
