@@ -26,7 +26,7 @@ st.set_page_config(
 
 CUSTOM_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
     --bg: #060A10;
@@ -39,6 +39,16 @@ CUSTOM_CSS = """
     --text: #C9D1D9;
     --text-dim: #6B7280;
 }
+
+/* ── Hide Streamlit chrome ── */
+#MainMenu {visibility: hidden !important;}
+footer {visibility: hidden !important;}
+[data-testid="stToolbar"] {display: none !important;}
+[data-testid="stDecoration"] {display: none !important;}
+[data-testid="stStatusWidget"] {display: none !important;}
+[data-testid="stHeader"] {display: none !important;}
+.stDeployButton {display: none !important;}
+header[data-testid="stHeader"] {display: none !important;}
 
 .stApp {
     background: var(--bg) !important;
@@ -503,16 +513,54 @@ def metric_card(label, value, delta_text=None, delta_ok=True, accent="#F59E0B"):
     )
 
 
+def section_header(title: str, subtitle: str = "") -> str:
+    """Render a styled terminal section header."""
+    sub = (
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+        f'color:#6B7280;margin-top:4px;letter-spacing:1px">{subtitle}</div>'
+        if subtitle else ""
+    )
+    return (
+        f'<div style="margin:0 0 20px 0;padding-bottom:16px;'
+        f'border-bottom:1px solid rgba(245,158,11,0.15)">'
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
+        f'color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">'
+        f'// {title}</div>'
+        f'</div>'
+    ) if not subtitle else (
+        f'<div style="margin:0 0 20px 0;padding-bottom:16px;'
+        f'border-bottom:1px solid rgba(245,158,11,0.15)">'
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
+        f'color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">'
+        f'// {title}</div>'
+        f'{sub}'
+        f'</div>'
+    )
+
+
+def subsection(title: str) -> str:
+    """Render a styled subsection label."""
+    return (
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
+        f'color:#6B7280;letter-spacing:2px;text-transform:uppercase;'
+        f'margin:20px 0 10px 0;padding-left:8px;'
+        f'border-left:2px solid rgba(245,158,11,0.3)">{title}</div>'
+    )
+
+
 # ─── Sidebar ─────────────────────────────────────────────────────────────────
 
 def render_sidebar(runs):
     with st.sidebar:
-        st.title("Opportunity OS")
-
-        # Last run
         last_ts = get_last_run_ts(runs)
-        st.caption(f"Last run: **{fmt_ts(last_ts)}**")
-        st.divider()
+        st.markdown(f"""
+<div style="padding:16px 0 12px 0;border-bottom:1px solid rgba(245,158,11,0.2);margin-bottom:16px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#F59E0B;
+       letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">// OPPORTUNITY OS</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4B5563;
+       letter-spacing:1px">Last run: {fmt_ts(last_ts)}</div>
+</div>
+""", unsafe_allow_html=True)
 
         # Auto-refresh toggle
         auto_refresh = st.toggle("Auto-refresh (30s)", value=False)
@@ -522,8 +570,8 @@ def render_sidebar(runs):
             time.sleep(30)
             st.rerun()
 
+        st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
         # Run pipeline button
-        st.subheader("Pipeline")
         if st.button("▶ Run daily pipeline", use_container_width=True):
             with st.spinner("Running pipeline…"):
                 try:
@@ -549,7 +597,7 @@ def render_sidebar(runs):
         st.divider()
 
         # Geography filter
-        st.subheader("Filters")
+        
         geo_options = ["All", "Global", "LATAM", "Venezuela", "Spain", "US", "Other"]
         geo_filter = st.selectbox("Geography", geo_options, index=0)
 
@@ -577,7 +625,7 @@ def tab_command_center(opps, filtered_opps, quotas):
   <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#F59E0B;letter-spacing:3px;text-transform:uppercase">OPPORTUNITY OS v1 &middot; LIVE &middot; {today}</span>
 </div>
 """.format(today=datetime.now().strftime("%Y-%m-%d %H:%M")), unsafe_allow_html=True)
-    st.header("Command Center")
+    st.markdown(section_header("Command Center"), unsafe_allow_html=True)
 
     active_opps = [o for o in filtered_opps if not o.get("kill_decision", False)]
     killed_opps = [o for o in filtered_opps if o.get("kill_decision", False)]
@@ -634,7 +682,7 @@ def tab_command_center(opps, filtered_opps, quotas):
     col_left, col_right = st.columns([1.5, 1])
 
     with col_left:
-        st.subheader("Full Ranking")
+        st.markdown(subsection("Full Ranking"), unsafe_allow_html=True)
         if not active_opps:
             st.info("No opportunities match current filters.")
         else:
@@ -718,7 +766,7 @@ def tab_command_center(opps, filtered_opps, quotas):
 def tab_all_opportunities(opps, geo_filter, score_range):
     import pandas as pd
 
-    st.header("All Opportunities")
+    st.markdown(section_header("All Opportunities"), unsafe_allow_html=True)
 
     # Local filters
     col1, col2, col3 = st.columns([2, 1, 1])
@@ -854,7 +902,7 @@ def tab_pipeline_health():
     import pandas as pd
     from collections import Counter
 
-    st.header("Pipeline Health")
+    st.markdown(section_header("Pipeline Health"), unsafe_allow_html=True)
 
     runs = load_automation_runs()
     metrics_list = load_machine_metrics()
@@ -864,7 +912,7 @@ def tab_pipeline_health():
 
     # ── Last 10 automation runs
     with col1:
-        st.subheader("Last 10 Automation Runs")
+        st.markdown(subsection("Last 10 Automation Runs"), unsafe_allow_html=True)
         if not runs:
             st.info("No automation runs recorded.")
         else:
@@ -887,7 +935,7 @@ def tab_pipeline_health():
 
     # ── Pipeline failures
     with col2:
-        st.subheader("Pipeline Failures by Step")
+        st.markdown(subsection("Pipeline Failures by Step"), unsafe_allow_html=True)
         if not failures:
             st.success("No pipeline failures logged.")
         else:
@@ -900,7 +948,7 @@ def tab_pipeline_health():
     st.divider()
 
     # ── Machine metrics table
-    st.subheader("Machine Metrics History")
+    st.markdown(subsection("Machine Metrics History"), unsafe_allow_html=True)
     if not metrics_list:
         st.info("No machine metrics recorded.")
     else:
@@ -923,7 +971,7 @@ def tab_pipeline_health():
     st.divider()
 
     # ── Score history chart (opps with multi-point history)
-    st.subheader("Score History (Opportunities with Tracked History)")
+    st.markdown(subsection("Score History"), unsafe_allow_html=True)
     all_opps = load_opportunities()
     opps_with_history = [o for o in all_opps if o.get("score_history") and len(o["score_history"]) > 1]
 
@@ -963,7 +1011,7 @@ def tab_venezuela_focus(opps):
     import pandas as pd
     from collections import Counter
 
-    st.header("Venezuela Focus")
+    st.markdown(section_header("Venezuela Focus"), unsafe_allow_html=True)
 
     ve_opps = [o for o in opps if (o.get("geography") or "").lower() == "venezuela"]
     ve_opps_sorted = sorted(ve_opps, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
@@ -992,7 +1040,7 @@ def tab_venezuela_focus(opps):
 
     # ── Wedge category breakdown
     with col1:
-        st.subheader("Wedge Category Breakdown")
+        st.markdown(subsection("Wedge Category Breakdown"), unsafe_allow_html=True)
         wedge_counts = Counter(
             o.get("venezuela_wedge_category") or "unclassified"
             for o in ve_opps
@@ -1024,7 +1072,7 @@ def tab_venezuela_focus(opps):
 
     # ── Lane breakdown
     with col2:
-        st.subheader("Lane Distribution")
+        st.markdown(subsection("Lane Distribution"), unsafe_allow_html=True)
         lane_counts = Counter(o.get("portfolio_lane") or "unknown" for o in ve_opps)
         labels = list(lane_counts.keys())
         values = list(lane_counts.values())
@@ -1050,7 +1098,7 @@ def tab_venezuela_focus(opps):
     st.divider()
 
     # ── VE opportunities table
-    st.subheader("Venezuela Opportunities — Ranked")
+    st.markdown(subsection("Venezuela Opportunities — Ranked"), unsafe_allow_html=True)
     rows = []
     for o in ve_opps_sorted:
         rows.append({
@@ -1072,7 +1120,7 @@ def tab_venezuela_focus(opps):
     )
 
     # ── Expandable detail per VE opp
-    st.subheader("Detail")
+    st.markdown(subsection("Detail"), unsafe_allow_html=True)
     for o in ve_opps_sorted:
         score = float(o.get(SCORE_FIELD) or 0)
         with st.expander(f"{o.get('name', '—')} — {score:.2f}", expanded=False):
@@ -1090,7 +1138,7 @@ def tab_weekly_ritual(opps, quotas):
     from datetime import datetime, timedelta
     import pandas as pd
 
-    st.header("Weekly Ritual")
+    st.markdown(section_header("Weekly Ritual"), unsafe_allow_html=True)
 
     active = [o for o in opps if not o.get("kill_decision", False)]
     sorted_opps = sorted(active, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
@@ -1119,7 +1167,7 @@ def tab_weekly_ritual(opps, quotas):
 
     # ── Rising signals
     with col1:
-        st.subheader("Rising Signals (score delta >= 0.5 in 7 days)")
+        st.markdown(subsection("Rising Signals"), unsafe_allow_html=True)
         seven_days_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         rising = []
         for o in active:
@@ -1142,7 +1190,7 @@ def tab_weekly_ritual(opps, quotas):
 
     # ── Top 3 to validate
     with col2:
-        st.subheader("Top 3 to Validate")
+        st.markdown(subsection("Top 3 to Validate"), unsafe_allow_html=True)
         not_in_validation = [
             o for o in sorted_opps
             if o.get("stage") not in ("validation", "validated", "killed")
@@ -1165,7 +1213,7 @@ def tab_weekly_ritual(opps, quotas):
 
     # ── Candidates to kill
     with col3:
-        st.subheader("Candidates to Kill (score < 4.0)")
+        st.markdown(subsection("Candidates to Kill (score < 4.0)"), unsafe_allow_html=True)
         kill_candidates = [
             o for o in active
             if float(o.get(SCORE_FIELD) or 0) < 4.0
@@ -1183,7 +1231,7 @@ def tab_weekly_ritual(opps, quotas):
 
     # ── Conviction area
     with col4:
-        st.subheader("This Week's Conviction Area")
+        st.markdown(subsection("This Week's Conviction Area"), unsafe_allow_html=True)
         # Use top VE opp name or top overall
         ve_opps = [o for o in sorted_opps if (o.get("geography") or "") == "venezuela"]
         if ve_opps:
@@ -1206,7 +1254,7 @@ def tab_weekly_ritual(opps, quotas):
     st.divider()
 
     # ── Weekly summary stats
-    st.subheader("Weekly Pipeline Summary (last 7 days)")
+    st.markdown(subsection("Weekly Pipeline Summary (last 7 days)"), unsafe_allow_html=True)
     if not metrics_list:
         st.info("No machine metrics yet.")
     else:
@@ -1281,7 +1329,7 @@ def _load_validation_report(opp_id: str) -> str | None:
 
 
 def tab_deep_dive(opps: list):
-    st.header("Deep Dive")
+    st.markdown(section_header("Deep Dive"), unsafe_allow_html=True)
     st.caption("Select an opportunity and run automated validation + research expansion on-demand.")
 
     active_opps = [o for o in opps if not o.get("kill_decision", False)]
