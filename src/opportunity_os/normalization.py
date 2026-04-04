@@ -111,16 +111,19 @@ def infer_missing_fields(raw: dict) -> dict:
     """
     raw = dict(raw)
 
-    # problem_statement <- description if missing
-    if not raw.get("problem_statement") and raw.get("description"):
-        raw["problem_statement"] = raw["description"]
+    # problem_statement <- raw_text / description / raw_notes if missing
+    if not raw.get("problem_statement"):
+        for src in ("raw_text", "description", "raw_notes"):
+            if raw.get(src):
+                raw["problem_statement"] = raw[src]
+                break
 
-    # trigger_signal <- raw_notes (or description) if missing
+    # trigger_signal <- raw_text / raw_notes / description if missing
     if not raw.get("trigger_signal"):
-        if raw.get("raw_notes"):
-            raw["trigger_signal"] = raw["raw_notes"][:300]
-        elif raw.get("description"):
-            raw["trigger_signal"] = raw["description"][:300]
+        for src in ("raw_text", "raw_notes", "description"):
+            if raw.get(src):
+                raw["trigger_signal"] = str(raw[src])[:300]
+                break
 
     # target_customer <- infer from vertical + geography if missing
     if not raw.get("target_customer"):
