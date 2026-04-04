@@ -528,7 +528,7 @@ def render_sidebar(runs):
             with st.spinner("Running pipeline…"):
                 try:
                     result = subprocess.run(
-                        ["uv", "run", "--no-sync", "python", "-m", "opportunity_os.main", "daily"],
+                        ["uv", "run", "--no-sync", "opp-os", "daily"],
                         cwd=str(PROJECT_ROOT),
                         capture_output=True,
                         text=True,
@@ -655,7 +655,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                 })
             df = pd.DataFrame(rows)
             st.dataframe(
-                df, use_container_width=True, hide_index=True,
+                df, width="stretch", hide_index=True,
                 column_config={
                     "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=10, format="%.1f"),
                 },
@@ -686,7 +686,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                 annotations=[dict(text="GEO", x=0.5, y=0.5, showarrow=False,
                                   font=dict(size=11, color="#6B7280", family="JetBrains Mono"))],
             )
-            st.plotly_chart(fig_geo, use_container_width=True)
+            st.plotly_chart(fig_geo, width="stretch")
 
             # Lane horizontal bars
             lane_order = ["now", "soon", "strategic", "no"]
@@ -710,7 +710,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                 xaxis=dict(visible=False),
                 yaxis=dict(tickfont=dict(family="JetBrains Mono", size=10)),
             )
-            st.plotly_chart(fig_lane, use_container_width=True)
+            st.plotly_chart(fig_lane, width="stretch")
 
 
 # ─── Tab 2: All Opportunities ─────────────────────────────────────────────────
@@ -821,7 +821,7 @@ def tab_all_opportunities(opps, geo_filter, score_range):
 
                 has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
                 if has_dims:
-                    st.plotly_chart(radar_chart(o), use_container_width=True)
+                    st.plotly_chart(radar_chart(o), width="stretch")
 
             # Distribution channels
             channels = o.get("top_distribution_channels")
@@ -880,10 +880,10 @@ def tab_pipeline_health():
                     "": icon,
                     "Timestamp": ts,
                     "Status": status.capitalize(),
-                    "Exit": exit_code if exit_code is not None else "—",
+                    "Exit": str(exit_code) if exit_code is not None else "—",
                     "Trigger": trigger,
                 })
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
     # ── Pipeline failures
     with col2:
@@ -895,7 +895,7 @@ def tab_pipeline_health():
             df_fail = pd.DataFrame(
                 [{"Step": k, "Count": v} for k, v in step_counts.most_common()],
             )
-            st.dataframe(df_fail, use_container_width=True, hide_index=True)
+            st.dataframe(df_fail, width="stretch", hide_index=True)
 
     st.divider()
 
@@ -918,7 +918,7 @@ def tab_pipeline_health():
                 "Top Category": m.get("top_category_this_run", "—"),
                 "Top Geo": m.get("top_geo_this_run", "—"),
             })
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
     st.divider()
 
@@ -954,7 +954,7 @@ def tab_pipeline_health():
         )
         fig.update_xaxes(gridcolor="#333")
         fig.update_yaxes(gridcolor="#333")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 # ─── Tab 4: Venezuela Focus ────────────────────────────────────────────────────
@@ -1020,7 +1020,7 @@ def tab_venezuela_focus(opps):
         )
         fig.update_xaxes(gridcolor="#333")
         fig.update_yaxes(gridcolor="#333")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # ── Lane breakdown
     with col2:
@@ -1045,7 +1045,7 @@ def tab_venezuela_focus(opps):
             height=280,
             showlegend=False,
         )
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width="stretch")
 
     st.divider()
 
@@ -1064,7 +1064,7 @@ def tab_venezuela_focus(opps):
     df = pd.DataFrame(rows)
     st.dataframe(
         df,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "Score": st.column_config.NumberColumn(format="%.2f"),
@@ -1336,7 +1336,7 @@ def tab_deep_dive(opps: list):
             else:
                 with st.spinner(f"Running validation for: {opp_name[:40]}…"):
                     ok, out = _run_subprocess(
-                        ["uv", "run", "--no-sync", "python", "-m", "opportunity_os.main", "validate", opp_id],
+                        ["uv", "run", "--no-sync", "opp-os", "validate", opp_id],
                         "Validation",
                     )
                     st.session_state[f"val_result_{selected_idx}"] = (ok, out)
@@ -1385,7 +1385,7 @@ def tab_deep_dive(opps: list):
             else:
                 with st.spinner(f"Running research for: {opp_name[:40]}…"):
                     ok, out = _run_subprocess(
-                        ["uv", "run", "--no-sync", "python", "-m", "opportunity_os.main", "research", opp_id],
+                        ["uv", "run", "--no-sync", "opp-os", "research", opp_id],
                         "Research",
                     )
                     st.session_state[f"res_result_{selected_idx}"] = (ok, out)
@@ -1450,7 +1450,7 @@ def tab_deep_dive(opps: list):
         has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
         if has_dims:
             st.markdown("**Dimension Radar**")
-            st.plotly_chart(radar_chart(o), use_container_width=True)
+            st.plotly_chart(radar_chart(o), width="stretch")
 
     with col_fields:
         st.markdown("**All Scored Fields**")
