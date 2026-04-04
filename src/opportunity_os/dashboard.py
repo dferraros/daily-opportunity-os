@@ -1992,8 +1992,179 @@ def tab_deep_dive(opps: list):
         else:
             st.caption("No validation report yet. Run validation above.")
 
+        # ── Kill Gate ────────────────────────────────────────────────────────
+        st.markdown("---")
+
+        def _kl(t):
+            return (
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                f'letter-spacing:0.07em;text-transform:uppercase;margin:10px 0 6px 0">{t}</div>'
+            )
+
+        def _yn(v):
+            c, lb = ("#22C55E", "PASS") if v else ("#EF4444", "FAIL")
+            return (
+                f'<span style="color:{c};font-weight:600;'
+                f'font-family:JetBrains Mono,monospace;font-size:10px">{lb}</span>'
+            )
+
+        _KILL_QS = [
+            ("Pain in 1 sentence?",      bool(o.get("problem_statement", ""))),
+            ("Named buyer?",              bool(o.get("target_customer"))),
+            ("CAC cheap enough?",         bool(o.get("estimated_cac_logic"))),
+            ("Revenue < 90 days?",        bool(o.get("path_to_first_revenue_description") or o.get("path_to_first_revenue"))),
+            ("MVP in 2–6 weeks?",         o.get("speed_to_mvp") is not None and float(o.get("speed_to_mvp") or 0) >= 6),
+            ("TAM > $10M?",              bool(tam_raw) and float(tam_raw) > 10_000_000),
+            ("Has wedge?",               bool(o.get("benchmark_archetype")) or float(o.get("daniels_wedge_score") or 0) >= 2),
+        ]
+        _kg_pass = sum(1 for _, a in _KILL_QS if a)
+        _kg_color = "#22C55E" if _kg_pass >= 6 else "#F59E0B" if _kg_pass >= 5 else "#EF4444"
+        _kg_killed = o.get("kill_decision", False)
+        _gate_html = "".join([
+            f'<div style="display:flex;justify-content:space-between;padding:4px 0;'
+            f'border-bottom:1px solid rgba(255,255,255,0.04)">'
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:#9CA3AF">{q}</span>'
+            f'{_yn(ans)}</div>'
+            for q, ans in _KILL_QS
+        ])
+        st.markdown(_kl("KILL GATE"), unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);'
+            f'border-radius:6px;padding:10px 12px">'
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:{_kg_color};'
+            f'font-weight:600;margin-bottom:8px">{_kg_pass}/7 PASSED'
+            f'{"  ·  KILLED" if _kg_killed else ""}</div>'
+            f'{_gate_html}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # ── Decision Filters ─────────────────────────────────────────────────
+        _COMPOUND = {
+            "local_clone", "workflow_unbundling", "smb_operating_system",
+            "fragmented_supply_marketplace", "ai_operator_replacement",
+        }
+        _df_stored = o.get("decision_filter_results") or {}
+        _FILTERS = [
+            ("Sell fast (< 2 wks)?", _df_stored.get("can_sell_fast",   o.get("distribution_validated") is True)),
+            ("Build lean (< $2K)?",  _df_stored.get("can_build_lean",  o.get("capital_efficiency") is not None and float(o.get("capital_efficiency") or 0) >= 6)),
+            ("Can compound?",        _df_stored.get("can_compound",    (o.get("benchmark_archetype") or "") in _COMPOUND)),
+        ]
+        _fp = sum(1 for _, a in _FILTERS if a)
+        _fc = "#22C55E" if _fp == 3 else "#F59E0B" if _fp >= 2 else "#EF4444"
+        _filter_html = "".join([
+            f'<div style="display:flex;justify-content:space-between;padding:4px 0;'
+            f'border-bottom:1px solid rgba(255,255,255,0.04)">'
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:#9CA3AF">{q}</span>'
+            f'{_yn(ans)}</div>'
+            for q, ans in _FILTERS
+        ])
+        st.markdown(_kl("DECISION FILTERS"), unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);'
+            f'border-radius:6px;padding:10px 12px">'
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:{_fc};'
+            f'font-weight:600;margin-bottom:8px">{_fp}/3 FILTERS'
+            f'{"  ·  CAP 5.0" if _fp < 2 else ""}</div>'
+            f'{_filter_html}</div>',
+            unsafe_allow_html=True,
+        )
+
         with st.expander("▸ All raw fields", expanded=False):
             st.json({k: v for k, v in o.items() if k != "score_history"})
+
+    # ── Decision Memo ─────────────────────────────────────────────────────────
+    st.divider()
+    st.markdown(subsection("Decision Memo"), unsafe_allow_html=True)
+
+    def _ml(t):
+        return (
+            '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+            f'letter-spacing:0.07em;text-transform:uppercase;margin:10px 0 6px 0">{t}</div>'
+        )
+
+    def _mtext(txt, color="#A1A1AA", size="12px"):
+        return (
+            f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:{size};'
+            f'color:{color};line-height:1.7">{txt}</div>'
+        )
+
+    _wedge_names = ["Growth & GTM", "Narrative", "LATAM intuition", "Fintech/crypto", "Speed to build", "Distribution"]
+    _wedge_n     = int(o.get("daniels_wedge_score") or 0)
+    _wedge_list  = _wedge_names[:_wedge_n]
+    _why_now     = o.get("why_now") or str(o.get("timing_tailwind") or "—")
+    _frp         = o.get("path_to_first_revenue_description") or str(o.get("path_to_first_revenue") or "—")
+    _risks       = o.get("kill_reasons") or []
+    _sam_raw     = o.get("sam_usd_estimate")
+    _som_raw     = o.get("som_usd_estimate")
+
+    mc1, mc2, mc3 = st.columns(3)
+
+    with mc1:
+        st.markdown(_ml("THESIS"), unsafe_allow_html=True)
+        st.markdown(_mtext(f"<em>{str(problem)[:220]}</em>"), unsafe_allow_html=True)
+
+        st.markdown(_ml("TARGET BUYER"), unsafe_allow_html=True)
+        st.markdown(_mtext(str(o.get("target_customer") or "—")[:180]), unsafe_allow_html=True)
+
+        st.markdown(_ml("MARKET SIZE"), unsafe_allow_html=True)
+        _msizes = [f'TAM <strong style="color:#3B82F6">{tam_str}</strong>']
+        if _sam_raw:
+            _msizes.append(f'SAM <strong>${float(_sam_raw)/1e6:.0f}M</strong>')
+        if _som_raw:
+            _msizes.append(f'SOM <strong>${float(_som_raw)/1e6:.0f}M</strong>')
+        st.markdown(_mtext("  ·  ".join(_msizes), color="#9CA3AF"), unsafe_allow_html=True)
+
+    with mc2:
+        st.markdown(_ml("WHY NOW"), unsafe_allow_html=True)
+        st.markdown(_mtext(str(_why_now)[:300]), unsafe_allow_html=True)
+
+        st.markdown(_ml("WHY DANIEL WINS"), unsafe_allow_html=True)
+        if _wedge_list:
+            _wins_html = "".join([
+                f'<div style="color:#22C55E;font-family:JetBrains Mono,monospace;'
+                f'font-size:10px;padding:2px 0">&#10003; {w}</div>'
+                for w in _wedge_list
+            ])
+            if _wedge_n < 2:
+                _wins_html += (
+                    '<div style="color:#F59E0B;font-family:JetBrains Mono,monospace;'
+                    'font-size:10px;padding:2px 0">&#9888; Founder-fit risk (&lt;2 wedges)</div>'
+                )
+            st.markdown(_wins_html, unsafe_allow_html=True)
+        else:
+            st.markdown(
+                '<div style="color:#F59E0B;font-family:JetBrains Mono,monospace;font-size:10px">'
+                '&#9888; No wedge match — run scorer</div>',
+                unsafe_allow_html=True,
+            )
+
+    with mc3:
+        st.markdown(_ml("KEY RISKS"), unsafe_allow_html=True)
+        if _risks:
+            st.markdown("".join([
+                f'<div style="color:#F59E0B;font-family:JetBrains Mono,monospace;'
+                f'font-size:10px;padding:2px 0">&#9888; {str(r)[:90]}</div>'
+                for r in _risks[:4]
+            ]), unsafe_allow_html=True)
+        else:
+            st.markdown(_mtext("No kill signals logged."), unsafe_allow_html=True)
+
+        st.markdown(_ml("NEXT TEST THIS WEEK"), unsafe_allow_html=True)
+        st.markdown(_mtext(str(_frp)[:220]), unsafe_allow_html=True)
+
+        # Conviction bar
+        _conv = min(100, round(score * 10))
+        _bc   = "#22C55E" if _conv >= 85 else "#3B82F6" if _conv >= 65 else "#F59E0B"
+        st.markdown(
+            f'<div style="margin-top:14px">'
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+            f'letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px">CONVICTION</div>'
+            f'<div style="background:rgba(255,255,255,0.05);border-radius:4px;height:6px;overflow:hidden">'
+            f'<div style="width:{_conv}%;height:100%;background:{_bc};border-radius:4px"></div></div>'
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:14px;color:{_bc};'
+            f'margin-top:6px;font-weight:600">{_conv}%</div></div>',
+            unsafe_allow_html=True,
+        )
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
