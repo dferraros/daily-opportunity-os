@@ -368,6 +368,107 @@ DIMENSION_FIELDS = [
 SCORE_FIELD = "final_score"
 
 
+def hero_card(o: dict, rank: int) -> str:
+    """Render a top-opportunity hero card as HTML."""
+    score = float(o.get(SCORE_FIELD) or 0)
+    lane = o.get("portfolio_lane") or "—"
+    geo = GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—"))
+    name = o.get("name", "—")
+    problem = (o.get("problem_statement") or "")[:180]
+    tam = o.get("tam_usd_estimate") or o.get("tam")
+    tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
+    bucket = (o.get("bucket") or "—").replace("_", " ").upper()
+    archetype = (o.get("benchmark_archetype") or "—").replace("_", " ").title()
+    wedge = o.get("daniels_wedge_score")
+
+    lane_color = LANE_COLORS.get(lane, "#888")
+    score_color = "#22D3EE" if score >= 9 else "#F59E0B" if score >= 7 else "#6B7280"
+
+    rank_labels = {1: "01", 2: "02", 3: "03"}
+    rank_str = rank_labels.get(rank, f"{rank:02d}")
+
+    return f"""
+<div style="background:#0D1420;border:1px solid rgba(245,158,11,0.12);border-left:3px solid {lane_color};
+     border-radius:6px;padding:20px 24px;margin-bottom:12px;position:relative;overflow:hidden">
+  <div style="position:absolute;top:16px;right:20px;
+       font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;
+       color:{score_color};line-height:1">{score:.1f}</div>
+  <div style="position:absolute;top:20px;right:22px;margin-top:40px;
+       font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;letter-spacing:1px">/10</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;
+       letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">#{rank_str} · {geo}</div>
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;
+       color:#F8FAFC;margin-bottom:10px;max-width:75%">{name}</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9CA3AF;
+       line-height:1.6;margin-bottom:14px;max-width:80%">{problem}</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
+      TAM <span style="color:#F59E0B">{tam_str}</span>
+    </span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
+      LANE <span style="color:{lane_color}">{lane.upper()}</span>
+    </span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
+      BUCKET <span style="color:#C9D1D9">{bucket}</span>
+    </span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
+      ARCHETYPE <span style="color:#C9D1D9">{archetype}</span>
+    </span>
+    {f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:#6B7280">WEDGES <span style="color:#22D3EE">{wedge}/6</span></span>' if wedge is not None else ''}
+  </div>
+</div>"""
+
+
+def radar_chart(o: dict):
+    """Return a Plotly radar chart for the opportunity's 8 key dimensions."""
+    dims = [
+        ("Pain", "pain_severity"),
+        ("Market", "market_size"),
+        ("WTP", "willingness_to_pay"),
+        ("Speed", "speed_to_mvp"),
+        ("Capital", "capital_efficiency"),
+        ("Distribution", "distribution_accessibility"),
+        ("Regional Fit", "regional_fit"),
+        ("Founder Fit", "founder_fit"),
+    ]
+    labels = [d[0] for d in dims]
+    values = [float(o.get(d[1]) or 5) for d in dims]
+    # Close the polygon
+    labels_closed = labels + [labels[0]]
+    values_closed = values + [values[0]]
+
+    fig = go.Figure(go.Scatterpolar(
+        r=values_closed,
+        theta=labels_closed,
+        fill="toself",
+        fillcolor="rgba(245,158,11,0.12)",
+        line=dict(color="#F59E0B", width=1.5),
+        mode="lines+markers",
+        marker=dict(color="#F59E0B", size=5),
+    ))
+    fig.update_layout(
+        polar=dict(
+            bgcolor="rgba(0,0,0,0)",
+            radialaxis=dict(
+                visible=True, range=[0, 10],
+                tickfont=dict(size=8, color="#6B7280"),
+                gridcolor="rgba(255,255,255,0.08)",
+                linecolor="rgba(255,255,255,0.08)",
+            ),
+            angularaxis=dict(
+                tickfont=dict(size=9, color="#9CA3AF", family="JetBrains Mono"),
+                gridcolor="rgba(255,255,255,0.08)",
+                linecolor="rgba(255,255,255,0.08)",
+            ),
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=20, b=20),
+        height=260,
+        showlegend=False,
+    )
+    return fig
+
+
 def apply_filters(opps, geo_filter, score_min, score_max):
     """Apply sidebar filters."""
     result = opps
@@ -516,78 +617,100 @@ def tab_command_center(opps, filtered_opps, quotas):
 
     st.divider()
 
-    # ── Top 10 table
-    col_left, col_right = st.columns([1.4, 1])
+    # ── Top 3 hero cards
+    if active_opps:
+        sorted_opps = sorted(active_opps, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
+        st.markdown(
+            '<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:#6B7280;'
+            'letter-spacing:3px;text-transform:uppercase;margin-bottom:12px">Top Opportunities</div>',
+            unsafe_allow_html=True,
+        )
+        for rank, o in enumerate(sorted_opps[:3], 1):
+            st.markdown(hero_card(o, rank), unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Table + charts
+    col_left, col_right = st.columns([1.5, 1])
 
     with col_left:
-        st.subheader("Top 10 Opportunities")
+        st.subheader("Full Ranking")
         if not active_opps:
             st.info("No opportunities match current filters.")
         else:
-            sorted_opps = sorted(active_opps, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
+            import pandas as pd
             top10 = sorted_opps[:10]
             rows = []
             for rank, o in enumerate(top10, 1):
                 tam = o.get("tam_usd_estimate") or o.get("tam")
                 tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
                 rows.append({
-                    "Rank": rank,
-                    "Name": o.get("name", "—"),
+                    "#": rank,
+                    "Name": (o.get("name", "—") or "—")[:40],
                     "Geo": GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—")),
                     "Score": round(float(o.get(SCORE_FIELD) or 0), 2),
                     "TAM": tam_str,
-                    "Bucket": (o.get("bucket") or "—").replace("_", " ").title(),
                     "Lane": (o.get("portfolio_lane") or "—").capitalize(),
                     "Wedge": str(o.get("daniels_wedge_score") or "—"),
                 })
-
-            import pandas as pd
             df = pd.DataFrame(rows)
             st.dataframe(
-                df,
-                use_container_width=True,
-                hide_index=True,
+                df, use_container_width=True, hide_index=True,
                 column_config={
-                    "Score": st.column_config.ProgressColumn(
-                        "Score",
-                        min_value=0,
-                        max_value=10,
-                        format="%.2f",
-                    ),
+                    "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=10, format="%.1f"),
                 },
             )
 
     with col_right:
-        st.subheader("Score Distribution")
         if not active_opps:
             st.info("No data.")
         else:
             from collections import Counter
-            bucket_counts = Counter(score_bucket(o.get(SCORE_FIELD)) for o in active_opps)
-            bucket_data = {b: bucket_counts.get(b, 0) for b in SCORE_BUCKET_ORDER}
 
-            fig = go.Figure(
-                go.Bar(
-                    x=list(bucket_data.keys()),
-                    y=list(bucket_data.values()),
-                    marker_color="#4C8BFF",
-                    text=list(bucket_data.values()),
-                    textposition="outside",
-                )
-            )
-            fig.update_layout(
+            # Geo donut
+            geo_counts = Counter(GEO_LABELS.get(o.get("geography", ""), "Other") for o in active_opps)
+            geo_colors = ["#F59E0B", "#22D3EE", "#10B981", "#A855F7", "#EF4444", "#6B7280"]
+            fig_geo = go.Figure(go.Pie(
+                labels=list(geo_counts.keys()),
+                values=list(geo_counts.values()),
+                hole=0.6,
+                marker=dict(colors=geo_colors[:len(geo_counts)]),
+                textfont=dict(family="JetBrains Mono", size=10),
+            ))
+            fig_geo.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                font_color="#fafafa",
-                margin=dict(l=10, r=10, t=10, b=30),
-                xaxis_title="Score bucket",
-                yaxis_title="Count",
-                height=320,
-                showlegend=False,
+                margin=dict(l=0, r=0, t=24, b=0), height=200,
+                showlegend=True,
+                legend=dict(font=dict(size=9, color="#9CA3AF", family="JetBrains Mono"),
+                            orientation="v", x=1.0),
+                annotations=[dict(text="GEO", x=0.5, y=0.5, showarrow=False,
+                                  font=dict(size=11, color="#6B7280", family="JetBrains Mono"))],
             )
-            fig.update_xaxes(tickfont_color="#fafafa", gridcolor="#333")
-            fig.update_yaxes(tickfont_color="#fafafa", gridcolor="#333")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig_geo, use_container_width=True)
+
+            # Lane horizontal bars
+            lane_order = ["now", "soon", "strategic", "no"]
+            lane_counts = Counter(o.get("portfolio_lane") or "—" for o in active_opps)
+            lane_vals = [lane_counts.get(l, 0) for l in lane_order]
+            lane_clrs = [LANE_COLORS.get(l, "#888") for l in lane_order]
+            fig_lane = go.Figure(go.Bar(
+                y=[l.upper() for l in lane_order],
+                x=lane_vals,
+                orientation="h",
+                marker_color=lane_clrs,
+                text=lane_vals,
+                textposition="outside",
+                textfont=dict(family="JetBrains Mono", size=10, color="#9CA3AF"),
+            ))
+            fig_lane.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                font_color="#9CA3AF",
+                margin=dict(l=0, r=30, t=8, b=0), height=160,
+                showlegend=False,
+                xaxis=dict(visible=False),
+                yaxis=dict(tickfont=dict(family="JetBrains Mono", size=10)),
+            )
+            st.plotly_chart(fig_lane, use_container_width=True)
 
 
 # ─── Tab 2: All Opportunities ─────────────────────────────────────────────────
@@ -696,17 +819,9 @@ def tab_all_opportunities(opps, geo_filter, score_range):
                     if v is not None:
                         st.caption(f"{k}: **{v}**")
 
-                st.markdown("**Dimension Scores**")
-                dim_data = {
-                    field.replace("_", " ").title(): o.get(field)
-                    for field in DIMENSION_FIELDS
-                    if o.get(field) is not None
-                }
-                if dim_data:
-                    rows_dim = [{"Dimension": k, "Score": v} for k, v in dim_data.items()]
-                    df_dim = pd.DataFrame(rows_dim)
-                    st.dataframe(df_dim, use_container_width=True, hide_index=True,
-                                 column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=10, format="%d")})
+                has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
+                if has_dims:
+                    st.plotly_chart(radar_chart(o), use_container_width=True)
 
             # Distribution channels
             channels = o.get("top_distribution_channels")
