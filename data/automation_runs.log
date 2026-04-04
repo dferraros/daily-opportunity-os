@@ -1,0 +1,5 @@
+/usr/bin/bash: line 1: bash: command not found
+C:\Users\ferra\OneDrive\Desktop\Projects\.worktrees\daily-opportunity-os\.venv\Scripts\python.exe: Error while finding module specification for 'opportunity_os.main' (ModuleNotFoundError: No module named 'opportunity_os')
+No raw signals found for 2026-04-04. Add signals to C:\Users\ferra\OneDrive\Desktop\Projects\.worktrees\daily-opportunity-os\data\raw\2026-04-04-signals.jsonl
+
+Done: 0 scored, 0 killed, 1 reports.
