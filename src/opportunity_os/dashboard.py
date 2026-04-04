@@ -87,12 +87,14 @@ h1, h2, h3, h4 {
 }
 
 /* Expander icon spans must NEVER get font overridden — the icon glyph only exists
-   in Streamlit's internal icon font; overriding renders the raw text "_arrowRight" */
+   in Streamlit's internal icon font; overriding renders the raw text "_arrowRight".
+   Use `initial` (browser default) NOT `inherit` — inherit would give Plus Jakarta Sans
+   which has no icon glyphs. initial lets Streamlit's icon font render correctly. */
 [data-testid="stExpander"] summary span,
 [data-testid="stExpander"] summary svg,
 [data-testid="stExpander"] details > summary > span:first-child {
-    font-family: inherit !important;
-    font-size: inherit !important;
+    font-family: initial !important;
+    font-size: initial !important;
 }
 
 /* ── Tab nav ── */
@@ -1623,7 +1625,7 @@ def tab_deep_dive(opps: list):
         f'VE WEDGE <span style="color:#F59E0B">{ve_wedge}</span></span>'
         if ve_wedge else ""
     )
-    st.markdown(f"""
+    st.html(f"""
 <div style="background:#18181B;
      border:1px solid rgba(255,255,255,0.07);border-left:3px solid {decision_color};
      border-radius:10px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden">
@@ -1666,7 +1668,7 @@ def tab_deep_dive(opps: list):
     </div>
   </div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
     # ── 3-column intelligence sections ────────────────────────────────────────
     col_pain, col_market, col_build = st.columns(3)
@@ -1921,7 +1923,7 @@ def tab_deep_dive(opps: list):
         research_check_fields = ["pain_validation_score", "exact_customer_phrases", "first_10_customer_path", "distribution_validated"]
         has_research = any(o.get(f) for f in research_check_fields)
 
-        st.markdown(f"""
+        st.html(f"""
 <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
   <span style="font-family:JetBrains Mono,monospace;font-size:10px;color:{stage_color};
        background:{stage_color}15;border:1px solid {stage_color}40;border-radius:3px;padding:5px 12px">
@@ -1933,7 +1935,7 @@ def tab_deep_dive(opps: list):
        border:1px solid {'#10B98140' if has_research else '#6B728035'};border-radius:3px;padding:5px 12px">
     {'✓ RESEARCH' if has_research else '○ NO RESEARCH'}
   </span>
-</div>""", unsafe_allow_html=True)
+</div>""")
 
         run_val = st.button(
             "▶ Run Validation Package",
