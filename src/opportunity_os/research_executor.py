@@ -43,17 +43,12 @@ def run_research_executor(opp: dict) -> dict:
 
     name = opp.get("name", "unknown")
 
+    # Combined pain + distribution in ONE API call with ONE web search (was 2 calls × 2 searches)
     try:
-        pain_result = _execute_pain_research(opp, api_key)
-        opp.update(pain_result)
+        combined = _execute_combined_research(opp, api_key)
+        opp.update(combined)
     except Exception as exc:
-        print(f"  [research_executor] Pain research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
-
-    try:
-        dist_result = _execute_distribution_research(opp, api_key)
-        opp.update(dist_result)
-    except Exception as exc:
-        print(f"  [research_executor] Distribution research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
+        print(f"  [research_executor] Combined research failed ({type(exc).__name__}: {exc}) for: {name[:40]}")
 
     # Firecrawl pain evidence enrichment (optional, guarded)
     try:
@@ -73,6 +68,99 @@ def run_research_executor(opp: dict) -> dict:
     opp["research_executed_at"] = datetime.now().isoformat()
     print(f"  [research_executor] Research complete: {name[:50]}")
     return opp
+
+
+def _execute_combined_research(opp: dict, api_key: str) -> dict:
+    """
+    Pain + distribution in ONE API call with ONE web search.
+    Replaces two separate _execute_pain_research + _execute_distribution_research calls.
+    Cost: 1 web search ($0.01) + 1 API call vs 2 searches ($0.02) + 2 API calls.
+    """
+    import anthropic
+
+    name = opp.get("name", "")
+    problem = opp.get("problem_statement", "") or opp.get("description", "")
+    geography = opp.get("geography", "latam")
+    geo_label = "Venezuela" if geography == "venezuela" else geography.upper()
+    vertical = opp.get("vertical", "")
+
+    # Build best available search query from pre-computed queries
+    pain_queries = opp.get("_pain_queries") or []
+    dist_queries = opp.get("_distribution_queries") or []
+    all_queries = (pain_queries + dist_queries)[:2]
+    if not all_queries:
+        all_queries = [f"{name} {geo_label} market demand customers"]
+
+    query_list = "\n".join(f"- {q}" for q in all_queries)
+
+    prompt = f"""Research this opportunity in {geo_label}: {name}
+Problem: {problem}
+Vertical: {vertical}
+
+Search queries to execute:
+{query_list}
+
+After searching, return ONLY this JSON (no prose, no code block):
+{{
+  "pain_validation_score": <float 0-10>,
+  "exact_customer_phrases": [<up to 2 complaint phrases in local language>],
+  "pain_evidence_sources": [<up to 2 source descriptions>],
+  "workarounds_found": [<1-2 current workarounds people use>],
+  "distribution_validated": <true/false>,
+  "top_distribution_channels": [<up to 2 confirmed channels>],
+  "estimated_cac_logic": "<channel + estimated CAC in one line>",
+  "first_10_customer_path": "<how to get first 10 customers, max 2 sentences>",
+  "trust_mechanism_latam": "<primary trust signal for this geography>"
+}}"""
+
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=1200,
+        tools=[{
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": 1,  # 1 search covers both pain + distribution
+        }],
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    text_blocks = [b.text for b in response.content if hasattr(b, "text") and getattr(b, "type", "") == "text"]
+    raw = " ".join(text_blocks).strip()
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        return {}
+
+    data = json.loads(match.group())
+    result = {}
+
+    for field, cast, cap in [
+        ("pain_validation_score", lambda v: max(0.0, min(10.0, float(v))), None),
+        ("distribution_validated", bool, None),
+        ("estimated_cac_logic", lambda v: str(v)[:300], None),
+        ("first_10_customer_path", lambda v: str(v)[:500], None),
+        ("trust_mechanism_latam", lambda v: str(v)[:300], None),
+    ]:
+        val = data.get(field)
+        if val is not None:
+            try:
+                result[field] = cast(val)
+            except (ValueError, TypeError):
+                pass
+
+    for list_field, max_items, item_len in [
+        ("exact_customer_phrases", 2, 200),
+        ("pain_evidence_sources", 2, 300),
+        ("workarounds_found", 2, 200),
+        ("top_distribution_channels", 2, 100),
+    ]:
+        items = data.get(list_field)
+        if isinstance(items, list):
+            result[list_field] = [str(x)[:item_len] for x in items[:max_items] if x]
+
+    return result
 
 
 def _execute_pain_research(opp: dict, api_key: str) -> dict:
