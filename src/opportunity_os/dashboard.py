@@ -86,15 +86,25 @@ h1, h2, h3, h4 {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* Expander icon spans must NEVER get font overridden — the icon glyph only exists
-   in Streamlit's internal icon font; overriding renders the raw text "_arrowRight".
-   Use `initial` (browser default) NOT `inherit` — inherit would give Plus Jakarta Sans
-   which has no icon glyphs. initial lets Streamlit's icon font render correctly. */
-[data-testid="stExpander"] summary span,
-[data-testid="stExpander"] summary svg,
-[data-testid="stExpander"] details > summary > span:first-child {
-    font-family: initial !important;
-    font-size: initial !important;
+/* Streamlit 1.56 uses Material Symbols Rounded for expander toggle icons.
+   Our .stApp font-family !important cascades down and breaks ligature rendering —
+   keyboard_arrow_right becomes visible text instead of a glyph.
+   Fix: restore the exact font on spans, then override <p> (the label) separately. */
+[data-testid="stExpander"] summary span {
+    font-family: 'Material Symbols Rounded' !important;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' -25, 'opsz' 20 !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    user-select: none !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+/* Label paragraph and any inline spans inside it use the custom font, not icon font */
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary p span {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
 }
 
 /* ── Tab nav ── */
