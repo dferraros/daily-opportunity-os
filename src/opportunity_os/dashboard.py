@@ -775,7 +775,7 @@ def tab_weekly_ritual(opps, quotas):
                     f"- **{o.get('name', '—')}** — Score: `{score:.2f}` · {geo} · Lane: `{o.get('portfolio_lane', '—')}`"
                 )
                 if o.get("path_to_first_revenue"):
-                    st.caption(f"  Path: {o.get('path_to_first_revenue')[:120]}…")
+                    st.caption(f"  Path: {str(o.get('path_to_first_revenue'))[:120]}…")
 
     st.divider()
 
