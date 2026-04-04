@@ -82,18 +82,17 @@ h1, h2, h3, h4 {
 [data-testid="stMarkdownContainer"] li,
 [data-testid="stMarkdownContainer"] span,
 [data-testid="stWidgetLabel"] p,
-[data-testid="stExpander"] summary p,
-[data-testid="stExpander"] summary span {
+[data-testid="stExpander"] summary p {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* Fix expander icon — Streamlit renders it as SVG, force-hide the text fallback */
-[data-testid="stExpander"] summary svg {
-    flex-shrink: 0 !important;
-}
-/* The expand arrow must inherit system fonts, not Plus Jakarta Sans */
-[data-testid="stExpander"] details > summary > div:first-child {
+/* Expander icon spans must NEVER get font overridden — the icon glyph only exists
+   in Streamlit's internal icon font; overriding renders the raw text "_arrowRight" */
+[data-testid="stExpander"] summary span,
+[data-testid="stExpander"] summary svg,
+[data-testid="stExpander"] details > summary > span:first-child {
     font-family: inherit !important;
+    font-size: inherit !important;
 }
 
 /* ── Tab nav ── */
@@ -180,11 +179,17 @@ h1, h2, h3, h4 {
     border-color: var(--border-strong) !important;
 }
 [data-testid="stExpander"] summary {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     color: var(--text) !important;
     padding: 12px 16px !important;
+}
+/* Only the label text paragraph gets our custom font */
+[data-testid="stExpander"] summary p {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
 }
 
 /* ── Sidebar ── */
