@@ -559,11 +559,13 @@ def _infer_kill_answers(opp_dict: dict) -> dict:
     pfr = opp_dict.get("path_to_first_revenue")
     answers["KG-04"] = bool(pfr) if isinstance(pfr, str) else (pfr or 5) >= 5
     answers["KG-05"] = (opp_dict.get("speed_to_mvp") or 5) >= 5
-    tam = opp_dict.get("tam_usd_estimate")
-    answers["KG-06"] = bool(tam and float(tam) >= 10_000_000)
+    # KG-06: if no TAM yet (raw scout signal), give benefit of the doubt —
+    # TAM estimation runs in step 9.5 after kill gate, so we can't penalise here.
+    tam = opp_dict.get("tam_usd_estimate") or opp_dict.get("tam")
+    answers["KG-06"] = True if not tam else float(tam) >= 10_000_000
     answers["KG-07"] = opp_dict.get("defensibility", 5) >= 5 or bool(
         opp_dict.get("venezuela_wedge_category")
-    )
+    ) or bool(opp_dict.get("problem_statement"))
     return answers
 
 
