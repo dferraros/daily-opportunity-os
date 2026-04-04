@@ -26,18 +26,22 @@ st.set_page_config(
 
 CUSTOM_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-    --bg: #060A10;
-    --card: #0D1420;
-    --amber: #F59E0B;
-    --cyan: #22D3EE;
-    --green: #10B981;
+    --bg: #09090B;
+    --surface: #18181B;
+    --surface-2: #27272A;
+    --border: rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.10);
+    --blue: #3B82F6;
+    --blue-dim: rgba(59,130,246,0.10);
+    --green: #22C55E;
     --red: #EF4444;
-    --muted: #4B5563;
-    --text: #C9D1D9;
-    --text-dim: #6B7280;
+    --amber: #F59E0B;
+    --text: #F4F4F5;
+    --text-muted: #A1A1AA;
+    --text-dim: #52525B;
 }
 
 /* ── Hide Streamlit chrome ── */
@@ -46,87 +50,93 @@ footer {visibility: hidden !important;}
 [data-testid="stDecoration"] {display: none !important;}
 [data-testid="stStatusWidget"] {display: none !important;}
 .stDeployButton {display: none !important;}
-/* Keep header/toolbar visible for sidebar toggle — just make it blend */
 [data-testid="stHeader"] {
     background: transparent !important;
     border-bottom: none !important;
 }
-[data-testid="stToolbar"] {
-    background: transparent !important;
-}
-/* Style the sidebar collapse toggle button */
+[data-testid="stToolbar"] { background: transparent !important; }
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="collapsedControl"] {
-    color: rgba(245,158,11,0.5) !important;
-    background: rgba(6,9,15,0.8) !important;
-    border: 1px solid rgba(245,158,11,0.15) !important;
+    color: var(--text-muted) !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 6px !important;
 }
 
+/* ── App shell ── */
 .stApp {
     background: var(--bg) !important;
-    background-image:
-        linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px) !important;
-    background-size: 40px 40px !important;
-    font-family: 'Syne', sans-serif !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
     color: var(--text) !important;
 }
 
-h1, h2, h3 {
-    font-family: 'Syne', sans-serif !important;
-    letter-spacing: -0.02em !important;
-    color: #F8FAFC !important;
+h1, h2, h3, h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.025em !important;
+    color: var(--text) !important;
 }
 
-/* Tab nav */
+p, span, div, li {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* ── Tab nav ── */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid rgba(245,158,11,0.2) !important;
+    border-bottom: 1px solid var(--border) !important;
     gap: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 11px !important;
-    letter-spacing: 2px !important;
-    text-transform: uppercase !important;
-    color: var(--muted) !important;
-    padding: 12px 20px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em !important;
+    text-transform: none !important;
+    color: var(--text-dim) !important;
+    padding: 10px 20px !important;
     background: transparent !important;
     border: none !important;
+    transition: color 0.15s ease !important;
+}
+.stTabs [data-baseweb="tab"]:hover {
+    color: var(--text-muted) !important;
 }
 .stTabs [aria-selected="true"] {
-    color: var(--amber) !important;
-    border-bottom: 2px solid var(--amber) !important;
+    color: var(--text) !important;
+    border-bottom: 2px solid var(--blue) !important;
 }
 
-/* Metrics */
+/* ── Metric cards ── */
 [data-testid="metric-container"] {
-    background: var(--card) !important;
-    border-left: 3px solid var(--amber) !important;
-    border-radius: 4px !important;
-    padding: 16px !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-top: 2px solid var(--blue) !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
 }
 [data-testid="metric-container"] label {
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 0.08em !important;
     text-transform: uppercase !important;
     color: var(--text-dim) !important;
 }
 [data-testid="metric-container"] [data-testid="stMetricValue"] {
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 28px !important;
-    color: #F8FAFC !important;
+    font-size: 26px !important;
+    font-weight: 500 !important;
+    color: var(--text) !important;
 }
 [data-testid="metric-container"] [data-testid="stMetricDelta"] {
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 11px !important;
 }
 
-/* DataFrames */
+/* ── DataFrames ── */
 [data-testid="stDataFrame"] {
-    border: 1px solid rgba(245,158,11,0.15) !important;
-    border-radius: 4px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
     overflow: hidden !important;
 }
 [data-testid="stDataFrame"] table {
@@ -134,165 +144,150 @@ h1, h2, h3 {
     font-size: 12px !important;
 }
 [data-testid="stDataFrame"] th {
-    background: rgba(245,158,11,0.08) !important;
-    color: var(--amber) !important;
+    background: var(--surface-2) !important;
+    color: var(--text-muted) !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
-    letter-spacing: 1px !important;
+    letter-spacing: 0.06em !important;
     text-transform: uppercase !important;
+    border-bottom: 1px solid var(--border-strong) !important;
 }
 
-/* Expanders */
+/* ── Expanders ── */
 [data-testid="stExpander"] {
-    border: none !important;
-    border-left: 3px solid rgba(245,158,11,0.3) !important;
-    background: var(--card) !important;
-    border-radius: 0 4px 4px 0 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    background: var(--surface) !important;
     margin-bottom: 6px !important;
+    transition: border-color 0.15s ease !important;
 }
 [data-testid="stExpander"]:hover {
-    border-left-color: var(--amber) !important;
+    border-color: var(--border-strong) !important;
 }
 [data-testid="stExpander"] summary {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 12px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
     color: var(--text) !important;
+    padding: 12px 16px !important;
 }
 
-/* ── Sidebar base ── */
+/* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: #06090F !important;
-    border-right: 1px solid rgba(245,158,11,0.12) !important;
+    background: #0C0C0E !important;
+    border-right: 1px solid var(--border) !important;
 }
-[data-testid="stSidebar"] > div {
-    padding-top: 0 !important;
-}
+[data-testid="stSidebar"] > div { padding-top: 0 !important; }
 
-/* Sidebar widget labels */
 [data-testid="stSidebar"] label,
-[data-testid="stSidebar"] p,
 [data-testid="stSidebar"] .stWidgetLabel > label {
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 9px !important;
-    letter-spacing: 2px !important;
-    text-transform: uppercase !important;
-    color: #4B5563 !important;
-}
-
-/* Sidebar button */
-[data-testid="stSidebar"] .stButton > button {
-    width: 100% !important;
-    background: transparent !important;
-    border: 1px solid rgba(245,158,11,0.35) !important;
-    color: var(--amber) !important;
-    font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 0.06em !important;
     text-transform: uppercase !important;
-    padding: 10px 0 !important;
-    border-radius: 2px !important;
-    transition: all 0.2s ease !important;
-}
-[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(245,158,11,0.08) !important;
-    border-color: var(--amber) !important;
-}
-
-/* Sidebar selectbox */
-[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
-    background: rgba(13,20,32,0.8) !important;
-    border: 1px solid rgba(245,158,11,0.2) !important;
-    color: var(--text) !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 11px !important;
-    border-radius: 2px !important;
-}
-
-/* Sidebar toggle */
-[data-testid="stSidebar"] [data-testid="stToggle"] p {
-    color: #4B5563 !important;
-}
-
-/* Sidebar slider track */
-[data-testid="stSidebar"] [data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
-    background: var(--amber) !important;
-    border-color: var(--amber) !important;
-    box-shadow: 0 0 6px rgba(245,158,11,0.5) !important;
-}
-
-/* Sidebar caption */
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: #1F2937 !important;
-    font-size: 9px !important;
-    letter-spacing: 1px !important;
-}
-
-/* Global selectbox / multiselect */
-[data-testid="stSelectbox"] > div, [data-testid="stMultiSelect"] > div {
-    background: var(--card) !important;
-    border-color: rgba(245,158,11,0.2) !important;
-}
-
-/* Divider */
-hr {
-    border-color: rgba(245,158,11,0.1) !important;
-}
-
-/* Alert boxes */
-[data-testid="stSuccess"] {
-    background: rgba(16,185,129,0.1) !important;
-    border-color: #10B981 !important;
-    font-family: 'JetBrains Mono', monospace !important;
-}
-[data-testid="stError"] {
-    background: rgba(239,68,68,0.1) !important;
-    border-color: #EF4444 !important;
-    font-family: 'JetBrains Mono', monospace !important;
-}
-[data-testid="stInfo"] {
-    background: rgba(34,211,238,0.07) !important;
-    border-color: #22D3EE !important;
-    font-family: 'JetBrains Mono', monospace !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.3); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--amber); }
-
-/* Caption */
-[data-testid="stCaptionContainer"] {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 10px !important;
     color: var(--text-dim) !important;
 }
 
-/* Text input */
-[data-testid="stTextInput"] input {
-    background: var(--card) !important;
-    border-color: rgba(245,158,11,0.2) !important;
-    color: var(--text) !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 12px !important;
+[data-testid="stSidebar"] .stButton > button {
+    width: 100% !important;
+    background: var(--blue-dim) !important;
+    border: 1px solid rgba(59,130,246,0.25) !important;
+    color: var(--blue) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 9px 0 !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(59,130,246,0.18) !important;
+    border-color: var(--blue) !important;
 }
 
-/* Main content area */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-strong) !important;
+    color: var(--text) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+    background: var(--blue) !important;
+    border-color: var(--blue) !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: var(--text-dim) !important;
+    font-size: 10px !important;
+}
+
+/* ── Global inputs ── */
+[data-testid="stSelectbox"] > div,
+[data-testid="stMultiSelect"] > div {
+    background: var(--surface) !important;
+    border-color: var(--border-strong) !important;
+}
+
+[data-testid="stTextInput"] input {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-strong) !important;
+    color: var(--text) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+}
+[data-testid="stTextInput"] input:focus {
+    border-color: var(--blue) !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12) !important;
+}
+
+/* ── Alerts ── */
+hr { border-color: var(--border) !important; }
+
+[data-testid="stSuccess"] {
+    background: rgba(34,197,94,0.07) !important;
+    border-color: rgba(34,197,94,0.3) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stError"] {
+    background: rgba(239,68,68,0.07) !important;
+    border-color: rgba(239,68,68,0.3) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stInfo"] {
+    background: var(--blue-dim) !important;
+    border-color: rgba(59,130,246,0.3) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stWarning"] {
+    background: rgba(245,158,11,0.07) !important;
+    border-color: rgba(245,158,11,0.3) !important;
+    border-radius: 6px !important;
+}
+
+/* ── Caption ── */
+[data-testid="stCaptionContainer"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 11px !important;
+    color: var(--text-dim) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ── Main content ── */
 .stMainBlockContainer, [data-testid="stMainBlockContainer"],
 section[data-testid="stMain"] > div:first-child {
-    padding-top: 24px !important;
+    padding-top: 48px !important;
     padding-left: 32px !important;
     padding-right: 32px !important;
-}
-
-/* Remove bottom padding from section blocks */
-[data-testid="stVerticalBlock"] > [data-testid="element-container"] {
-    margin-bottom: 0 !important;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 8px #F59E0B; }
-    50% { opacity: 0.4; box-shadow: 0 0 3px #F59E0B; }
 }
 </style>
 """
@@ -466,39 +461,39 @@ def hero_card(o: dict, rank: int) -> str:
     wedge = o.get("daniels_wedge_score")
 
     lane_color = LANE_COLORS.get(lane, "#888")
-    score_color = "#22D3EE" if score >= 9 else "#F59E0B" if score >= 7 else "#6B7280"
+    score_color = "#3B82F6" if score >= 9 else "#F59E0B" if score >= 7 else "#71717A"
 
     rank_labels = {1: "01", 2: "02", 3: "03"}
     rank_str = rank_labels.get(rank, f"{rank:02d}")
 
     return f"""
-<div style="background:#0D1420;border:1px solid rgba(245,158,11,0.12);border-left:3px solid {lane_color};
-     border-radius:6px;padding:20px 24px;margin-bottom:12px;position:relative;overflow:hidden">
+<div style="background:#18181B;border:1px solid rgba(255,255,255,0.06);border-left:3px solid {lane_color};
+     border-radius:8px;padding:20px 24px;margin-bottom:10px;position:relative;overflow:hidden">
   <div style="position:absolute;top:16px;right:20px;
-       font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;
+       font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:600;
        color:{score_color};line-height:1">{score:.1f}</div>
   <div style="position:absolute;top:20px;right:22px;margin-top:40px;
-       font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;letter-spacing:1px">/10</div>
-  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;
-       letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">#{rank_str} · {geo}</div>
-  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;
-       color:#F8FAFC;margin-bottom:10px;max-width:75%">{name}</div>
-  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9CA3AF;
+       font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;letter-spacing:1px">/10</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;
+       letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">#{rank_str} · {geo}</div>
+  <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;
+       color:#F4F4F5;margin-bottom:8px;max-width:75%;letter-spacing:-0.01em">{name}</div>
+  <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#A1A1AA;
        line-height:1.6;margin-bottom:14px;max-width:80%">{problem}</div>
   <div style="display:flex;gap:16px;flex-wrap:wrap">
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
-      TAM <span style="color:#F59E0B">{tam_str}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+      TAM <span style="color:#3B82F6">{tam_str}</span>
     </span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
       LANE <span style="color:{lane_color}">{lane.upper()}</span>
     </span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
-      BUCKET <span style="color:#C9D1D9">{bucket}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+      BUCKET <span style="color:#A1A1AA">{bucket}</span>
     </span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280">
-      ARCHETYPE <span style="color:#C9D1D9">{archetype}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+      ARCHETYPE <span style="color:#A1A1AA">{archetype}</span>
     </span>
-    {f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:#6B7280">WEDGES <span style="color:#22D3EE">{wedge}/6</span></span>' if wedge is not None else ''}
+    {f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:#52525B">WEDGES <span style="color:#3B82F6">{wedge}/6</span></span>' if wedge is not None else ''}
   </div>
 </div>"""
 
@@ -525,10 +520,10 @@ def radar_chart(o: dict):
         r=values_closed,
         theta=labels_closed,
         fill="toself",
-        fillcolor="rgba(245,158,11,0.12)",
-        line=dict(color="#F59E0B", width=1.5),
+        fillcolor="rgba(59,130,246,0.10)",
+        line=dict(color="#3B82F6", width=1.5),
         mode="lines+markers",
-        marker=dict(color="#F59E0B", size=5),
+        marker=dict(color="#3B82F6", size=4),
     ))
     fig.update_layout(
         polar=dict(
@@ -553,6 +548,128 @@ def radar_chart(o: dict):
     return fig
 
 
+def score_gauge(value: float, title: str, max_val: float = 10.0):
+    """Plotly gauge chart for a score value (pain, timing, etc)."""
+    color = "#3B82F6" if value >= 8 else "#F59E0B" if value >= 6 else "#EF4444" if value < 4 else "#71717A"
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=value,
+        number={"font": {"family": "JetBrains Mono", "color": color, "size": 24}, "suffix": "/10"},
+        gauge={
+            "axis": {
+                "range": [0, max_val],
+                "tickfont": {"size": 8, "color": "#52525B", "family": "JetBrains Mono"},
+                "tickcolor": "#52525B",
+            },
+            "bar": {"color": color, "thickness": 0.22},
+            "bgcolor": "rgba(0,0,0,0)",
+            "borderwidth": 0,
+            "steps": [
+                {"range": [0, 4], "color": "rgba(239,68,68,0.07)"},
+                {"range": [4, 7], "color": "rgba(245,158,11,0.06)"},
+                {"range": [7, 10], "color": "rgba(59,130,246,0.07)"},
+            ],
+            "threshold": {"line": {"color": color, "width": 2}, "thickness": 0.8, "value": value},
+        },
+        title={"text": title, "font": {"family": "JetBrains Mono", "size": 9, "color": "#4B5563"}},
+    ))
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=10, r=10, t=30, b=5),
+        height=160,
+    )
+    return fig
+
+
+def tam_funnel_chart(tam: float, sam: float | None, som: float | None):
+    """TAM → SAM → SOM bar chart."""
+    def fmt(v):
+        if v >= 1e9:
+            return f"${v/1e9:.1f}B"
+        if v >= 1e6:
+            return f"${v/1e6:.0f}M"
+        return f"${v/1e3:.0f}K"
+
+    _sam = sam if sam else tam * 0.12
+    _som = som if som else _sam * 0.18
+    labels = ["TAM", "SAM", "SOM"]
+    values = [tam, _sam, _som]
+    colors = ["rgba(59,130,246,0.85)", "rgba(34,197,94,0.6)", "rgba(245,158,11,0.55)"]
+    fig = go.Figure(go.Bar(
+        x=labels,
+        y=values,
+        marker_color=colors,
+        text=[fmt(v) for v in values],
+        textposition="inside",
+        insidetextanchor="middle",
+        textfont=dict(family="JetBrains Mono", size=12, color="#F8FAFC"),
+    ))
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=8, b=0),
+        height=150,
+        showlegend=False,
+        xaxis=dict(tickfont=dict(family="JetBrains Mono", size=10, color="#9CA3AF"), showgrid=False),
+        yaxis=dict(visible=False),
+    )
+    return fig
+
+
+def score_breakdown_chart(o: dict):
+    """Horizontal bars for each scored dimension."""
+    dims = [
+        ("Pain", "pain_severity"),
+        ("Market Size", "market_size"),
+        ("Timing", "timing_tailwind"),
+        ("WTP", "willingness_to_pay"),
+        ("Monetization", "monetization_clarity"),
+        ("Speed to MVP", "speed_to_mvp"),
+        ("Capital Eff.", "capital_efficiency"),
+        ("Distribution", "distribution_accessibility"),
+        ("Competition", "competition_intensity"),
+        ("Defensibility", "defensibility"),
+        ("Regional Fit", "regional_fit"),
+        ("Founder Fit", "founder_fit"),
+    ]
+    labels, values = [], []
+    for label, field in dims:
+        v = o.get(field)
+        if v is not None:
+            labels.append(label)
+            values.append(float(v))
+    if not labels:
+        return None
+    colors = [
+        "#3B82F6" if v >= 8 else "#F59E0B" if v >= 6 else "#EF4444" if v < 4 else "#71717A"
+        for v in values
+    ]
+    fig = go.Figure(go.Bar(
+        y=labels,
+        x=values,
+        orientation="h",
+        marker_color=colors,
+        marker_line_width=0,
+        text=[f"{v:.0f}" for v in values],
+        textposition="outside",
+        textfont=dict(family="JetBrains Mono", size=10, color="#9CA3AF"),
+    ))
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=36, t=4, b=4),
+        height=max(200, len(labels) * 26),
+        showlegend=False,
+        xaxis=dict(range=[0, 11], visible=False),
+        yaxis=dict(
+            tickfont=dict(family="JetBrains Mono", size=10, color="#9CA3AF"),
+            autorange="reversed",
+            gridcolor="rgba(255,255,255,0.04)",
+        ),
+    )
+    return fig
+
+
 def apply_filters(opps, geo_filter, score_min, score_max):
     """Apply sidebar filters."""
     result = opps
@@ -566,47 +683,41 @@ def apply_filters(opps, geo_filter, score_min, score_max):
     return result
 
 
-def metric_card(label, value, delta_text=None, delta_ok=True, accent="#F59E0B"):
-    """Render a styled metric card as HTML for the intelligence terminal UI."""
+def metric_card(label, value, delta_text=None, delta_ok=True, accent="#3B82F6"):
+    """Render a styled metric card as HTML."""
     delta_html = ""
     if delta_text:
-        color = "#10B981" if delta_ok else "#EF4444"
+        color = "#22C55E" if delta_ok else "#EF4444"
         delta_html = (
             f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
             f'color:{color};margin-top:4px">{delta_text}</div>'
         )
     return (
-        f'<div style="background:#0D1420;border-left:3px solid {accent};'
-        f'border-radius:4px;padding:16px 20px;margin:4px 0">'
-        f'<div style="font-family:Syne,sans-serif;font-size:11px;color:#6B7280;'
-        f'text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">{label}</div>'
-        f'<div style="font-family:JetBrains Mono,monospace;font-size:28px;'
-        f'font-weight:500;color:#F8FAFC">{value}</div>'
+        f'<div style="background:#18181B;border:1px solid rgba(255,255,255,0.06);'
+        f'border-top:2px solid {accent};'
+        f'border-radius:8px;padding:16px 20px;margin:4px 0">'
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:#52525B;'
+        f'text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">{label}</div>'
+        f'<div style="font-family:JetBrains Mono,monospace;font-size:26px;'
+        f'font-weight:500;color:#F4F4F5">{value}</div>'
         f'{delta_html}'
         f'</div>'
     )
 
 
 def section_header(title: str, subtitle: str = "") -> str:
-    """Render a styled terminal section header."""
+    """Render a styled section header."""
     sub = (
-        f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
-        f'color:#6B7280;margin-top:4px;letter-spacing:1px">{subtitle}</div>'
+        f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:13px;'
+        f'color:#71717A;margin-top:4px">{subtitle}</div>'
         if subtitle else ""
     )
     return (
         f'<div style="margin:0 0 20px 0;padding-bottom:16px;'
-        f'border-bottom:1px solid rgba(245,158,11,0.15)">'
-        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
-        f'color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">'
-        f'// {title}</div>'
-        f'</div>'
-    ) if not subtitle else (
-        f'<div style="margin:0 0 20px 0;padding-bottom:16px;'
-        f'border-bottom:1px solid rgba(245,158,11,0.15)">'
-        f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
-        f'color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">'
-        f'// {title}</div>'
+        f'border-bottom:1px solid rgba(255,255,255,0.06)">'
+        f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:18px;'
+        f'font-weight:600;letter-spacing:-0.025em;color:#F4F4F5;margin-bottom:4px">'
+        f'{title}</div>'
         f'{sub}'
         f'</div>'
     )
@@ -616,9 +727,9 @@ def subsection(title: str) -> str:
     """Render a styled subsection label."""
     return (
         f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;'
-        f'color:#6B7280;letter-spacing:2px;text-transform:uppercase;'
-        f'margin:20px 0 10px 0;padding-left:8px;'
-        f'border-left:2px solid rgba(245,158,11,0.3)">{title}</div>'
+        f'color:#52525B;letter-spacing:0.07em;text-transform:uppercase;'
+        f'margin:20px 0 10px 0;padding-left:10px;'
+        f'border-left:2px solid rgba(59,130,246,0.4)">{title}</div>'
     )
 
 
@@ -630,13 +741,13 @@ def render_sidebar(runs):
 
         # Header block
         st.markdown(f"""
-<div style="padding:20px 16px 16px 16px;border-bottom:1px solid rgba(245,158,11,0.15);margin-bottom:20px;background:rgba(245,158,11,0.03)">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
-       color:#F59E0B;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">
-    ◈ OPPORTUNITY OS
+<div style="padding:20px 16px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:20px">
+  <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;
+       color:#F4F4F5;letter-spacing:-0.01em;margin-bottom:4px">
+    Opportunity OS
   </div>
-  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#374151;
-       letter-spacing:1px;text-transform:uppercase">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;
+       letter-spacing:0.04em">
     {fmt_ts(last_ts)}
   </div>
 </div>
@@ -675,7 +786,7 @@ def render_sidebar(runs):
 
         # Filters section
         st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
-        st.markdown('<div style="padding:0 4px;font-family:JetBrains Mono,monospace;font-size:8px;color:#1F2937;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;border-top:1px solid rgba(245,158,11,0.08);padding-top:16px">FILTERS</div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:0 4px;font-family:JetBrains Mono,monospace;font-size:10px;color:#3F3F46;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;border-top:1px solid rgba(255,255,255,0.05);padding-top:16px">Filters</div>', unsafe_allow_html=True)
 
         geo_options = ["All", "Global", "LATAM", "Venezuela", "Spain", "US", "Other"]
         geo_filter = st.selectbox("Geography", geo_options, index=0, label_visibility="visible")
@@ -698,9 +809,9 @@ def render_sidebar(runs):
 
 def tab_command_center(opps, filtered_opps, quotas):
     st.markdown("""
-<div style="display:flex;align-items:center;gap:16px;padding:8px 0 24px 0;border-bottom:1px solid rgba(245,158,11,0.2);margin-bottom:24px">
-  <div style="width:10px;height:10px;background:#F59E0B;border-radius:50%;box-shadow:0 0 8px #F59E0B;animation:pulse 2s infinite"></div>
-  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#F59E0B;letter-spacing:3px;text-transform:uppercase">OPPORTUNITY OS v1 &middot; LIVE &middot; {today}</span>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 0 20px 0;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:24px">
+  <div style="width:7px;height:7px;background:#22C55E;border-radius:50%;box-shadow:0 0 0 2px rgba(34,197,94,0.2)"></div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#52525B;letter-spacing:0.05em">Live · {today}</span>
 </div>
 """.format(today=datetime.now().strftime("%Y-%m-%d %H:%M")), unsafe_allow_html=True)
     st.markdown(section_header("Command Center"), unsafe_allow_html=True)
@@ -729,9 +840,9 @@ def tab_command_center(opps, filtered_opps, quotas):
     with c1:
         st.markdown(metric_card("Total Opportunities", len(active_opps)), unsafe_allow_html=True)
     with c2:
-        st.markdown(metric_card("Top Score", f"{top_score:.2f}", accent="#22D3EE"), unsafe_allow_html=True)
+        st.markdown(metric_card("Top Score", f"{top_score:.2f}", accent="#3B82F6"), unsafe_allow_html=True)
     with c3:
-        st.markdown(metric_card("VE Opportunities", len(ve_opps), accent="#F59E0B"), unsafe_allow_html=True)
+        st.markdown(metric_card("VE Opportunities", len(ve_opps), accent="#22C55E"), unsafe_allow_html=True)
     with c4:
         delta_ok = recent_validations >= interview_target
         st.markdown(metric_card(
@@ -795,7 +906,7 @@ def tab_command_center(opps, filtered_opps, quotas):
 
             # Geo donut
             geo_counts = Counter(GEO_LABELS.get(o.get("geography", ""), "Other") for o in active_opps)
-            geo_colors = ["#F59E0B", "#22D3EE", "#10B981", "#A855F7", "#EF4444", "#6B7280"]
+            geo_colors = ["#3B82F6", "#22C55E", "#F59E0B", "#A855F7", "#EF4444", "#71717A"]
             fig_geo = go.Figure(go.Pie(
                 labels=list(geo_counts.keys()),
                 values=list(geo_counts.values()),
@@ -972,6 +1083,17 @@ def tab_all_opportunities(opps, geo_filter, score_range):
 
             if o.get("ai_scored_at"):
                 st.caption(f"AI scored: {o.get('ai_scored_at')} · Venezuela lens: {'Yes' if o.get('venezuela_lens_applied') else 'No'}")
+
+            # Cross-tab deep dive button
+            st.markdown("---")
+            btn_col, hint_col = st.columns([1, 3])
+            with btn_col:
+                if st.button("📊 → Super Deep Dive", key=f"goto_dd_{opp_idx}", use_container_width=True):
+                    st.session_state["deep_dive_opp_name"] = o.get("name")
+                    st.session_state["active_tab_hint"] = True
+            with hint_col:
+                if st.session_state.get("active_tab_hint") and st.session_state.get("deep_dive_opp_name") == o.get("name"):
+                    st.info("↑ Switch to the **Deep Dive** tab above to see the full intelligence brief.")
 
 
 # ─── Tab 3: Pipeline Health ────────────────────────────────────────────────────
@@ -1365,7 +1487,7 @@ def tab_weekly_ritual(opps, quotas):
                     col.metric(label, value)
 
 
-# ─── Tab 6: Deep Dive (On-Demand Validation + Research) ──────────────────────
+# ─── Tab 6: Super Deep Dive ──────────────────────────────────────────────────
 
 def _run_subprocess(cmd: list, label: str) -> tuple[bool, str]:
     """Run a subprocess command, return (success, output_text)."""
@@ -1407,185 +1529,447 @@ def _load_validation_report(opp_id: str) -> str | None:
 
 
 def tab_deep_dive(opps: list):
-    st.markdown(section_header("Deep Dive"), unsafe_allow_html=True)
-    st.caption("Select an opportunity and run automated validation + research expansion on-demand.")
-
-    active_opps = [o for o in opps if not o.get("kill_decision", False)]
+    """Super Deep Dive — full intelligence brief for a selected opportunity."""
+    active_opps = sorted(
+        [o for o in opps if not o.get("kill_decision", False)],
+        key=lambda o: float(o.get(SCORE_FIELD) or 0),
+        reverse=True,
+    )
     if not active_opps:
         st.info("No opportunities loaded. Run the daily pipeline first.")
         return
 
-    sorted_opps = sorted(active_opps, key=lambda o: float(o.get(SCORE_FIELD) or 0), reverse=True)
-
-    # ── Opportunity selector
     opp_labels = [
-        f"[{float(o.get(SCORE_FIELD) or 0):.1f}] {o.get('name', '—')[:60]}  ·  {(o.get('geography') or '').upper()}"
-        for o in sorted_opps
+        f"[{float(o.get(SCORE_FIELD) or 0):.1f}]  {o.get('name', '—')[:58]}  ·  {(o.get('geography') or '').upper()}"
+        for o in active_opps
     ]
+
+    # Pre-select from cross-tab navigation
+    default_idx = 0
+    if "deep_dive_opp_name" in st.session_state:
+        for i, o in enumerate(active_opps):
+            if o.get("name") == st.session_state.deep_dive_opp_name:
+                default_idx = i
+                break
+        del st.session_state["deep_dive_opp_name"]
+
     selected_idx = st.selectbox(
-        "Select opportunity",
-        options=range(len(sorted_opps)),
+        "Intelligence brief",
+        options=range(len(active_opps)),
         format_func=lambda i: opp_labels[i],
-        index=0,
-        key="deep_dive_selector",
+        index=default_idx,
+        key="super_deep_dive_selector",
     )
 
-    o = sorted_opps[selected_idx]
+    o = active_opps[selected_idx]
     opp_id = o.get("id", "")
     opp_name = o.get("name", "—")
+    score = float(o.get(SCORE_FIELD) or 0)
+    geo = o.get("geography", "global")
+    geo_label = GEO_LABELS.get(geo, geo.upper())
+    lane = o.get("portfolio_lane") or "—"
+    bucket = (o.get("bucket") or "").replace("_", " ").upper()
+    stage = o.get("stage") or "scout"
+    archetype = (o.get("benchmark_archetype") or "—").replace("_", " ").title()
+    problem = o.get("problem_statement") or ""
+    tam_raw = o.get("tam_usd_estimate") or o.get("tam")
+    tam_str = f"${float(tam_raw)/1e6:.0f}M" if tam_raw else "—"
+    wedge = o.get("daniels_wedge_score")
+    ve_wedge = (o.get("venezuela_wedge_category") or "").replace("_", " ").upper()
 
-    # ── Selected opportunity summary card
-    st.markdown(hero_card(o, selected_idx + 1), unsafe_allow_html=True)
+    # Decision logic
+    if score >= 8.5:
+        decision_label, decision_color = "GO", "#22C55E"
+    elif score >= 6.5:
+        decision_label, decision_color = "WATCH", "#F59E0B"
+    elif score >= 4.5:
+        decision_label, decision_color = "HOLD", "#71717A"
+    else:
+        decision_label, decision_color = "KILL", "#EF4444"
+    score_color = "#3B82F6"
 
-    col_val, col_res = st.columns(2)
+    # ── Full-width intelligence brief hero ────────────────────────────────────
+    wedge_pill = (
+        f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#52525B">'
+        f'WEDGES <span style="color:#3B82F6;font-weight:600">{wedge}/6</span></span>'
+        if wedge is not None else ""
+    )
+    ve_pill = (
+        f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#52525B">'
+        f'VE WEDGE <span style="color:#F59E0B">{ve_wedge}</span></span>'
+        if ve_wedge else ""
+    )
+    st.markdown(f"""
+<div style="background:#18181B;
+     border:1px solid rgba(255,255,255,0.07);border-left:3px solid {decision_color};
+     border-radius:10px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
+    <div style="flex:1">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;
+           letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px">
+        {geo_label.upper()} &nbsp;·&nbsp; {bucket or "UNCLASSIFIED"}
+      </div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;
+           color:#F4F4F5;margin-bottom:10px;line-height:1.25;max-width:600px;letter-spacing:-0.025em">{opp_name}</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#A1A1AA;
+           line-height:1.75;margin-bottom:20px;max-width:640px">{problem[:320]}{'…' if len(problem) > 320 else ''}</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+          TAM <span style="color:#3B82F6;font-weight:600">{tam_str}</span>
+        </span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+          LANE <span style="color:{LANE_COLORS.get(lane, '#888')};font-weight:600">{lane.upper()}</span>
+        </span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+          STAGE <span style="color:#A1A1AA;font-weight:600">{stage.upper()}</span>
+        </span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B">
+          ARCHETYPE <span style="color:#A1A1AA">{archetype}</span>
+        </span>
+        {wedge_pill}
+        {ve_pill}
+      </div>
+    </div>
+    <div style="text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+         border-radius:8px;padding:24px 32px;min-width:130px;flex-shrink:0">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#52525B;
+           letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Decision</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;
+           color:{decision_color};margin-bottom:12px">{decision_label}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:600;
+           color:{score_color};line-height:1">{score:.1f}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;margin-top:4px">/10</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    # ── Run Validation button
-    with col_val:
-        stage = o.get("stage") or "scout"
-        stage_color = {"validation": "#F59E0B", "validated": "#10B981", "killed": "#EF4444"}.get(stage, "#6B7280")
-        st.markdown(
-            f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;'
-            f'color:{stage_color}">Current stage: {stage.upper()}</span>',
-            unsafe_allow_html=True,
+    # ── 3-column intelligence sections ────────────────────────────────────────
+    col_pain, col_market, col_build = st.columns(3)
+
+    # ── PAIN ─────────────────────────────────────────────────────────────────
+    with col_pain:
+        st.markdown(subsection("The Pain"), unsafe_allow_html=True)
+
+        pvs = o.get("pain_validation_score")
+        pain_sev = o.get("pain_severity")
+        gauge_val = float(pvs) if pvs is not None else (float(pain_sev) if pain_sev is not None else None)
+        gauge_title = "PAIN VALIDATION" if pvs is not None else "PAIN SEVERITY"
+
+        if gauge_val is not None:
+            st.plotly_chart(
+                score_gauge(gauge_val, gauge_title),
+                use_container_width=True,
+                key=f"dd_gauge_{opp_id}",
+            )
+
+        phrases = o.get("exact_customer_phrases")
+        if phrases:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px 0">CUSTOMER LANGUAGE</div>',
+                unsafe_allow_html=True,
+            )
+            for p in (phrases if isinstance(phrases, list) else [phrases])[:3]:
+                st.markdown(
+                    f'<div style="background:rgba(255,255,255,0.02);border-left:2px solid rgba(59,130,246,0.4);'
+                    f'padding:8px 12px;margin-bottom:6px;border-radius:0 6px 6px 0">'
+                    f'<span style="font-family:Plus Jakarta Sans,sans-serif;font-size:12px;'
+                    f'color:#A1A1AA;font-style:italic">"{str(p)[:130]}"</span></div>',
+                    unsafe_allow_html=True,
+                )
+
+        workarounds = o.get("workarounds_found")
+        if workarounds:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px 0">WORKAROUNDS TODAY</div>',
+                unsafe_allow_html=True,
+            )
+            for w in (workarounds if isinstance(workarounds, list) else [workarounds])[:3]:
+                st.markdown(
+                    f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+                    f'color:#9CA3AF;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03)">'
+                    f'→ {str(w)[:110]}</div>',
+                    unsafe_allow_html=True,
+                )
+
+        pain_sources = o.get("pain_evidence_sources")
+        if pain_sources:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px 0">EVIDENCE SOURCES</div>',
+                unsafe_allow_html=True,
+            )
+            for src in (pain_sources if isinstance(pain_sources, list) else [pain_sources])[:2]:
+                st.caption(str(src)[:120])
+
+    # ── MARKET ────────────────────────────────────────────────────────────────
+    with col_market:
+        st.markdown(subsection("The Market"), unsafe_allow_html=True)
+
+        if tam_raw:
+            sam_raw = o.get("sam_usd_estimate")
+            som_raw = o.get("som_usd_estimate")
+            st.plotly_chart(
+                tam_funnel_chart(float(tam_raw), float(sam_raw) if sam_raw else None, float(som_raw) if som_raw else None),
+                use_container_width=True,
+                key=f"dd_tam_{opp_id}",
+            )
+            if o.get("tam_rationale"):
+                st.caption(str(o.get("tam_rationale"))[:200])
+
+        timing = o.get("timing_tailwind")
+        comp = o.get("competition_intensity")
+        defensibility = o.get("defensibility")
+
+        row_items = []
+        if timing is not None:
+            row_items.append(("TIMING", float(timing), "#F59E0B"))
+        if comp is not None:
+            comp_color = "#22C55E" if float(comp) < 4 else "#F59E0B" if float(comp) < 7 else "#EF4444"
+            row_items.append(("COMPETITION", float(comp), comp_color))
+        if defensibility is not None:
+            row_items.append(("DEFENSIBILITY", float(defensibility), "#3B82F6"))
+
+        if row_items:
+            items_html = "".join([
+                f'<div style="flex:1;text-align:center;padding:10px 8px;'
+                f'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px">'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:8px;color:#52525B;'
+                f'letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px">{label}</div>'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:20px;'
+                f'font-weight:600;color:{color}">{val:.0f}</div></div>'
+                for label, val, color in row_items
+            ])
+            st.markdown(
+                f'<div style="display:flex;gap:8px;margin-bottom:12px">{items_html}</div>',
+                unsafe_allow_html=True,
+            )
+
+        why_now = o.get("why_now")
+        if why_now:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:0.07em;text-transform:uppercase;margin:12px 0 6px 0">WHY NOW</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+                f'color:#9CA3AF;line-height:1.65">{str(why_now)[:300]}</div>',
+                unsafe_allow_html=True,
+            )
+
+        target_customer = o.get("target_customer")
+        if target_customer:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px 0">TARGET BUYER</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+                f'color:#F4F4F5;font-weight:500;line-height:1.5">{str(target_customer)[:180]}</div>',
+                unsafe_allow_html=True,
+            )
+
+    # ── BUILD ─────────────────────────────────────────────────────────────────
+    with col_build:
+        st.markdown(subsection("The Build"), unsafe_allow_html=True)
+
+        speed_mvp = o.get("speed_to_mvp")
+        cap_eff = o.get("capital_efficiency")
+        if speed_mvp is not None or cap_eff is not None:
+            speed_html = (
+                f'<div style="flex:1;text-align:center;padding:12px 8px;'
+                f'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px">'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:8px;color:#52525B;'
+                f'letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px">SPEED TO MVP</div>'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:600;'
+                f'color:#3B82F6">{float(speed_mvp):.0f}</div></div>'
+                if speed_mvp is not None else ""
+            )
+            cap_html = (
+                f'<div style="flex:1;text-align:center;padding:12px 8px;'
+                f'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px">'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:8px;color:#52525B;'
+                f'letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px">CAPITAL EFF.</div>'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:600;'
+                f'color:#22C55E">{float(cap_eff):.0f}</div></div>'
+                if cap_eff is not None else ""
+            )
+            st.markdown(
+                f'<div style="display:flex;gap:8px;margin-bottom:14px">{speed_html}{cap_html}</div>',
+                unsafe_allow_html=True,
+            )
+
+        frp = (
+            o.get("path_to_first_revenue_description")
+            or o.get("path_to_first_revenue")
+            or o.get("first_revenue_path_description")
         )
+        if frp:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">PATH TO FIRST REVENUE</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div style="background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.12);'
+                f'border-radius:6px;padding:10px 14px;font-family:Plus Jakarta Sans,sans-serif;'
+                f'font-size:12px;color:#A1A1AA;line-height:1.7">{str(frp)[:300]}</div>',
+                unsafe_allow_html=True,
+            )
+
+        dist_channels = o.get("top_distribution_channels")
+        if dist_channels:
+            ch_list = dist_channels if isinstance(dist_channels, list) else [dist_channels]
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:14px 0 8px 0">DISTRIBUTION CHANNELS</div>',
+                unsafe_allow_html=True,
+            )
+            pills = "".join([
+                f'<span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);'
+                f'border-radius:4px;padding:4px 10px;font-family:JetBrains Mono,monospace;font-size:10px;'
+                f'color:#3B82F6;margin-right:6px;margin-bottom:6px;display:inline-block">{str(c)[:45]}</span>'
+                for c in ch_list[:4]
+            ])
+            st.markdown(f'<div style="line-height:2.2">{pills}</div>', unsafe_allow_html=True)
+
+        cac = o.get("estimated_cac_logic")
+        if cac:
+            st.markdown(
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:#6B7280;'
+                f'margin-top:6px">CAC → {str(cac)[:120]}</div>',
+                unsafe_allow_html=True,
+            )
+
+        path10 = o.get("first_10_customer_path")
+        if path10:
+            st.markdown(
+                '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                'letter-spacing:2px;text-transform:uppercase;margin:14px 0 6px 0">FIRST 10 CUSTOMERS</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;'
+                f'color:#C9D1D9;line-height:1.65">{str(path10)[:300]}</div>',
+                unsafe_allow_html=True,
+            )
+
+        trust = o.get("trust_mechanism_latam")
+        if trust:
+            st.markdown(
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:#6B7280;'
+                f'margin-top:8px">TRUST → {str(trust)[:120]}</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.divider()
+
+    # ── Bottom: Scoring breakdown + Actions ───────────────────────────────────
+    col_scoring, col_actions = st.columns([1.6, 1])
+
+    with col_scoring:
+        st.markdown(subsection("Scoring Breakdown"), unsafe_allow_html=True)
+        fig_breakdown = score_breakdown_chart(o)
+        if fig_breakdown:
+            st.plotly_chart(fig_breakdown, use_container_width=True, key=f"dd_breakdown_{opp_id}")
+        else:
+            has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
+            if has_dims:
+                col_r, col_f = st.columns(2)
+                with col_r:
+                    st.plotly_chart(radar_chart(o), use_container_width=True, key=f"radar_dd_{opp_id}")
+                with col_f:
+                    scored = {k: v for k, v in o.items() if isinstance(v, (int, float)) and v is not None}
+                    for k, v in sorted(scored.items()):
+                        st.caption(f"{k.replace('_', ' ').title()}: **{v}**")
+            else:
+                st.info("No scored dimensions found. Run the scoring pipeline to populate these fields.")
+
+    with col_actions:
+        st.markdown(subsection("Actions"), unsafe_allow_html=True)
+
+        # Status badges
+        stage_color = {"validation": "#F59E0B", "validated": "#10B981", "killed": "#EF4444"}.get(stage, "#6B7280")
+        research_check_fields = ["pain_validation_score", "exact_customer_phrases", "first_10_customer_path", "distribution_validated"]
+        has_research = any(o.get(f) for f in research_check_fields)
+
+        st.markdown(f"""
+<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+  <span style="font-family:JetBrains Mono,monospace;font-size:10px;color:{stage_color};
+       background:{stage_color}15;border:1px solid {stage_color}40;border-radius:3px;padding:5px 12px">
+    STAGE: {stage.upper()}
+  </span>
+  <span style="font-family:JetBrains Mono,monospace;font-size:10px;
+       color:{'#10B981' if has_research else '#6B7280'};
+       background:{'rgba(16,185,129,0.08)' if has_research else 'rgba(107,114,128,0.06)'};
+       border:1px solid {'#10B98140' if has_research else '#6B728035'};border-radius:3px;padding:5px 12px">
+    {'✓ RESEARCH' if has_research else '○ NO RESEARCH'}
+  </span>
+</div>""", unsafe_allow_html=True)
 
         run_val = st.button(
             "▶ Run Validation Package",
-            key="btn_run_validation",
+            key="btn_run_val_super",
             use_container_width=True,
             help="Runs the full 8-section validation package for this opportunity",
+        )
+        run_res = st.button(
+            "▶ Expand Research (Pain + Dist)",
+            key="btn_run_res_super",
+            use_container_width=True,
+            help="Runs combined pain + distribution web research (1 API call)",
         )
 
         if run_val:
             if not opp_id:
-                st.error("Opportunity has no ID — cannot run validation.")
+                st.error("No ID — cannot run validation.")
             else:
-                with st.spinner(f"Running validation for: {opp_name[:40]}…"):
+                with st.spinner(f"Validating: {opp_name[:40]}…"):
                     ok, out = _run_subprocess(
                         ["uv", "run", "--no-sync", "opp-os", "validate", opp_id],
                         "Validation",
                     )
-                    st.session_state[f"val_result_{selected_idx}"] = (ok, out)
+                    st.session_state[f"super_val_{selected_idx}"] = (ok, out)
                     st.cache_data.clear()
-
-        # Show validation result / existing report
-        if f"val_result_{selected_idx}" in st.session_state:
-            ok, out = st.session_state[f"val_result_{selected_idx}"]
-            if ok:
-                st.success("Validation completed.")
-            else:
-                st.warning("Validation run had errors — see output below.")
-            with st.expander("▸ Run output", expanded=False):
-                st.code(out[-3000:], language="text")
-
-        # Show existing validation report
-        val_md = _load_validation_report(opp_id)
-        if val_md:
-            with st.expander("▸ Latest validation report", expanded=True):
-                st.markdown(val_md[:6000])
-        else:
-            st.caption("No validation report found. Run validation above to generate one.")
-
-    # ── Expand Research button
-    with col_res:
-        research_fields = ["pain_validation_score", "exact_customer_phrases", "first_10_customer_path", "distribution_validated"]
-        has_research = any(o.get(f) for f in research_fields)
-        res_label = "✓ Research enriched" if has_research else "○ No research yet"
-        res_color = "#10B981" if has_research else "#6B7280"
-        st.markdown(
-            f'<span style="font-family:JetBrains Mono,monospace;font-size:11px;'
-            f'color:{res_color}">{res_label}</span>',
-            unsafe_allow_html=True,
-        )
-
-        run_res = st.button(
-            "▶ Expand Research (Pain + Distribution)",
-            key="btn_run_research",
-            use_container_width=True,
-            help="Runs combined pain + distribution research (1 API call, 1 web search)",
-        )
 
         if run_res:
             if not opp_id:
-                st.error("Opportunity has no ID.")
+                st.error("No ID.")
             else:
-                with st.spinner(f"Running research for: {opp_name[:40]}…"):
+                with st.spinner(f"Researching: {opp_name[:40]}…"):
                     ok, out = _run_subprocess(
                         ["uv", "run", "--no-sync", "opp-os", "research", opp_id],
                         "Research",
                     )
-                    st.session_state[f"res_result_{selected_idx}"] = (ok, out)
+                    st.session_state[f"super_res_{selected_idx}"] = (ok, out)
                     st.cache_data.clear()
 
-        if f"res_result_{selected_idx}" in st.session_state:
-            ok, out = st.session_state[f"res_result_{selected_idx}"]
-            if ok:
-                st.success("Research complete — reload to see updated fields.")
-            else:
-                st.warning("Research had errors.")
-            with st.expander("▸ Run output", expanded=False):
-                st.code(out[-3000:], language="text")
+        for sess_key, label in [
+            (f"super_val_{selected_idx}", "Validation"),
+            (f"super_res_{selected_idx}", "Research"),
+        ]:
+            if sess_key in st.session_state:
+                ok, out = st.session_state[sess_key]
+                if ok:
+                    st.success(f"{label} complete.")
+                else:
+                    st.warning(f"{label} had errors.")
+                with st.expander(f"▸ {label} output", expanded=False):
+                    st.code(out[-2500:], language="text")
 
-        # Show current research data inline
-        if has_research:
-            with st.expander("▸ Current research data", expanded=True):
-                pvs = o.get("pain_validation_score")
-                if pvs is not None:
-                    st.metric("Pain Validation Score", f"{float(pvs):.1f} / 10")
-
-                phrases = o.get("exact_customer_phrases")
-                if phrases:
-                    st.markdown("**Customer phrases:**")
-                    for p in (phrases if isinstance(phrases, list) else [phrases])[:3]:
-                        st.markdown(f"> *{p}*")
-
-                workarounds = o.get("workarounds_found")
-                if workarounds:
-                    st.markdown("**Current workarounds:**")
-                    for w in (workarounds if isinstance(workarounds, list) else [workarounds])[:3]:
-                        st.markdown(f"- {w}")
-
-                dist_ok = o.get("distribution_validated")
-                if dist_ok is not None:
-                    st.markdown(f"**Distribution validated:** {'Yes' if dist_ok else 'No'}")
-
-                channels = o.get("top_distribution_channels")
-                if channels:
-                    ch_list = channels if isinstance(channels, list) else [channels]
-                    st.markdown("**Top channels:** " + " · ".join(str(c) for c in ch_list[:3]))
-
-                cac = o.get("estimated_cac_logic")
-                if cac:
-                    st.caption(f"CAC logic: {cac}")
-
-                path10 = o.get("first_10_customer_path")
-                if path10:
-                    st.markdown(f"**First 10 customers:** {str(path10)[:300]}")
-
-                trust = o.get("trust_mechanism_latam")
-                if trust:
-                    st.caption(f"Trust mechanism: {trust}")
+        val_md = _load_validation_report(opp_id)
+        if val_md:
+            with st.expander("▸ Latest validation report", expanded=False):
+                st.markdown(val_md[:5000])
         else:
-            st.caption("No research data yet. Run 'Expand Research' above.")
+            st.caption("No validation report yet. Run validation above.")
 
-    st.divider()
-
-    # ── Radar chart + full field dump
-    col_chart, col_fields = st.columns([1, 1])
-    with col_chart:
-        has_dims = any(o.get(f) for f in DIMENSION_FIELDS)
-        if has_dims:
-            st.markdown("**Dimension Radar**")
-            st.plotly_chart(radar_chart(o), width="stretch", key=f"radar_dd_{opp_id}")
-
-    with col_fields:
-        st.markdown("**All Scored Fields**")
-        scored = {
-            k: v for k, v in o.items()
-            if isinstance(v, (int, float)) and k not in ("id",) and v is not None
-        }
-        for k, v in sorted(scored.items()):
-            st.caption(f"{k.replace('_', ' ').title()}: **{v}**")
+        with st.expander("▸ All raw fields", expanded=False):
+            st.json({k: v for k, v in o.items() if k != "score_history"})
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
