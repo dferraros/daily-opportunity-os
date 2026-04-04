@@ -10,6 +10,13 @@ import os
 import hashlib
 from datetime import date
 
+# Windows fix: reconfigure stdout to UTF-8 to support emoji/unicode output
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 def main():
     try:
