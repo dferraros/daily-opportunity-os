@@ -53,8 +53,12 @@ footer {visibility: hidden !important;}
 [data-testid="stHeader"] {
     background: transparent !important;
     border-bottom: none !important;
+    pointer-events: none !important;  /* don't intercept clicks on tabs below */
 }
-[data-testid="stToolbar"] { background: transparent !important; }
+[data-testid="stToolbar"] {
+    background: transparent !important;
+    pointer-events: auto !important;  /* keep toolbar buttons (sidebar toggle) clickable */
+}
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="collapsedControl"] {
     color: var(--text-muted) !important;
@@ -307,9 +311,9 @@ section[data-testid="stMain"] > div:first-child {
     padding-right: 32px !important;
 }
 
-/* Push content below the fixed Streamlit header bar (~60px) */
+/* Small top clearance for the toolbar */
 .stApp > section[data-testid="stMain"] {
-    padding-top: 60px !important;
+    padding-top: 10px !important;
 }
 </style>
 """
