@@ -13,6 +13,13 @@ import sys
 import json
 import os
 
+# Windows fix: reconfigure stdout to UTF-8 to support emoji/unicode output
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 def find_project_root(start: str) -> str:
     """Walk up from start until pyproject.toml is found."""

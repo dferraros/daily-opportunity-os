@@ -1,75 +1,227 @@
 {
   "hooks": {
     "UserPromptSubmit": [
-      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/skill_router.py"}]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/skill_router.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "InstructionsLoaded": [
-      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/inject_market_context.py"}]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/inject_market_context.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "PreToolUse": [
-      {"matcher": "Write|Edit", "hooks": [{"type": "command", "command": "python hooks/validate_required_fields.py"}]}
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/validate_required_fields.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "PostToolUse": [
-      {"matcher": "Write|Edit", "hooks": [
-        {"type": "command", "command": "python hooks/dedupe_opportunities.py"},
-        {"type": "command", "command": "python hooks/append_score_history.py"}
-      ]}
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/dedupe_opportunities.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          },
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/append_score_history.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "SubagentStart": [
-      {"matcher": "geo-scout-.*", "hooks": [{"type": "command", "command": "python hooks/preload_geo_context.py"}]}
+      {
+        "matcher": "geo-scout-.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/preload_geo_context.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "SubagentStop": [
-      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/export_notion_files.py"}]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/export_notion_files.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "PreCompact": [
-      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/save_session_state.py"}]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/save_session_state.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "FileChanged": [
-      {"matcher": "data/opportunities/opportunities.jsonl", "hooks": [{"type": "command", "command": "python hooks/auto_rescore.py"}]}
+      {
+        "matcher": "data/opportunities/opportunities.jsonl",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/auto_rescore.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "Stop": [
-      {"matcher": "", "hooks": [
-        {"type": "command", "command": "python hooks/ensure_venezuela_section.py"},
-        {"type": "command", "command": "python hooks/track_machine_metrics.py"},
-        {"type": "command", "command": "python hooks/check_interview_quota.py"}
-      ]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/ensure_venezuela_section.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          },
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/track_machine_metrics.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          },
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/check_interview_quota.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ],
     "SessionEnd": [
-      {"matcher": "", "hooks": [{"type": "command", "command": "python hooks/auto_save_session.py"}]}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\ferra\\.local\\bin\\uv.exe run --no-sync python hooks/auto_save_session.py",
+            "env": {
+              "PYTHONPATH": "src",
+              "PYTHONIOENCODING": "utf-8"
+            }
+          }
+        ]
+      }
     ]
   },
   "mcpServers": {
     "brave-search": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
       "env": {
         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     },
     "tavily": {
       "command": "npx",
-      "args": ["-y", "tavily-mcp"],
+      "args": [
+        "-y",
+        "tavily-mcp"
+      ],
       "env": {
         "TAVILY_API_KEY": "${TAVILY_API_KEY}"
       }
     },
     "firecrawl": {
       "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
       "env": {
         "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
       }
     },
     "apify": {
       "command": "npx",
-      "args": ["-y", "@apify/actors-mcp-server"],
+      "args": [
+        "-y",
+        "@apify/actors-mcp-server"
+      ],
       "env": {
         "APIFY_TOKEN": "${APIFY_TOKEN}"
       }
     },
     "omnisearch": {
       "command": "npx",
-      "args": ["-y", "mcp-omnisearch"],
+      "args": [
+        "-y",
+        "mcp-omnisearch"
+      ],
       "env": {
         "BRAVE_API_KEY": "${BRAVE_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
@@ -78,11 +230,17 @@
     },
     "research-powerpack": {
       "command": "npx",
-      "args": ["-y", "mcp-researchpowerpack"]
+      "args": [
+        "-y",
+        "mcp-researchpowerpack"
+      ]
     },
     "perplexity": {
       "command": "npx",
-      "args": ["-y", "perplexity-mcp"],
+      "args": [
+        "-y",
+        "perplexity-mcp"
+      ],
       "env": {
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
       }
