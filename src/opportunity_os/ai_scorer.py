@@ -181,6 +181,102 @@ Daniel's background for founder_fit scoring:
 """
 
 
+def score_batch_with_ai(opps: list[dict]) -> list[dict]:
+    """
+    Score multiple opportunities in ONE API call instead of one call per opp.
+    Costs: 1 call × (rubric + N × opp context) vs N calls × (rubric + opp context).
+    For N=5 this saves ~75% of API cost. Falls back to per-opp heuristic on failure.
+    """
+    if not opps:
+        return opps
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_env_key()
+    if not api_key:
+        return [_heuristic_fallback(o) for o in opps]
+
+    # Skip already-scored ones, only pass unscored to API
+    to_score = [o for o in opps if not o.get("ai_scored_at")]
+    already_done = [o for o in opps if o.get("ai_scored_at")]
+    if not to_score:
+        return opps
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+
+        opp_blocks = []
+        for i, opp in enumerate(to_score):
+            geo = opp.get("geography", "global")
+            geo_note = ""
+            if geo == "venezuela":
+                geo_note = " [VE: WTP=0.25x, WhatsApp-first, no competition, informal 55%]"
+            elif geo == "latam":
+                geo_note = " [LATAM: WTP=0.40x, WhatsApp 90%, informal 45%]"
+            opp_blocks.append(
+                f"OPP_{i}: {opp.get('name', '?')[:80]} | geo={geo}{geo_note}\n"
+                f"  problem={str(opp.get('problem_statement', ''))[:200]}\n"
+                f"  vertical={opp.get('vertical', '')} bucket={opp.get('bucket', '')}"
+            )
+
+        opps_text = "\n\n".join(opp_blocks)
+        dim_list = ", ".join(DIMENSIONS)
+
+        prompt = f"""Score these {len(to_score)} opportunities on 16 dimensions each.
+
+{RUBRIC}
+
+{FOUNDER_WEDGES_CONTEXT}
+
+OPPORTUNITIES:
+{opps_text}
+
+Return ONLY a JSON array with {len(to_score)} objects (index 0 to {len(to_score)-1}).
+Each object must have exactly these fields: {dim_list}
+Plus _reason fields: {', '.join(d + '_reason' for d in DIMENSIONS[:4])} (first 4 dims only, to save tokens).
+No prose, no markdown, no code block. Array only."""
+
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=min(4000, 300 * len(to_score)),
+            system=(
+                "You are a hard-nosed business analyst. Score opportunities on 16 dimensions. "
+                "Use the FULL 1-10 range. 30% scores ≤5 (real weaknesses), 30% above 7 (genuine strengths). "
+                "Return ONLY a valid JSON array — no prose, no markdown."
+            ),
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        raw = response.content[0].text.strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+
+        scores_list = json.loads(raw)
+        if not isinstance(scores_list, list) or len(scores_list) != len(to_score):
+            raise ValueError(f"Expected {len(to_score)} items, got {len(scores_list) if isinstance(scores_list, list) else type(scores_list)}")
+
+        now = datetime.now().strftime("%Y-%m-%d")
+        for opp, scores in zip(to_score, scores_list):
+            for dim in DIMENSIONS:
+                val = scores.get(dim)
+                if val is not None:
+                    try:
+                        opp[dim] = max(1, min(10, int(val)))
+                    except (ValueError, TypeError):
+                        pass
+                reason = scores.get(f"{dim}_reason")
+                if reason:
+                    opp[f"{dim}_reason"] = str(reason)[:200]
+            opp["ai_scored_at"] = now
+            opp["ai_scorer_version"] = AI_SCORER_VERSION + "-batch"
+
+        print(f"  [ai_scorer] Batch scored {len(to_score)} opps in 1 API call")
+        return already_done + to_score
+
+    except Exception as exc:
+        print(f"  [ai_scorer] Batch failed ({exc}) — heuristic fallback for {len(to_score)} opps")
+        return already_done + [_heuristic_fallback(o) for o in to_score]
+
+
 def score_dimensions_with_ai(opp: dict) -> dict:
     """
     Score an opportunity on 16 dimensions using Claude Haiku.
