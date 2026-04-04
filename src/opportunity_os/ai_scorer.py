@@ -237,7 +237,7 @@ No prose, no markdown, no code block. Array only."""
 
         response = client.messages.create(
             model=MODEL,
-            max_tokens=min(4000, 300 * len(to_score)),
+            max_tokens=min(8000, 800 * len(to_score)),
             system=(
                 "You are a hard-nosed business analyst. Score opportunities on 16 dimensions. "
                 "Use the FULL 1-10 range. 30% scores ≤5 (real weaknesses), 30% above 7 (genuine strengths). "
