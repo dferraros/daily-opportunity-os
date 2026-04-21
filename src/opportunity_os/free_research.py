@@ -220,7 +220,87 @@ def research_opportunity_free(opp: dict) -> dict:
         if score:
             result["pain_validation_score"] = round(score, 1)
 
+    # Infer workarounds from Reddit complaint text (mine "currently", "have to", "use X instead")
+    if not opp.get("workarounds_found") and reddit_results:
+        workarounds = _extract_workarounds(reddit_results)
+        if workarounds:
+            result["workarounds_found"] = workarounds
+
+    # Heuristic distribution + CAC fields from geography/vertical (no API cost)
+    dist_fields = _heuristic_distribution(geography, vertical, opp)
+    for field, value in dist_fields.items():
+        if not opp.get(field):
+            result[field] = value
+
     if result:
         result["free_research_at"] = __import__("datetime").datetime.now().isoformat()
+
+    return result
+
+
+def _extract_workarounds(reddit_results: list[dict]) -> list[str]:
+    """
+    Extract workaround signals from Reddit post titles and text.
+    Looks for phrases that describe how people cope today.
+    """
+    workaround_keywords = [
+        "use ", "using ", "currently ", "have to ", "instead ", "manually ",
+        "workaround", "alternative", "instead of", "do it by", "through whatsapp",
+        "uso ", "usamos ", "actualmente ", "tenemos que ", "en vez de ", "manualmente ",
+    ]
+    workarounds = []
+    for r in reddit_results:
+        combined = f"{r.get('title', '')} {r.get('text', '')}".lower()
+        for kw in workaround_keywords:
+            idx = combined.find(kw)
+            if idx != -1:
+                phrase = combined[idx:idx + 80].strip().rstrip(".,;")
+                if len(phrase) > 20 and phrase not in workarounds:
+                    workarounds.append(phrase.capitalize())
+                    break
+    return workarounds[:3]
+
+
+_DISTRIBUTION_HEURISTICS = {
+    "venezuela": {
+        "top_distribution_channels": ["whatsapp_cold_ve", "whatsapp_referral_ve", "tiktok_organic_ve"],
+        "estimated_cac_logic": "WhatsApp cold outreach at ~$2-5 CPL in VE; referral converts 3x better than cold",
+        "first_10_customer_path": "Personal network + WhatsApp groups in target sector; first sale via direct demo",
+        "trust_mechanism_latam": "Referral chain from known operator; video demo before commitment; pay-after-results for first client",
+    },
+    "latam": {
+        "top_distribution_channels": ["whatsapp_cold", "referral_network", "linkedin_latam"],
+        "estimated_cac_logic": "WhatsApp outreach at ~$5-15 CPL; LinkedIn enterprise at $30-80; referral near zero",
+        "first_10_customer_path": "LinkedIn + WhatsApp groups in vertical; 3-5 day response cycle; monthly pricing",
+        "trust_mechanism_latam": "Case study from same-country peer; 30-day free trial; community proof",
+    },
+    "spain": {
+        "top_distribution_channels": ["linkedin_spain", "seo_spanish", "content_marketing"],
+        "estimated_cac_logic": "LinkedIn Spain $20-60 CPL; Google Ads $30-120 CPL by vertical; content/SEO $5-15 CPL long-term",
+        "first_10_customer_path": "LinkedIn outreach to SMB owners in target vertical; events (4YFN, SaaStr); partner referrals",
+        "trust_mechanism_latam": "EU compliance signals; local case studies; free audit or consultation as lead-in",
+    },
+    "global": {
+        "top_distribution_channels": ["content_marketing", "seo", "product_led_growth"],
+        "estimated_cac_logic": "Content/SEO at $8-25 CPL (long-term); paid at $40-150 CPL by vertical",
+        "first_10_customer_path": "Cold email sequences (personalized); community-led (Slack, Discord, Reddit); cold LinkedIn",
+        "trust_mechanism_latam": "Social proof from beta users; G2/Capterra reviews; free tier or trial",
+    },
+}
+
+
+def _heuristic_distribution(geography: str, vertical: str, opp: dict) -> dict:
+    """
+    Return heuristic distribution fields based on geography and vertical.
+    These are smart defaults — overwritten by real research_executor data if/when it runs.
+    """
+    geo_key = geography.lower() if geography.lower() in _DISTRIBUTION_HEURISTICS else "global"
+    base = _DISTRIBUTION_HEURISTICS[geo_key]
+
+    # Vertical overrides: fintech often has WhatsApp + partnership as primary channels
+    result = {k: v for k, v in base.items()}
+    if vertical in ("fintech", "payments") and "whatsapp" not in str(result.get("top_distribution_channels", [])):
+        channels = result.get("top_distribution_channels", [])
+        result["top_distribution_channels"] = ["whatsapp_cold"] + channels[:2]
 
     return result
