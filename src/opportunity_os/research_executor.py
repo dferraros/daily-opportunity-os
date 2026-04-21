@@ -61,8 +61,8 @@ def run_research_executor(opp: dict) -> dict:
                     f"{name} {geo_label} customers complaints demand",
                     f"{opp.get('vertical', '')} distribution channels {geo_label}",
                 ]
-            # 2 results/query → ~$0.008 Tavily cost (down from $0.016 at 4 results)
-            tavily_context = tavily_client.search_multi(all_queries, max_results_per_query=2)
+            # 3 results/query → ~$0.012 Tavily cost (better context depth, was 2 at $0.008)
+            tavily_context = tavily_client.search_multi(all_queries, max_results_per_query=3)
             if tavily_context:
                 print(f"  Tavily: {len(tavily_context)} chars of research context")
     except Exception as e:
