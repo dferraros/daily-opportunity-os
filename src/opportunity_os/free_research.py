@@ -1,12 +1,17 @@
 """
 Free Research Layer — zero-cost alternatives to Anthropic web_search.
 
-Sources:
-- Jina Reader (r.jina.ai) — any URL -> clean markdown. No key needed.
-- Jina Search (s.jina.ai) — web search, no key. 20 req/min.
-- HN Algolia — Hacker News search, completely free, no auth.
-- Reddit JSON — add .json to any Reddit URL, no auth needed.
+Sources (no API key required):
+- Jina Reader (r.jina.ai) — any URL -> clean markdown.
+- Jina Search (s.jina.ai) — web search. 20 req/min.
+- HN Algolia — Hacker News search, no auth.
+- Reddit JSON — add .json to any Reddit URL, no auth.
 - Google Trends via pytrends — no key, no cost.
+
+Sources (optional API key — free tiers are generous):
+- Serper.dev — real Google SERP results. 2,500 free/month. Set SERPER_API_KEY.
+- Exa.ai — semantic/neural search. 1,000 free/month. Set EXA_API_KEY.
+- Reddit Official API — authenticated, reliable. Set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET.
 
 Usage:
     from opportunity_os.free_research import research_opportunity_free
@@ -25,6 +30,9 @@ JINA_SEARCH_BASE = "https://s.jina.ai/"
 JINA_READER_BASE = "https://r.jina.ai/"
 HN_ALGOLIA_BASE = "https://hn.algolia.com/api/v1/search"
 REDDIT_BASE = "https://www.reddit.com"
+REDDIT_API_BASE = "https://oauth.reddit.com"
+SERPER_BASE = "https://google.serper.dev/search"
+EXA_BASE = "https://api.exa.ai/search"
 
 USER_AGENT = "Mozilla/5.0 (compatible; OpportunityOS/1.0; research-bot)"
 
@@ -164,42 +172,232 @@ def get_google_trends(keywords: list[str], geo: str = "") -> dict:
         return {}
 
 
+def serper_search(query: str, api_key: Optional[str] = None) -> list[str]:
+    """
+    Search Google via Serper.dev (2,500 free queries/month, then $0.001/query).
+    Returns list of result snippets. Falls back silently if no key or on error.
+
+    Set SERPER_API_KEY in .env to enable. Returns [] if key not set.
+    """
+    key = api_key or os.environ.get("SERPER_API_KEY")
+    if not key:
+        return []
+    try:
+        payload = json.dumps({"q": query, "num": 10}).encode("utf-8")
+        headers = {
+            "X-API-KEY": key,
+            "Content-Type": "application/json",
+        }
+        req = urllib.request.Request(
+            SERPER_BASE,
+            data=payload,
+            headers=headers,
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+        data = json.loads(raw)
+        snippets: list[str] = []
+        # Organic results
+        for r in data.get("organic", []):
+            snippet = r.get("snippet", "")
+            if len(snippet) > 40:
+                snippets.append(snippet)
+        # People Also Ask — reveals exact customer language
+        for paa in data.get("peopleAlsoAsk", []):
+            question = paa.get("question", "")
+            if question and len(question) > 20:
+                snippets.append(f"[PAA] {question}")
+        return snippets[:8]
+    except Exception:
+        return []
+
+
+def exa_search(query: str, api_key: Optional[str] = None, num_results: int = 5) -> list[str]:
+    """
+    Semantic/neural web search via Exa.ai (1,000 free queries/month, then $0.007/query).
+    Finds conceptually related content even without exact keyword matches.
+    Ideal for pain signal research: "what problems do Venezuelan SMBs face" finds
+    forum threads even when they don't contain those exact words.
+
+    Set EXA_API_KEY in .env to enable. Returns [] if key not set.
+    """
+    key = api_key or os.environ.get("EXA_API_KEY")
+    if not key:
+        return []
+    try:
+        payload = json.dumps({
+            "query": query,
+            "numResults": num_results,
+            "useAutoprompt": True,          # Exa rewrites query for better semantic coverage
+            "type": "neural",               # Embedding-based, not keyword
+            "contents": {"text": {"maxCharacters": 500}},
+        }).encode("utf-8")
+        headers = {
+            "x-api-key": key,
+            "Content-Type": "application/json",
+        }
+        req = urllib.request.Request(
+            EXA_BASE,
+            data=payload,
+            headers=headers,
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+        data = json.loads(raw)
+        snippets: list[str] = []
+        for result in data.get("results", []):
+            text = (result.get("text") or "").strip()
+            title = (result.get("title") or "").strip()
+            if text and len(text) > 40:
+                snippets.append(text[:300])
+            elif title and len(title) > 20:
+                snippets.append(title)
+        return snippets[:5]
+    except Exception:
+        return []
+
+
+def search_reddit_official(
+    query: str,
+    geography: str = "global",
+    limit: int = 10,
+    client_id: Optional[str] = None,
+    client_secret: Optional[str] = None,
+) -> list[dict]:
+    """
+    Search Reddit via the official OAuth2 API (more reliable than .json scraping).
+    Cost: $0.00024/query (~$0.01/month at 30 runs). Set REDDIT_CLIENT_ID +
+    REDDIT_CLIENT_SECRET in .env to enable. Falls back to search_reddit() if
+    credentials not set.
+
+    Returns same shape as search_reddit(): list of {title, text, score, url, subreddit, source}.
+    """
+    cid = client_id or os.environ.get("REDDIT_CLIENT_ID")
+    csecret = client_secret or os.environ.get("REDDIT_CLIENT_SECRET")
+    if not cid or not csecret:
+        return search_reddit(query, geography=geography, limit=limit)
+
+    try:
+        # Step 1: Get access token (application-only OAuth2)
+        credentials = f"{cid}:{csecret}".encode("utf-8")
+        import base64
+        encoded = base64.b64encode(credentials).decode("utf-8")
+        token_req = urllib.request.Request(
+            "https://www.reddit.com/api/v1/access_token",
+            data=b"grant_type=client_credentials",
+            headers={
+                "Authorization": f"Basic {encoded}",
+                "User-Agent": USER_AGENT,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(token_req, timeout=8) as resp:
+            token_data = json.loads(resp.read().decode("utf-8"))
+        access_token = token_data.get("access_token")
+        if not access_token:
+            return search_reddit(query, geography=geography, limit=limit)
+
+        # Step 2: Search across Reddit with official API
+        encoded_query = urllib.parse.quote(query)
+        subreddits = GEO_SUBREDDITS.get(geography.lower(), GEO_SUBREDDITS["global"])
+        subreddit_filter = "+".join(subreddits[:3])
+        search_url = (
+            f"{REDDIT_API_BASE}/r/{subreddit_filter}/search"
+            f"?q={encoded_query}&sort=top&limit={limit}&restrict_sr=1&t=year"
+        )
+        search_req = urllib.request.Request(
+            search_url,
+            headers={
+                "Authorization": f"bearer {access_token}",
+                "User-Agent": USER_AGENT,
+            },
+        )
+        with urllib.request.urlopen(search_req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+
+        results: list[dict] = []
+        for post in data.get("data", {}).get("children", []):
+            p = post.get("data", {})
+            text = (p.get("selftext") or "")[:500]
+            if text and text not in ("[removed]", "[deleted]"):
+                results.append({
+                    "title": p.get("title", ""),
+                    "text": text,
+                    "score": p.get("score", 0),
+                    "url": f"https://reddit.com{p.get('permalink', '')}",
+                    "subreddit": p.get("subreddit", ""),
+                    "source": "reddit_official",
+                })
+        return results
+    except Exception:
+        return search_reddit(query, geography=geography, limit=limit)
+
+
 def research_opportunity_free(opp: dict) -> dict:
     """
-    Run free research on one opportunity using Jina + HN + Reddit.
+    Run free research on one opportunity using Jina + Serper + Exa + HN + Reddit.
+
+    Sources used (in priority order):
+    1. Serper.dev — Google SERP + People Also Ask (if SERPER_API_KEY set; free 2,500/mo)
+    2. Exa.ai — semantic pain signal search (if EXA_API_KEY set; free 1,000/mo)
+    3. Jina Search — free web search fallback (no key required)
+    4. HN Algolia — startup/tech signals (no key required)
+    5. Reddit — official OAuth2 if REDDIT_CLIENT_ID/SECRET set, else .json fallback
+
     Returns dict of new fields to merge into opp (never overwrites existing non-null values).
-    Zero API cost. Falls back gracefully on any error.
+    Falls back gracefully on any error.
     """
     name = opp.get("name", "")
     geography = opp.get("geography", "global")
     vertical = opp.get("vertical", "")
     jina_key = os.environ.get("JINA_API_KEY")
 
-    result = {}
-    pain_snippets = []
-    evidence_sources = []
+    result: dict = {}
+    pain_snippets: list[str] = []
+    evidence_sources: list[str] = []
 
-    # 1. Jina search -- free web search
-    for query in [
-        f"{name} problema usuarios {geography}",
-        f"{vertical} pain frustration {geography} solution",
-    ]:
-        snippets = jina_search(query, api_key=jina_key)
-        pain_snippets.extend(snippets)
-        if snippets:
-            evidence_sources.append(f"Jina search: {query}")
-        time.sleep(0.3)
+    # 1. Serper.dev -- real Google SERP results (covers Spanish-language content better)
+    serper_snippets = serper_search(
+        f"{name} problema clientes {geography} alternativas",
+    )
+    if serper_snippets:
+        pain_snippets.extend(serper_snippets)
+        evidence_sources.append(f"Serper: {name} problema clientes {geography}")
+    else:
+        # Fallback: Jina search when Serper key not set
+        for query in [
+            f"{name} problema usuarios {geography}",
+            f"{vertical} pain frustration {geography} solution",
+        ]:
+            snippets = jina_search(query, api_key=jina_key)
+            pain_snippets.extend(snippets)
+            if snippets:
+                evidence_sources.append(f"Jina search: {query}")
+            time.sleep(0.3)
 
-    # 2. HN Algolia -- startup/tech signals
+    # 2. Exa.ai -- semantic search for pain signals (finds conceptual matches, not just keywords)
+    exa_pain_snippets = exa_search(
+        f"problems challenges {vertical} {geography} customers complain",
+        num_results=5,
+    )
+    if exa_pain_snippets:
+        pain_snippets.extend(exa_pain_snippets)
+        evidence_sources.append(f"Exa semantic: {vertical} pain {geography}")
+    time.sleep(0.2)
+
+    # 3. HN Algolia -- startup/tech signals (always free)
     hn_results = search_hn(f"{name} OR {vertical}", hits=5)
     for r in hn_results:
         if r["points"] > 10:
             pain_snippets.append(f"[HN {r['points']}pts] {r['title']}")
             evidence_sources.append(r["url"])
 
-    # 3. Reddit -- pain complaints in Spanish
-    reddit_results = search_reddit(name, geography=geography)
-    reddit_phrases = []
+    # 4. Reddit -- official API if credentials set, .json fallback otherwise
+    reddit_results = search_reddit_official(name, geography=geography)
+    reddit_phrases: list[str] = []
     for r in reddit_results:
         if r["score"] > 5 and r["text"]:
             pain_snippets.append(r["text"][:200])
