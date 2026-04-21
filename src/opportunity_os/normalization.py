@@ -141,7 +141,7 @@ def fill_defaults(raw: dict) -> dict:
     """
     Fill in computable defaults before validation:
     - id: auto-generate if missing
-    - first_seen: current ISO timestamp if missing
+    - first_seen: prefer harvested_at from raw signal, fallback to now
     - last_updated: always set to now
     - stage: 'scout' if missing
     - kill_decision: False if missing
@@ -156,7 +156,8 @@ def fill_defaults(raw: dict) -> dict:
         raw["id"] = f"opp_{date_str}_{geo}_{str(uuid.uuid4())[:8]}"
 
     if not raw.get("first_seen"):
-        raw["first_seen"] = now_iso
+        # Preserve the harvested_at timestamp from raw signals as the discovery date
+        raw["first_seen"] = raw.get("harvested_at") or now_iso
 
     raw["last_updated"] = now_iso
 
