@@ -917,6 +917,8 @@ def tab_command_center(opps, filtered_opps, quotas):
             for rank, o in enumerate(top10, 1):
                 tam = o.get("tam_usd_estimate") or o.get("tam")
                 tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
+                first_seen_raw = o.get("first_seen") or ""
+                discovered_str = str(first_seen_raw)[:10] if first_seen_raw else "—"
                 rows.append({
                     "#": rank,
                     "Name": (o.get("name", "—") or "—")[:40],
@@ -925,6 +927,7 @@ def tab_command_center(opps, filtered_opps, quotas):
                     "TAM": tam_str,
                     "Lane": (o.get("portfolio_lane") or "—").capitalize(),
                     "Wedge": str(o.get("daniels_wedge_score") or "—"),
+                    "Discovered": discovered_str,
                 })
             df = pd.DataFrame(rows)
             st.dataframe(
@@ -1081,7 +1084,10 @@ def tab_all_opportunities(opps, geo_filter, score_range):
             with c2:
                 # Intelligence scores
                 st.markdown("**Intelligence**")
+                first_seen_val = o.get("first_seen") or ""
+                discovered_label = str(first_seen_val)[:10] if first_seen_val else None
                 intel = {
+                    "Discovered": discovered_label,
                     "Thesis Fit": o.get("thesis_fit_score"),
                     "Daniel Wedges": f"{o.get('daniels_wedge_score')}/6" if o.get('daniels_wedge_score') is not None else None,
                     "Archetype": (o.get("benchmark_archetype") or "").replace("_", " ").title() or None,
