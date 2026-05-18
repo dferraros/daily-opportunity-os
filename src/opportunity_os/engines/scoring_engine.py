@@ -46,12 +46,14 @@ ATTRACTIVENESS_FIELDS = [
     "pain_severity",
     "willingness_to_pay",
     "monetization_clarity",
+    "pain_validation_score",
 ]
 
 EXECUTABILITY_FIELDS = [
     "speed_to_mvp",
     "capital_efficiency",
     "distribution_accessibility",
+    "distribution_quality",
 ]
 
 STRATEGIC_VALUE_FIELDS = [
@@ -75,9 +77,11 @@ DEFAULT_WEIGHTS = {
         "pain_severity": 0.10,
         "willingness_to_pay": 0.08,
         "monetization_clarity": 0.08,
+        "pain_validation_score": 0.08,
         "speed_to_mvp": 0.08,
         "capital_efficiency": 0.07,
         "distribution_accessibility": 0.08,
+        "distribution_quality": 0.07,
         "competition_intensity": 0.07,
         "defensibility": 0.07,
         "regional_fit": 0.07,
@@ -287,6 +291,14 @@ def normalize_portfolio_scores(
     return result
 
 
+def _derive_distribution_quality(opp: dict) -> dict:
+    validated = opp.get("distribution_validated")
+    if validated is None:
+        return opp
+    quality_score = 8.0 if validated else 3.0
+    return {**opp, "distribution_quality": quality_score}
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
@@ -297,6 +309,7 @@ def score_opportunity(opp_dict: dict) -> dict:
     - final_score            (weighted composite + modifiers + caps applied)
     """
     opp = dict(opp_dict)  # shallow copy
+    opp = _derive_distribution_quality(opp)
 
     if opp.get("kill_criteria_passed") is None:
         logger.warning(
