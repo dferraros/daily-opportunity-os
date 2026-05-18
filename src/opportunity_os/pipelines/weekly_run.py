@@ -110,15 +110,17 @@ def run_weekly(dry_run: bool = False) -> dict:
         print(f"WARNING  Weekly auto deep-dive error (non-blocking): {e}")
 
     # Quota check
+    deep_dives_count = _count_deep_dives_this_week(week_start)
+    validations_count = _count_validations_this_week(week_start)
     quota_status = {
         "signals": len(all_opps),
         "signals_ok": len(all_opps) >= 30,
         "structured": len(scored),
         "structured_ok": len(scored) >= 10,
-        "deep_dives": _count_deep_dives_this_week(week_start),
-        "deep_dives_ok": _count_deep_dives_this_week(week_start) >= 3,
-        "validations": 0,
-        "validations_ok": False,
+        "deep_dives": deep_dives_count,
+        "deep_dives_ok": deep_dives_count >= 3,
+        "validations": validations_count,
+        "validations_ok": validations_count >= 2,
     }
 
     context = {
@@ -143,6 +145,30 @@ def run_weekly(dry_run: bool = False) -> dict:
         "promote_count": len(promote),
         "kill_count": len(to_kill),
     }
+
+
+def _count_validations_this_week(week_start) -> int:
+    """Sum validations_run from machine_metrics.jsonl for entries >= week_start."""
+    import json
+    from opportunity_os.storage import _default_metrics_path
+    path = _default_metrics_path()
+    if not os.path.exists(path):
+        return 0
+    week_start_str = str(week_start)
+    total = 0
+    with open(path, "r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except ValueError:
+                continue
+            ts = record.get("timestamp", "")
+            if ts[:10] >= week_start_str:
+                total += int(record.get("validations_run", 0))
+    return total
 
 
 def _count_deep_dives_this_week(week_start) -> int:
