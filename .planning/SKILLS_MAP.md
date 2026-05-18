@@ -29,7 +29,6 @@ Reference this during any build phase — don't guess, use the skill.
 | `research-lookup` | skills/ | Perplexity + academic source lookup | P2 |
 | `gpt-researcher` | skills/ | Autonomous deep research agent for TAM/pain | P2 |
 | `fact-checker` | skills/ | Verify pain claims and market size assumptions | P2 |
-| `[external]-data-analyst` | skills/ | [external] internal data queries via BigQuery | P3 |
 | `data-analyst` | skills/ | EDA on opportunity JSONL data | P2 |
 
 ---
