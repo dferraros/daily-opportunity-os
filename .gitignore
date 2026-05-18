@@ -17,6 +17,18 @@ bit2me-journey-os/
 bit2me-pbw/
 Projects/
 memory/
+TASKS.md
+
+# Unrelated consulting work
+.planning/quick/
+
+# Bit2Me LC-OS lifecycle playbook phases (wrong repo)
+.planning/phases/01-foundation-safety-architecture/
+.planning/phases/02-taxonomy-competitive-benchmark/
+.planning/phases/03-scoring-system-master-trigger-table/
+.planning/phases/04-measurement-final-recommendations/
+.planning/REQUIREMENTS.md
+.planning/research/
 
 # Generated reports and exports (committed selectively, not on every run)
 reports/daily/*.json

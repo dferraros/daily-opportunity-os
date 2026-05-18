@@ -88,7 +88,7 @@
 - [ ] Growth & GTM edge (lifecycle, CRM, paid, organic, A/B)
 - [ ] Narrative & positioning (can frame and sell the story fast)
 - [ ] LATAM intuition (Venezuela, Spain, Colombia market patterns)
-- [ ] Fintech & crypto adjacency (payment rails, Bit2Me ops)
+- [ ] Fintech & crypto adjacency (payment rails, exchange ops)
 - [ ] Speed to prototype (MVP-level systems fast with Claude Code)
 - [ ] Distribution instincts (WhatsApp funnels, performance, community, referral)
 

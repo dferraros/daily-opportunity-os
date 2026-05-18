@@ -74,7 +74,7 @@ An opportunity with < 2 matching wedges is flagged as "founder-fit risk":
 1. Growth & GTM edge — 10+ years lifecycle, CRM, paid, organic, A/B
 2. Narrative & positioning edge — can frame and sell a story fast
 3. LATAM + Spanish-speaking intuition — Venezuela, Spain, Colombia patterns
-4. Fintech & crypto adjacency — Bit2Me operations, payment rails
+4. Fintech & crypto adjacency — exchange ops, payment rails, USDT
 5. Speed to prototype — can build MVP-level systems fast with Claude Code
 6. Distribution instincts — WhatsApp funnels, performance, community, referral
 

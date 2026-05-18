@@ -17,7 +17,7 @@ daniels_wedges:
   - id: latam_intuition
     description: "Venezuela, Spain, Colombia market patterns"
   - id: fintech_crypto_adjacency
-    description: "Bit2Me operations, payment rails familiarity"
+    description: "Crypto exchange ops, payment rails, USDT familiarity"
   - id: speed_to_prototype
     description: "Can build MVP-level systems fast with Claude Code"
   - id: distribution_instincts
