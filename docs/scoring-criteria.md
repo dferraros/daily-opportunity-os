@@ -177,7 +177,7 @@ Final score = composite of 3 layers + modifiers + caps.
 1. Growth & GTM edge (lifecycle, CRM, paid, organic, A/B testing)
 2. Narrative & positioning edge (frame and sell a story fast)
 3. LATAM + Spanish intuition (VE, Spain, Colombia patterns)
-4. Fintech & crypto adjacency (Bit2Me, payment rails, USDT)
+4. Fintech & crypto adjacency (exchange ops, payment rails, USDT)
 5. Speed to prototype (Claude Code, MVP systems fast)
 6. Distribution instincts (WhatsApp funnels, performance, referral)
 
