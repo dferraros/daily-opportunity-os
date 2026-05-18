@@ -210,6 +210,24 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         log_failure("tam_estimation", e)
 
+    # ─── Step 9.6: Wire TAM into market_size dimension and re-score ───
+    tam_rescored = 0
+    for i, opp in enumerate(all_opps_sorted):
+        if opp.get("market_size") is not None:
+            continue
+        tam_val = opp.get("tam_usd_estimate") or opp.get("tam")
+        if not tam_val:
+            continue
+        try:
+            ms = _tam_to_market_size(float(tam_val))
+            all_opps_sorted[i] = score_opportunity({**opp, "market_size": ms})
+            tam_rescored += 1
+        except (TypeError, ValueError):
+            pass
+    if tam_rescored:
+        logger.info("Step 9.6: TAM-derived market_size wired into scoring for %d opportunities", tam_rescored)
+        all_opps_sorted = sorted(all_opps_sorted, key=lambda x: x.get("final_score", 0), reverse=True)
+
     # ─── Step 9.7: Benchmark Mapping — map top 30 to archetypes ───
     logger.info("Step 9.7: Running Benchmark Mapper on top 30 opportunities...")
     top_30 = all_opps_sorted[:30]
@@ -602,6 +620,19 @@ def _infer_kill_answers(opp_dict: dict) -> dict:
         opp_dict.get("venezuela_wedge_category")
     ) or bool(opp_dict.get("problem_statement"))
     return answers
+
+
+def _tam_to_market_size(tam_usd: float) -> float:
+    """Convert raw TAM USD estimate to market_size scoring dimension (1-10)."""
+    if tam_usd >= 1_000_000_000:
+        return 10.0
+    if tam_usd >= 100_000_000:
+        return 8.0
+    if tam_usd >= 10_000_000:
+        return 6.0
+    if tam_usd >= 1_000_000:
+        return 4.0
+    return 2.0
 
 
 def _enrich_fields(opp_dict: dict) -> dict:
