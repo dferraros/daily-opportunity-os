@@ -20,11 +20,14 @@ Output: opp dict with these fields populated:
 """
 
 import json
+import logging
 import os
 import re
 import time
 from datetime import datetime
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from opportunity_os.pipeline_monitor import log_failure
 
@@ -42,7 +45,7 @@ def run_research_executor(opp: dict) -> dict:
 
     api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_env_key()
     if not api_key:
-        print(f"  [research_executor] No API key — skipping: {opp.get('name', '?')[:50]}")
+        logger.debug("[research_executor] No API key — skipping: %s", opp.get("name", "?")[:50])
         return opp
 
     name = opp.get("name", "unknown")
@@ -64,7 +67,7 @@ def run_research_executor(opp: dict) -> dict:
             # 3 results/query → ~$0.012 Tavily cost (better context depth, was 2 at $0.008)
             tavily_context = tavily_client.search_multi(all_queries, max_results_per_query=3)
             if tavily_context:
-                print(f"  Tavily: {len(tavily_context)} chars of research context")
+                logger.debug("Tavily: %d chars of research context", len(tavily_context))
     except Exception as e:
         log_failure("tavily_search", e, opp_id=opp.get("id", "unknown"))
 
@@ -77,7 +80,7 @@ def run_research_executor(opp: dict) -> dict:
         found = crawl_pain_evidence(query, geography=geo)
         if found:
             firecrawl_phrases = found
-            print(f"  Firecrawl: {len(found)} pain phrases found")
+            logger.debug("Firecrawl: %d pain phrases found", len(found))
     except Exception as e:
         log_failure("firecrawl_pain_evidence", e, opp_id=opp.get("id", "unknown"))
 
@@ -98,7 +101,7 @@ def run_research_executor(opp: dict) -> dict:
         opp["exact_customer_phrases"] = merged
 
     opp["research_executed_at"] = datetime.now().isoformat()
-    print(f"  [research_executor] Research complete: {name[:50]}")
+    logger.info("[research_executor] Research complete: %s", name[:50])
     return opp
 
 

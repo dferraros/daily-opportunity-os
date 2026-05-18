@@ -6,9 +6,12 @@ This module tracks real outcomes and generates weight adjustment suggestions.
 
 from __future__ import annotations
 import json
+import logging
 import os
 from datetime import datetime
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ─── Schema documentation ────────────────────────────────────────────────────
@@ -152,7 +155,7 @@ def record_outcome(opp_id: str, outcome: str, notes: str = "") -> None:
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
 
-    print(f"Outcome recorded: {opp_id} -> {outcome} (score: {predicted_score})")
+    logger.info("Outcome recorded: %s -> %s (score: %s)", opp_id, outcome, predicted_score)
 
 
 def get_calibration_report() -> dict:

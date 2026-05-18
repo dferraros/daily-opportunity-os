@@ -1,7 +1,10 @@
 """Weekly run pipeline -- computes score deltas and renders weekly report."""
 
+import logging
 from datetime import datetime, timedelta
 import os
+
+logger = logging.getLogger(__name__)
 
 
 def _get_rising_signals(all_opps: list, days: int = 7) -> list:
@@ -74,7 +77,7 @@ def run_weekly(dry_run: bool = False) -> dict:
     )[:3]
 
     # Auto deep-dive on top 3 with score >= 7.0
-    print("Running auto deep-dive on top 3 weekly candidates (score >= 7.0)...")
+    logger.info("Running auto deep-dive on top 3 weekly candidates (score >= 7.0)...")
     try:
         from opportunity_os.pipelines.deep_dive import run_deep_dive
         from opportunity_os.reports import get_project_root
@@ -94,20 +97,20 @@ def run_weekly(dry_run: bool = False) -> dict:
                         already_exists = True
                         break
             if already_exists:
-                print(f"  Deep dive already exists this week for {opp_id}, skipping")
+                logger.info("Deep dive already exists this week for %s, skipping", opp_id)
                 continue
             if not dry_run:
                 result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
                 if "error" not in result:
-                    print(f"  Auto deep-dive: {opp.get('name', 'unknown')[:50]} (score {opp.get('final_score', 0):.1f})")
+                    logger.info("Auto deep-dive: %s (score %.1f)", opp.get("name", "unknown")[:50], opp.get("final_score", 0))
                 else:
-                    print(f"  Deep dive failed: {result.get('error')}")
+                    logger.warning("Deep dive failed: %s", result.get("error"))
             else:
-                print(f"  [dry-run] Would deep-dive: {opp.get('name', 'unknown')[:50]}")
+                logger.info("[dry-run] Would deep-dive: %s", opp.get("name", "unknown")[:50])
         if not deep_dive_candidates:
-            print("  No weekly candidates scored >= 7.0")
+            logger.info("No weekly candidates scored >= 7.0")
     except Exception as e:
-        print(f"WARNING  Weekly auto deep-dive error (non-blocking): {e}")
+        logger.warning("Weekly auto deep-dive error (non-blocking): %s", e)
 
     # Quota check
     deep_dives_count = _count_deep_dives_this_week(week_start)
@@ -139,7 +142,7 @@ def run_weekly(dry_run: bool = False) -> dict:
 
     if not dry_run:
         write_report(content, path)
-    print(f"Weekly report: {os.path.basename(path)}")
+    logger.info("Weekly report: %s", os.path.basename(path))
     return {
         "week": week,
         "promote_count": len(promote),

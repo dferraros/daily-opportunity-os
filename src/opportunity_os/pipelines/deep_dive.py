@@ -14,8 +14,11 @@ Generates a comprehensive markdown deep dive that incorporates ALL enriched fiel
 Auto-runs research_executor if the opp has not been researched yet.
 """
 
+import logging
 from datetime import datetime
 import os
+
+logger = logging.getLogger(__name__)
 
 
 def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
@@ -36,7 +39,7 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
 
     opp = get_opportunity_by_id(opp_id)
     if not opp:
-        print(f"Opportunity {opp_id} not found.")
+        logger.warning("Opportunity %s not found.", opp_id)
         return {"error": f"Not found: {opp_id}"}
 
     # Auto-research if this opp hasn't been through the research executor yet
@@ -55,7 +58,7 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
                     ) if k in opp
                 })
         except Exception as exc:
-            print(f"  [deep_dive] Research executor failed ({type(exc).__name__}: {exc}) — continuing without research")
+            logger.warning("[deep_dive] Research executor failed (%s: %s) — continuing without research", type(exc).__name__, exc)
 
     # Run benchmark analysis
     archetype = classify_archetype(opp)
@@ -89,7 +92,7 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
             {"deep_dive_status": "complete", "benchmark_archetype": archetype},
         )
 
-    print(f"Deep dive written: {os.path.basename(path)}")
+    logger.info("Deep dive written: %s", os.path.basename(path))
     return {"opp_id": opp_id, "path": path, "archetype": archetype}
 
 
