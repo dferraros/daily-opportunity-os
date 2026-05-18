@@ -365,7 +365,8 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             package = run_validation(opp, mode="auto")
             validation_candidates[i] = {**opp, **{k: v for k, v in package.items() if not k.startswith("_")}}
             validation_packages_for_sync.append((validation_candidates[i], package))
-    except ImportError:
+    except ImportError as e:
+        logger.warning("Validation engine not available, skipping auto-promotion: %s", e)
         validation_candidates = []
     except Exception as e:
         log_failure("validation_pre_collect", e)
