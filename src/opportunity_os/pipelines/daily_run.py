@@ -625,7 +625,7 @@ def _enrich_fields(opp_dict: dict) -> dict:
             wedges += 1
         if _re.search(r"latam|venezuela|spain|colombia|spanish|hispano", text):
             wedges += 1
-        if _re.search(r"fintech|crypto|usdt|payment|[external]|blockchain", text):
+        if _re.search(r"fintech|crypto|usdt|payment|exchange|blockchain", text):
             wedges += 1
         if _re.search(r"mvp|prototype|claude|build fast|automation", text):
             wedges += 1

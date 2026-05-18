@@ -364,7 +364,7 @@ def _section_founder_fit(opp: dict) -> list:
         "Growth & GTM edge (lifecycle, CRM, paid, organic, A/B)",
         "Narrative & positioning edge (frame and sell a story fast)",
         "LATAM + Spanish-speaking intuition (Venezuela, Spain, Colombia)",
-        "Fintech & crypto adjacency ([external], payment rails)",
+        "Fintech & crypto adjacency (exchange ops, payment rails)",
         "Speed to prototype (Claude Code, MVP systems)",
         "Distribution instincts (WhatsApp funnels, performance, community)",
     ]

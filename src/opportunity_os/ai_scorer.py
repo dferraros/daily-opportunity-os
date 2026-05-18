@@ -136,7 +136,7 @@ DIMENSION RUBRICS:
     1. Growth & GTM edge (lifecycle, CRM, paid, organic, A/B testing)
     2. Narrative & positioning edge (frame and sell a story fast)
     3. LATAM + Spanish intuition (VE, Spain, Colombia patterns)
-    4. Fintech & crypto adjacency ([external], payment rails, USDT)
+    4. Fintech & crypto adjacency (crypto exchange ops, payment rails, USDT)
     5. Speed to prototype (Claude Code, MVP systems fast)
     6. Distribution instincts (WhatsApp funnels, performance, referral)
     Score = 4 + matching wedges. <2 matching wedges = flag "founder-fit risk".
@@ -175,9 +175,9 @@ DIMENSION RUBRICS:
 
 FOUNDER_WEDGES_CONTEXT = """
 Daniel's background for founder_fit scoring:
-- 10+ years lifecycle marketing, CRM, paid acquisition, A/B testing at crypto fintech ([external])
+- 10+ years lifecycle marketing, CRM, paid acquisition, A/B testing at crypto fintech
 - Deep LATAM/Spanish market intuition (Venezuela, Spain, Colombia patterns)
-- Crypto/fintech adjacency: [external] operations, USDT payment rails, DeFi familiarity
+- Crypto/fintech adjacency: exchange operations, USDT payment rails, DeFi familiarity
 - Can build MVP-level systems fast using Claude Code and modern tools
 - Strong distribution instincts: WhatsApp funnels, performance marketing, referral programs
 - Narrative & positioning: can frame and sell a story quickly
