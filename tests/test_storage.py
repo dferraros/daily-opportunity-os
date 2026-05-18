@@ -142,3 +142,22 @@ def test_score_history_idempotent_same_day(tmp_path_file):
 def test_score_history_returns_false_for_unknown_id(tmp_path_file):
     result = append_opp_score_history("does_not_exist", 7.0, path=tmp_path_file)
     assert result is False
+
+
+# ─── immutability ─────────────────────────────────────────────────────────────
+
+def test_append_opportunity_does_not_mutate_caller(tmp_path_file):
+    """append_opportunity must not add id/first_seen/last_updated to the caller's dict."""
+    opp = {"name": "Immutable Test", "geography": "global"}
+    keys_before = set(opp.keys())
+    append_opportunity(opp, path=tmp_path_file)
+    assert set(opp.keys()) == keys_before, "append_opportunity mutated caller dict"
+
+
+def test_update_opportunity_does_not_mutate_stored_record(tmp_path_file):
+    """update_opportunity must not bleed the updates dict into unrelated records."""
+    append_opportunity({"id": "imm_001", "name": "Alpha"}, path=tmp_path_file)
+    append_opportunity({"id": "imm_002", "name": "Beta"}, path=tmp_path_file)
+    update_opportunity("imm_001", {"stage": "validated"}, path=tmp_path_file)
+    beta = get_opportunity_by_id("imm_002", path=tmp_path_file)
+    assert beta.get("stage") is None, "update leaked into unrelated record"

@@ -55,6 +55,11 @@ def test_score_opportunity_killed_returns_zero(base_opp):
 
 
 def test_score_opportunity_decision_filter_caps_at_5(base_opp):
+    # First verify the uncapped score is above 5.0 so the cap is non-vacuous.
+    uncapped = score_opportunity(base_opp)
+    assert uncapped["final_score"] > 5.0, (
+        "base_opp scores <= 5.0 before cap — test would pass trivially; raise base dimensions"
+    )
     opp = {
         **base_opp,
         "decision_filter_results": {
@@ -136,3 +141,38 @@ def test_normalize_portfolio_backs_up_raw_score():
     for opp in result:
         if not opp.get("kill_decision"):
             assert "raw_final_score" in opp
+
+
+# ─── Venezuela +1.5 wedge bonus ───────────────────────────────────────────────
+
+def test_venezuela_wedge_bonus_raises_final_score(base_opp):
+    """Venezuela +1.5 regional_fit bonus must flow through Layer 3 and lift final_score."""
+    opp_no_bonus = {**base_opp, "geography": "venezuela", "venezuela_wedge_match": False}
+    opp_with_bonus = {**base_opp, "geography": "venezuela", "venezuela_wedge_match": True}
+
+    result_no = score_opportunity(opp_no_bonus)
+    result_yes = score_opportunity(opp_with_bonus)
+
+    assert result_yes["final_score"] > result_no["final_score"], (
+        "Venezuela wedge_match=True must produce a higher final_score than False"
+    )
+
+
+def test_venezuela_wedge_bonus_capped_at_10(base_opp):
+    """regional_fit + 1.5 must not exceed 10.0."""
+    opp = {**base_opp, "geography": "venezuela", "venezuela_wedge_match": True, "regional_fit": 9.5}
+    result = score_opportunity(opp)
+    assert result["final_score"] <= 10.0
+
+
+def test_venezuela_wedge_bonus_not_applied_outside_venezuela(base_opp):
+    """Bonus must not fire for non-Venezuela geographies even if flag is True."""
+    opp_global = {**base_opp, "geography": "global", "venezuela_wedge_match": True}
+    opp_ve = {**base_opp, "geography": "venezuela", "venezuela_wedge_match": True}
+
+    result_global = score_opportunity(opp_global)
+    result_ve = score_opportunity(opp_ve)
+
+    assert result_ve["final_score"] > result_global["final_score"], (
+        "Bonus should only apply to Venezuela, not global"
+    )
