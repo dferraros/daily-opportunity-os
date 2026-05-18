@@ -49,8 +49,6 @@ EXECUTABILITY_FIELDS = [
     "speed_to_mvp",
     "capital_efficiency",
     "distribution_accessibility",
-    "operational_simplicity",
-    "revenue_speed_score",
 ]
 
 STRATEGIC_VALUE_FIELDS = [
@@ -59,7 +57,9 @@ STRATEGIC_VALUE_FIELDS = [
     "regional_fit",
     "founder_fit",
     "ai_leverage",
+    "operational_simplicity",
     "regulatory_simplicity",
+    "revenue_speed_score",
 ]
 
 # ---------------------------------------------------------------------------
@@ -165,19 +165,32 @@ def score_layer(opp_fields: dict, field_list: list, weights: dict) -> float:
     return max(0.0, min(10.0, raw))
 
 
-def apply_modifiers(score: float, opp: dict, weights: dict) -> float:
-    """Apply score modifiers.
+def apply_venezuela_wedge_bonus(opp: dict, weights: dict) -> dict:
+    """Apply the Venezuela +1.5 structural wedge bonus to regional_fit dimension.
 
-    + venezuela_wedge_match bonus if geography=venezuela and venezuela_wedge_category set
+    Must be called BEFORE score_layer() runs on STRATEGIC_VALUE_FIELDS so the
+    bonus is subject to the 20% strategic weight instead of bypassing it.
+    Returns a new dict (does not mutate input).
+    """
+    geo = (opp.get("geography") or "").lower().strip()
+    if not (geo == "venezuela" and opp.get("venezuela_wedge_match", False)):
+        return opp
+
+    mods = weights.get("modifiers", {})
+    bonus = float(mods.get("venezuela_wedge_match", 1.5))
+    current = float(opp.get("regional_fit") or 5.0)
+    return {**opp, "regional_fit": min(10.0, current + bonus)}
+
+
+def apply_modifiers(score: float, opp: dict, weights: dict) -> float:
+    """Apply composite-level score modifiers.
+
     - daniels_wedge_low penalty if daniels_wedge_score < 2
+    Note: Venezuela wedge bonus is applied to regional_fit before layer scoring,
+    not here, so it is correctly weighted through the strategic layer.
     """
     mods = weights.get("modifiers", {})
-    geo = (opp.get("geography") or "").lower().strip()
     adjusted = score
-
-    # Venezuela wedge match bonus
-    if geo == "venezuela" and opp.get("venezuela_wedge_match", False):
-        adjusted += float(mods.get("venezuela_wedge_match", 1.5))
 
     # Daniels wedge low penalty
     daniels_wedge = opp.get("daniels_wedge_score")
@@ -255,15 +268,20 @@ def normalize_portfolio_scores(
     capped_output_max = min(output_max, max_s + max_inflation)
     output_spread = capped_output_max - output_min
 
+    result = []
     for opp in opps:
         raw_val = opp.get(raw_field)
         if raw_val is None or opp.get("kill_decision"):
+            result.append(opp)
             continue
-        opp[raw_backup_field] = round(float(raw_val), 4)
         normalized = ((float(raw_val) - min_s) / spread) * output_spread + output_min
-        opp[output_field] = round(max(output_min, min(output_max, normalized)), 4)
+        result.append({
+            **opp,
+            raw_backup_field: round(float(raw_val), 4),
+            output_field: round(max(output_min, min(output_max, normalized)), 4),
+        })
 
-    return opps
+    return result
 
 
 def score_opportunity(opp_dict: dict) -> dict:
@@ -285,6 +303,10 @@ def score_opportunity(opp_dict: dict) -> dict:
     # --- Layer 2: Executability ---
     executability = score_layer(opp, EXECUTABILITY_FIELDS, weights)
     opp["executability_score"] = round(executability, 4)
+
+    # --- Venezuela wedge bonus: applied to regional_fit before Layer 3 ---
+    # Bonus must go through the 20% strategic weight, not added to composite.
+    opp = apply_venezuela_wedge_bonus(opp, weights)
 
     # --- Layer 3: Strategic Value ---
     strategic = score_layer(opp, STRATEGIC_VALUE_FIELDS, weights)
