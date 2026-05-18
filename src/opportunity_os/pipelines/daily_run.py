@@ -16,9 +16,12 @@ Steps:
 
 from datetime import datetime
 import json
+import logging
 import os
 import time
 from opportunity_os.pipeline_monitor import log_failure
+
+logger = logging.getLogger(__name__)
 
 
 def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> dict:
@@ -75,7 +78,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                         summary["errors"].append(f"JSON parse error: {exc}")
 
     if not raw_signals:
-        print(f"No raw signals found for {date}. Add signals to {raw_file}")
+        logger.info("No raw signals found for %s. Add signals to %s", date, raw_file)
         _write_empty_venezuela_report(date, dry_run, summary)
         return summary
 
@@ -127,18 +130,18 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     # Saves API tokens that would have been spent on throwaways.
     ai_candidates = [o for o in survivors if not o.get("ai_scored_at")][:10]
     if ai_candidates:
-        print(f"Step 2.5: Batch AI scoring {len(ai_candidates)}/{len(survivors)} kill-gate survivors (1 API call)...")
+        logger.info("Step 2.5: Batch AI scoring %d/%d kill-gate survivors (1 API call)...", len(ai_candidates), len(survivors))
         try:
             ai_scored = score_batch_with_ai(ai_candidates)
             scored_ids = {o["id"] for o in ai_candidates if o.get("id")}
             survivors = [o for o in survivors if o.get("id") not in scored_ids] + ai_scored
             ai_count = sum(1 for o in survivors if o.get("ai_scored_at"))
-            print(f"  AI scoring complete: {ai_count} scored by AI, "
-                  f"{len(survivors) - ai_count} used heuristic fallback")
+            logger.info("  AI scoring complete: %d scored by AI, %d used heuristic fallback",
+                        ai_count, len(survivors) - ai_count)
         except Exception as exc:
             log_failure("ai_scoring", exc)
     else:
-        print(f"Step 2.5: All {len(survivors)} survivors scored by heuristic (no API call needed)")
+        logger.info("Step 2.5: All %d survivors scored by heuristic (no API call needed)", len(survivors))
 
     # Steps 5-8: Score, adjust, assign lanes, persist for kill-gate survivors
     scored_opps = []
@@ -174,7 +177,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                 log_failure("score_history_append", e, opp_id=opp_id)
 
     if ve_lens_count > 0:
-        print(f"Step 5.5: Venezuela lens applied to {ve_lens_count} opportunities")
+        logger.info("Step 5.5: Venezuela lens applied to %d opportunities", ve_lens_count)
 
     # Step 9: Rank scored opportunities
     all_opps_sorted = sorted(
@@ -188,12 +191,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         all_opps_sorted = normalize_portfolio_scores(all_opps_sorted)
         live_scores = [o.get("final_score", 0) for o in all_opps_sorted if not o.get("kill_decision")]
         if live_scores:
-            print(f"Step 9.3: Score normalization applied. Range: "
-                  f"{min(live_scores):.2f} - {max(live_scores):.2f} "
-                  f"(raw scores preserved in raw_final_score)")
+            logger.info("Step 9.3: Score normalization applied. Range: %.2f - %.2f (raw preserved in raw_final_score)",
+                        min(live_scores), max(live_scores))
 
     # ─── Step 9.5: TAM Estimation — estimate market size for all scored opps ───
-    print(f"Step 9.5: Running TAM estimation on {len(all_opps_sorted)} scored opportunities...")
+    logger.info("Step 9.5: Running TAM estimation on %d scored opportunities...", len(all_opps_sorted))
     try:
         from opportunity_os.engines.tam_engine import estimate_tam_from_opp
         for i, opp in enumerate(all_opps_sorted):
@@ -201,14 +203,14 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                 result = estimate_tam_from_opp(opp)
                 all_opps_sorted[i] = {**opp, **{k: v for k, v in result.items() if not k.startswith("_")}}
         tam_populated = sum(1 for o in all_opps_sorted if o.get("tam") or o.get("tam_usd_estimate"))
-        print(f"  TAM populated for {tam_populated}/{len(all_opps_sorted)} opportunities")
+        logger.info("  TAM populated for %d/%d opportunities", tam_populated, len(all_opps_sorted))
     except ImportError as e:
-        print(f"WARNING  TAM engine not available: {e}")
+        logger.warning("TAM engine not available: %s", e)
     except Exception as e:
         log_failure("tam_estimation", e)
 
     # ─── Step 9.7: Benchmark Mapping — map top 30 to archetypes ───
-    print("Step 9.7: Running Benchmark Mapper on top 30 opportunities...")
+    logger.info("Step 9.7: Running Benchmark Mapper on top 30 opportunities...")
     top_30 = all_opps_sorted[:30]
     try:
         from opportunity_os.engines.benchmark_engine import run_benchmark
@@ -217,37 +219,39 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                 result = run_benchmark(opp)
                 top_30[i] = {**opp, **{k: v for k, v in result.items() if not k.startswith("_")}}
         bench_populated = sum(1 for o in top_30 if o.get("benchmark_archetype"))
-        print(f"  Benchmark archetypes populated for {bench_populated}/{len(top_30)} opportunities")
+        logger.info("  Benchmark archetypes populated for %d/%d opportunities", bench_populated, len(top_30))
     except ImportError as e:
-        print(f"WARNING  Benchmark engine not available: {e}")
+        logger.warning("Benchmark engine not available: %s", e)
     except Exception as e:
         log_failure("benchmark_mapping", e)
 
     # ─── Step 10: Customer Pain OS — enrich top 20 scored opportunities ───
-    print("Step 10: Running Customer Pain OS on top 20 opportunities...")
+    logger.info("Step 10: Running Customer Pain OS on top 20 opportunities...")
     top_20 = all_opps_sorted[:20]
     try:
         from opportunity_os.pain_intelligence import run_pain_intelligence
         for i, opp in enumerate(top_20):
             pain_result = run_pain_intelligence(opp)
             top_20[i] = {**opp, **{k: v for k, v in pain_result.items() if not k.startswith("_")}}
-            print(f"  Pain queries built for: {opp.get('name', 'unknown')} ({len(pain_result.get('_pain_queries', []))} queries)")
+            logger.info("  Pain queries built for: %s (%d queries)",
+                        opp.get("name", "unknown"), len(pain_result.get("_pain_queries", [])))
     except ImportError as e:
-        print(f"WARNING  Pain intelligence module not available: {e}")
+        logger.warning("Pain intelligence module not available: %s", e)
     except Exception as e:
         log_failure("pain_os", e)
 
     # ─── Step 11: Distribution OS — map distribution reality for top 20 ───
-    print("Step 11: Running Distribution OS on top 20 opportunities...")
+    logger.info("Step 11: Running Distribution OS on top 20 opportunities...")
     try:
         from opportunity_os.distribution_intelligence import run_distribution_intelligence
         for i, opp in enumerate(top_20):
             dist_result = run_distribution_intelligence(opp)
             top_20[i] = {**opp, **{k: v for k, v in dist_result.items() if not k.startswith("_")}}
             channels = dist_result.get("_recommended_channels", [])
-            print(f"  Distribution mapped for: {opp.get('name', 'unknown')} -> top channel: {channels[0] if channels else 'unknown'}")
+            logger.info("  Distribution mapped for: %s -> top channel: %s",
+                        opp.get("name", "unknown"), channels[0] if channels else "unknown")
     except ImportError as e:
-        print(f"WARNING  Distribution intelligence module not available: {e}")
+        logger.warning("Distribution intelligence module not available: %s", e)
     except Exception as e:
         log_failure("distribution_os", e)
 
@@ -255,20 +259,20 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     # Cost: ~$0.08-0.15 per opp with web_search. Top 3 = ~$0.50/day max.
     # Never increase this without checking Anthropic billing first.
     top_3_research = [o for o in all_opps_sorted[:3] if not o.get("research_executed_at")]
-    print(f"Step 11.5: Running Research Executor on top 3 new opportunities ({len(top_3_research)} unresearched)...")
+    logger.info("Step 11.5: Running Research Executor on top 3 new opportunities (%d unresearched)...", len(top_3_research))
     try:
         from opportunity_os.research_executor import run_research_executor
         for i, opp in enumerate(top_3_research, 1):
-            print(f"  Researching {i}/{len(top_3_research)}: {opp.get('name', 'unknown')[:50]}")
+            logger.info("  Researching %d/%d: %s", i, len(top_3_research), opp.get("name", "unknown")[:50])
             run_research_executor(opp)
     except ImportError as e:
-        print(f"WARNING  Research executor not available: {e}")
+        logger.warning("Research executor not available: %s", e)
     except Exception as e:
         log_failure("research_executor", e)
 
     # ─── Step 11.6: Free Research — Jina + HN + Reddit for opps 4-20 ───
     # Zero cost. Covers what the paid API executor skips.
-    print("Step 11.6: Running free research (Jina + HN + Reddit) on top 20...")
+    logger.info("Step 11.6: Running free research (Jina + HN + Reddit) on top 20...")
     try:
         from opportunity_os.free_research import research_opportunity_free
         free_researched = 0
@@ -279,12 +283,12 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                     all_opps_sorted[i] = {**opp, **updates}
                     free_researched += 1
                 time.sleep(0.5)
-        print(f"  Free research complete: {free_researched} opps enriched")
+        logger.info("  Free research complete: %d opps enriched", free_researched)
     except Exception as e:
         log_failure("free_research", e)
 
     # ─── Step 11.8: Pain Library — persist pain clusters from researched opps ───
-    print("Step 11.8: Updating pain library with researched opportunities...")
+    logger.info("Step 11.8: Updating pain library with researched opportunities...")
     try:
         from opportunity_os.pain_library import upsert_pain_cluster
         written = 0
@@ -292,14 +296,14 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             if opp.get("research_executed_at") and opp.get("pain_validation_score") is not None:
                 if upsert_pain_cluster(opp):
                     written += 1
-        print(f"  Pain library updated: {written} clusters upserted")
+        logger.info("  Pain library updated: %d clusters upserted", written)
     except ImportError as e:
-        print(f"WARNING  Pain library not available: {e}")
+        logger.warning("Pain library not available: %s", e)
     except Exception as e:
         log_failure("pain_library", e)
 
     # ─── Step 12: Save enriched records back to JSONL ───
-    print("Step 12: Saving enriched opportunity records...")
+    logger.info("Step 12: Saving enriched opportunity records...")
     if not dry_run:
         try:
             all_stored_opps = read_all_opportunities()
@@ -309,7 +313,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             with open(opps_path, "w", encoding="utf-8") as f:
                 for o in updated_opps:
                     f.write(json.dumps(o, default=str) + "\n")
-            print(f"  Saved {len(top_20)} enriched records")
+            logger.info("  Saved %d enriched records", len(top_20))
         except Exception as e:
             log_failure("save_enriched", e)
 
@@ -325,7 +329,8 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             with open(config_path, "r", encoding="utf-8") as f:
                 cfg = yaml.safe_load(f)
             threshold = cfg.get("thresholds", {}).get("auto_validation", AUTO_VALIDATION_THRESHOLD)
-        except Exception:
+        except Exception as exc:
+            logger.warning("Could not read auto_validation threshold from config: %s", exc)
             threshold = AUTO_VALIDATION_THRESHOLD
 
         validation_candidates = [
@@ -345,7 +350,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         validation_candidates = []
 
     # ─── Step 13: Build Notion sync payload (JSON for Claude Code to execute) ───
-    print("Step 13: Building Notion sync payload...")
+    logger.info("Step 13: Building Notion sync payload...")
     try:
         from opportunity_os.notion_sync import build_sync_payload
         from collections import Counter
@@ -372,13 +377,14 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         sync_path = os.path.join(_get_project_root(), "reports", "daily", f"{date}-notion-sync.json")
         with open(sync_path, "w", encoding="utf-8") as f:
             json.dump(sync_payload, f, indent=2, default=str)
-        print(f"  Notion sync payload ready: {len(sync_payload['upsert_opps'])} opps to upsert -> {sync_path}")
-        print(f"\n>>> NOTION SYNC READY: run `uv run python scripts/notion_push.py` or ask Claude to sync {sync_path}")
+        logger.info("  Notion sync payload ready: %d opps to upsert -> %s",
+                    len(sync_payload["upsert_opps"]), sync_path)
+        logger.info(">>> NOTION SYNC READY: run `uv run python scripts/notion_push.py` or ask Claude to sync %s", sync_path)
     except Exception as e:
         log_failure("notion_sync", e)
 
     # ─── Step 14: Write validation markdown files for auto-promoted opps ────────
-    print("Step 14: Auto-validating high-scoring scouts...")
+    logger.info("Step 14: Auto-validating high-scoring scouts...")
     try:
         if validation_packages_for_sync:
             ensure_report_dirs()
@@ -391,16 +397,15 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                     )
                     with open(md_path, "w", encoding="utf-8") as f:
                         f.write(package.get("_validation_markdown", ""))
-                print(f"  Validated: {opp.get('name', 'unknown')} (score {opp.get('final_score', 0):.2f})")
-            print(f"  {len(validation_packages_for_sync)} opp(s) promoted to validation stage")
+                logger.info("  Validated: %s (score %.2f)", opp.get("name", "unknown"), opp.get("final_score", 0))
+            logger.info("  %d opp(s) promoted to validation stage", len(validation_packages_for_sync))
         else:
-            threshold_display = AUTO_VALIDATION_THRESHOLD
-            print(f"  No scouts above threshold {threshold_display} — no auto-validation triggered")
+            logger.info("  No scouts above threshold %s — no auto-validation triggered", AUTO_VALIDATION_THRESHOLD)
     except Exception as e:
         log_failure("validation_write", e)
 
     # --- Step 14.5: Auto deep-dive on top scorer >= 8.0 ---
-    print("Step 14.5: Checking for auto deep-dive candidates...")
+    logger.info("Step 14.5: Checking for auto deep-dive candidates...")
     try:
         from opportunity_os.pipelines.deep_dive import run_deep_dive
         deep_dive_candidates = [
@@ -410,25 +415,25 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         ][:1]  # top 1 only
         for opp in deep_dive_candidates:
             opp_id = opp.get("id", "unknown")
-            # Skip if deep dive already exists for this opp today
             dd_path = os.path.join(
                 root, "reports", "deep-dives", f"{date}-{opp_id[:40]}-deep-dive.md"
             )
             if os.path.exists(dd_path):
-                print(f"  Deep dive already exists for {opp_id}, skipping")
+                logger.info("  Deep dive already exists for %s, skipping", opp_id)
                 continue
             if not dry_run:
                 result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
                 if "error" not in result:
-                    print(f"  Auto deep-dive triggered: {opp.get('name', 'unknown')[:50]} (score {opp.get('final_score', 0):.1f})")
+                    logger.info("  Auto deep-dive triggered: %s (score %.1f)",
+                                opp.get("name", "unknown")[:50], opp.get("final_score", 0))
                 else:
-                    print(f"  Deep dive failed for {opp_id}: {result['error']}")
+                    logger.warning("  Deep dive failed for %s: %s", opp_id, result["error"])
             else:
-                print(f"  [dry-run] Would deep-dive: {opp.get('name', 'unknown')[:50]}")
+                logger.info("  [dry-run] Would deep-dive: %s", opp.get("name", "unknown")[:50])
         if not deep_dive_candidates:
-            print("  No opportunities scored >= 8.0 -- no auto deep-dive")
+            logger.info("  No opportunities scored >= 8.0 -- no auto deep-dive")
     except Exception as e:
-        print(f"WARNING  Step 14.5 auto deep-dive error (non-blocking): {e}")
+        logger.warning("Step 14.5 auto deep-dive error (non-blocking): %s", e)
 
     # Render reports
     context = {
@@ -504,12 +509,8 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         daily_feed_to_csv(all_scored)
         opportunities_to_csv(all_scored)
 
-    print(
-        f"\nDaily run complete: {summary['scored']} scored, {summary['killed']} killed"
-    )
-    print(
-        f"   Reports: {', '.join(os.path.basename(r) for r in summary['reports_written'])}"
-    )
+    logger.info("Daily run complete: %d scored, %d killed", summary["scored"], summary["killed"])
+    logger.info("Reports: %s", ", ".join(os.path.basename(r) for r in summary["reports_written"]))
 
     # Step 15: Track quota progress from config
     try:
@@ -536,7 +537,8 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             },
         }
         append_machine_metrics(metrics)
-        print(f"Step 15: Quota progress tracked (signals: {metrics['signals_ingested']}, opps: {metrics['opportunities_scored']})")
+        logger.info("Step 15: Quota progress tracked (signals: %d, opps: %d)",
+                    metrics["signals_ingested"], metrics["opportunities_scored"])
     except Exception as e:
         log_failure("quota_tracking", e)
 
@@ -544,14 +546,16 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     from opportunity_os.interview_tracker import get_interview_quota_status
     quota = get_interview_quota_status()
     if not quota["on_track"]:
-        print(f"WARNING  Interview quota behind: {quota['completed']}/{quota['total_required']} done, {quota['days_remaining']} days left")
+        logger.warning("Interview quota behind: %d/%d done, %d days left",
+                       quota["completed"], quota["total_required"], quota["days_remaining"])
 
     # Step 18: Outcome calibration check (weekly)
     from opportunity_os.outcome_tracking import get_calibration_report
     if os.path.exists(os.path.join(_get_project_root(), "data", "outcome_tracking.jsonl")):
         report = get_calibration_report()
         if report["total_tracked"] > 0:
-            print(f"Score accuracy: {report['score_accuracy']:.0%} ({report['total_tracked']} tracked outcomes)")
+            logger.info("Score accuracy: %.0f%% (%d tracked outcomes)",
+                        report["score_accuracy"] * 100, report["total_tracked"])
 
     return summary
 
@@ -692,7 +696,7 @@ def _render_and_write(content: str, path: str, dry_run: bool, summary: dict):
     from opportunity_os.reports import write_report
 
     if dry_run:
-        print(f"[dry-run] Would write: {os.path.basename(path)}")
+        logger.info("[dry-run] Would write: %s", os.path.basename(path))
     else:
         write_report(content, path)
     summary["reports_written"].append(path)
