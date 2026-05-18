@@ -176,3 +176,37 @@ def test_venezuela_wedge_bonus_not_applied_outside_venezuela(base_opp):
     assert result_ve["final_score"] > result_global["final_score"], (
         "Bonus should only apply to Venezuela, not global"
     )
+
+
+# ─── pain_validation_score dimension ─────────────────────────────────────────
+
+def test_pain_validation_score_raises_final_score(base_opp):
+    low = score_opportunity({**base_opp, "pain_validation_score": 3.0})
+    high = score_opportunity({**base_opp, "pain_validation_score": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_pain_validation_score_absent_unchanged(base_opp):
+    without = score_opportunity(base_opp)
+    with_none = score_opportunity({**base_opp, "pain_validation_score": None})
+    assert without["final_score"] == with_none["final_score"]
+
+
+# ─── distribution_quality dimension ──────────────────────────────────────────
+
+def test_distribution_quality_validated_true_raises_score(base_opp):
+    unresearched = score_opportunity(base_opp)
+    researched = score_opportunity({**base_opp, "distribution_validated": True})
+    assert researched["final_score"] >= unresearched["final_score"]
+
+
+def test_distribution_quality_validated_false_lowers_score(base_opp):
+    unresearched = score_opportunity(base_opp)
+    poor = score_opportunity({**base_opp, "distribution_validated": False})
+    assert poor["final_score"] <= unresearched["final_score"]
+
+
+def test_distribution_validated_absent_unchanged(base_opp):
+    without = score_opportunity(base_opp)
+    with_none = score_opportunity({**base_opp, "distribution_validated": None})
+    assert without["final_score"] == with_none["final_score"]
