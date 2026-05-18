@@ -99,7 +99,7 @@ class Opportunity(BaseModel):
                       ai_leverage_potential, distribution_advantage_potential
     - TAM (6): tam, sam, som, tam_method, tam_formula, tam_confidence
     - Assumptions (3): assumptions, risks, kill_reasons
-    - Scoring (4): confidence_score, evidence_quality_score, attractiveness_score, execution_difficulty
+    - Scoring (6): confidence_score, evidence_quality_score, attractiveness_score, execution_difficulty, final_score, decision_filter_results
     - Kill Gate (2): kill_criteria_passed, kill_decision
     - Paths (3): path_to_first_revenue, path_to_1m_arr, path_to_10m_arr
     - Pipeline (3): stage, validation_status, validation_notes
@@ -199,12 +199,17 @@ class Opportunity(BaseModel):
     revenue_speed_score_reason: Optional[str] = None
 
     # ── TAM ──────────────────────────────────────────────────────────────────
-    tam: Optional[float] = None   # Total Addressable Market in USD
+    tam: Optional[float] = None   # Total Addressable Market in USD (raw float)
     sam: Optional[float] = None   # Serviceable Addressable Market
     som: Optional[float] = None   # Serviceable Obtainable Market (Year 3 target)
+    tam_display: Optional[str] = None        # tam_engine: human-readable, e.g. "$80.0M"
+    tam_usd_estimate: Optional[float] = None # tam_engine: alias kept for backward compat
+    sam_usd: Optional[float] = None          # tam_engine output alias
+    som_usd: Optional[float] = None          # tam_engine output alias
     tam_method: Optional[Literal["bottom_up", "top_down", "proxy", "competitor_revenue"]] = None
     tam_formula: Optional[str] = None        # explicit formula with numbers
     tam_assumptions: List[str] = Field(default_factory=list)
+    tam_notes: List[str] = Field(default_factory=list)  # tam_engine supplementary notes
     tam_confidence: Optional[Literal["high", "medium", "low"]] = None
 
     # ── Risk ─────────────────────────────────────────────────────────────────
@@ -216,9 +221,15 @@ class Opportunity(BaseModel):
     confidence_score: Optional[float] = Field(None, ge=0, le=10)
     evidence_quality_score: Optional[float] = Field(None, ge=0, le=10)
     attractiveness_score: Optional[float] = Field(None, ge=0, le=10)
+    executability_score: Optional[float] = Field(None, ge=0, le=10)    # scoring_engine Layer 2
+    strategic_value_score: Optional[float] = Field(None, ge=0, le=10)  # scoring_engine Layer 3
     execution_difficulty: Optional[float] = Field(None, ge=1, le=10)
     capital_intensity: Optional[float] = Field(None, ge=1, le=10)
     time_to_mvp: Optional[str] = None
+    final_score: Optional[float] = Field(None, ge=0, le=10)  # composite after modifiers + caps
+    raw_final_score: Optional[float] = Field(None, ge=0, le=10)  # pre-normalization score backup
+    decision_filter_results: Optional[DecisionFilterResults] = None  # gates before build rec
+    daniels_wedge_score: Optional[float] = Field(None, ge=0, le=10)  # daily_run._enrich_fields
 
     # ── Kill Gate ────────────────────────────────────────────────────────────
     kill_criteria_passed: Optional[int] = Field(None, ge=0, le=7)
@@ -231,12 +242,16 @@ class Opportunity(BaseModel):
 
     # ── Pipeline Stage ───────────────────────────────────────────────────────
     stage: Literal["scout", "validation", "validated", "killed"] = "scout"
+    source: Optional[str] = None             # normalization.fill_defaults: "manual", "web", etc.
     validation_status: Optional[Literal["pending", "in_progress", "passed", "failed"]] = None
     validation_notes: Optional[str] = None
 
     # ── Venezuela-Specific ───────────────────────────────────────────────────
     venezuela_wedge_category: Optional[str] = None
     venezuela_lens_applied: bool = False
+    venezuela_wedge_match: Optional[bool] = None     # geo_lens: True if wedge category matched
+    wtp_pricing_estimate: Optional[float] = None     # geo_lens: WTP × regional multiplier
+    payment_rail_context: Optional[Dict] = None      # geo_lens: {primary_rail, secondary_rail, ...}
 
     # ── Action ───────────────────────────────────────────────────────────────
     recommendation: Optional[Literal["build", "test", "deep_dive", "watch", "ignore"]] = None
@@ -244,6 +259,21 @@ class Opportunity(BaseModel):
 
     # ── Score History ─────────────────────────────────────────────────────────
     score_history: Optional[List[Dict]] = None  # append-only: [{date, score, delta}]
+
+    # ── Research / Enrichment ─────────────────────────────────────────────────
+    kill_reason: Optional[str] = None
+    benchmark_archetype: Optional[str] = None
+    research_executed_at: Optional[str] = None
+    free_research_at: Optional[str] = None
+    pain_validation_score: Optional[float] = Field(None, ge=0, le=10)
+    exact_customer_phrases: List[str] = Field(default_factory=list)
+    pain_evidence_sources: List[str] = Field(default_factory=list)
+    workarounds_found: List[str] = Field(default_factory=list)
+    distribution_validated: Optional[bool] = None
+    top_distribution_channels: List[str] = Field(default_factory=list)
+    estimated_cac_logic: Optional[str] = None
+    first_10_customer_path: Optional[str] = None
+    trust_mechanism_latam: Optional[str] = None
 
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""

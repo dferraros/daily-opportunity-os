@@ -31,7 +31,7 @@ def _load_tavily_key() -> Optional[str]:
                     line = line.strip()
                     if line.startswith("TAVILY_API_KEY="):
                         val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val and not val.startswith("tvly-dev") or len(val) > 20:
+                        if val and (not val.startswith("tvly-dev") or len(val) > 20):
                             return val
                         if val:
                             return val

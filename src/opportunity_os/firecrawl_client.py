@@ -94,7 +94,9 @@ def crawl_pain_evidence(query: str, geography: str = "global") -> Optional[list[
                             if len(phrases) >= MAX_PHRASES:
                                 return phrases
             time.sleep(RATE_LIMIT_SECONDS)
-        except Exception:
-            continue  # Individual URL failure is OK
+        except Exception as exc:
+            from opportunity_os.pipeline_monitor import log_failure
+            log_failure("firecrawl_url", exc)
+            continue
 
     return phrases if phrases else None
