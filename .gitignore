@@ -12,6 +12,11 @@ data/processed/
 data/opportunities/
 .worktrees/
 
+# Bit2Me internal projects — not part of this repo
+bit2me-journey-os/
+Projects/
+memory/
+
 # Generated reports and exports (committed selectively, not on every run)
 reports/daily/*.json
 reports/daily/*.md
