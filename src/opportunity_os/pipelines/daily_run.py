@@ -448,12 +448,25 @@ def _step_enrich_and_rank(all_opps_sorted: list, dry_run: bool) -> tuple:
     logger.info("Step 10: Running Customer Pain OS on top 20 opportunities...")
     top_20 = all_opps_sorted[:20]
     try:
-        from opportunity_os.pain_intelligence import run_pain_intelligence
+        from opportunity_os.pain_intelligence import run_pain_intelligence, execute_pain_research
         for i, opp in enumerate(top_20):
             pain_result = run_pain_intelligence(opp)
             top_20[i] = {**opp, **{k: v for k, v in pain_result.items() if not k.startswith("_")}}
-            logger.info("  Pain queries built for: %s (%d queries)",
-                        opp.get("name", "unknown"), len(pain_result.get("_pain_queries", [])))
+        logger.info("  Pain templates built for %d opportunities", len(top_20))
+
+        # Execute real research on top 5 only (API cost ~$0.15/opp)
+        if not dry_run:
+            top_5 = top_20[:5]
+            researched_count = 0
+            for i, opp in enumerate(top_5):
+                research_result = execute_pain_research(opp)
+                if research_result:
+                    top_20[i] = {**top_20[i], **research_result}
+                    researched_count += 1
+                    logger.info("  Pain researched: %s (score: %s)",
+                                opp.get("name", "unknown")[:40],
+                                research_result.get("pain_validation_score"))
+            logger.info("  Pain research executed for %d/5 opportunities", researched_count)
     except ImportError as e:
         logger.warning("Pain intelligence module not available: %s", e)
     except Exception as e:
