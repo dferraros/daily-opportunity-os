@@ -475,13 +475,26 @@ def _step_enrich_and_rank(all_opps_sorted: list, dry_run: bool) -> tuple:
     # Step 11: Distribution OS
     logger.info("Step 11: Running Distribution OS on top 20 opportunities...")
     try:
-        from opportunity_os.distribution_intelligence import run_distribution_intelligence
+        from opportunity_os.distribution_intelligence import (
+            run_distribution_intelligence,
+            execute_distribution_research,
+        )
         for i, opp in enumerate(top_20):
             dist_result = run_distribution_intelligence(opp)
             top_20[i] = {**opp, **{k: v for k, v in dist_result.items() if not k.startswith("_")}}
-            channels = dist_result.get("_recommended_channels", [])
-            logger.info("  Distribution mapped for: %s -> top channel: %s",
-                        opp.get("name", "unknown"), channels[0] if channels else "unknown")
+        logger.info("  Distribution templates built for %d opportunities", len(top_20))
+
+        if not dry_run:
+            researched_count = 0
+            for i, opp in enumerate(top_20[:5]):
+                research_result = execute_distribution_research(opp)
+                if research_result:
+                    top_20[i] = {**top_20[i], **research_result}
+                    researched_count += 1
+                    logger.info("  Distribution researched: %s (validated: %s)",
+                                opp.get("name", "unknown")[:40],
+                                research_result.get("distribution_validated"))
+            logger.info("  Distribution research executed for %d/5 opportunities", researched_count)
     except ImportError as e:
         logger.warning("Distribution intelligence module not available: %s", e)
     except Exception as e:
