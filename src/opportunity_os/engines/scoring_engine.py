@@ -11,8 +11,11 @@ Hard caps applied after scoring:
 - 2+ decision filters failed -> cap at 5.0
 """
 
+import logging
 import os
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 try:
     import yaml
@@ -294,6 +297,13 @@ def score_opportunity(opp_dict: dict) -> dict:
     - final_score            (weighted composite + modifiers + caps applied)
     """
     opp = dict(opp_dict)  # shallow copy
+
+    if opp.get("kill_criteria_passed") is None:
+        logger.warning(
+            "score_opportunity called before kill gate for opp '%s' — kill_criteria_passed is None",
+            opp.get("name", "<unknown>"),
+        )
+
     weights = load_weights()
 
     # --- Layer 1: Attractiveness ---
