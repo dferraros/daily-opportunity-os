@@ -4,11 +4,14 @@ Single-file, 5-tab dashboard for the Daily Opportunity OS.
 """
 
 import json
+import logging
 import re
 import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -370,8 +373,8 @@ def load_opportunities():
                 if line:
                     try:
                         opps.append(json.loads(line))
-                    except Exception:
-                        pass
+                    except json.JSONDecodeError as exc:
+                        logger.debug("Skipping malformed opportunities line: %s", exc)
     return opps
 
 
@@ -386,8 +389,8 @@ def load_automation_runs():
                 if line:
                     try:
                         runs.append(json.loads(line))
-                    except Exception:
-                        pass
+                    except json.JSONDecodeError as exc:
+                        logger.debug("Skipping malformed automation_runs line: %s", exc)
     return runs
 
 
@@ -402,8 +405,8 @@ def load_machine_metrics():
                 if line:
                     try:
                         metrics.append(json.loads(line))
-                    except Exception:
-                        pass
+                    except json.JSONDecodeError as exc:
+                        logger.debug("Skipping malformed machine_metrics line: %s", exc)
     return metrics
 
 
@@ -418,8 +421,8 @@ def load_pipeline_failures():
                 if line:
                     try:
                         failures.append(json.loads(line))
-                    except Exception:
-                        pass
+                    except json.JSONDecodeError as exc:
+                        logger.debug("Skipping malformed pipeline_failures line: %s", exc)
     return failures
 
 
@@ -450,7 +453,7 @@ def fmt_ts(ts_str):
     try:
         dt = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         return dt.strftime("%Y-%m-%d %H:%M")
-    except Exception:
+    except (ValueError, OSError):
         return ts_str
 
 
@@ -1591,7 +1594,8 @@ def _load_validation_report(opp_id: str) -> str | None:
     if matches:
         try:
             return matches[0].read_text(encoding="utf-8")
-        except Exception:
+        except OSError as exc:
+            logger.warning("Could not read validation file %s: %s", matches[0], exc)
             return None
     return None
 
