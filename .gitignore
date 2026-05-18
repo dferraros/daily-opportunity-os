@@ -12,6 +12,11 @@ data/processed/
 data/opportunities/
 .worktrees/
 
+# [external] internal projects — not part of this repo
+[external]-journey-os/
+Projects/
+memory/
+
 # Generated reports and exports (committed selectively, not on every run)
 reports/daily/*.json
 reports/daily/*.md
