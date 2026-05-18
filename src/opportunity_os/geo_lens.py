@@ -44,6 +44,7 @@ LATAM_ADJUSTMENTS = {
 }
 
 LATAM_GEOGRAPHIES = [
+    "latam",
     "venezuela",
     "colombia",
     "brazil",
@@ -117,11 +118,12 @@ def apply_geo_adjustments(opp_dict: dict) -> dict:
     geo = (opp.get("geography") or "").lower().strip()
 
     if geo == "venezuela":
-        # Apply WTP multiplier
+        # Pricing context: store geo-adjusted WTP estimate for TAM/pricing calculations.
+        # willingness_to_pay (1-10 scoring dimension) is intentionally NOT overwritten —
+        # it reflects customer willingness relative to their own market, not vs. US prices.
         wtp = opp.get("willingness_to_pay")
         if wtp is not None:
-            opp["willingness_to_pay"] = round(wtp * VENEZUELA_ADJUSTMENTS["wtp_multiplier"], 4)
-            opp["willingness_to_pay_raw"] = wtp
+            opp["wtp_pricing_estimate"] = round(wtp * VENEZUELA_ADJUSTMENTS["wtp_multiplier"], 4)
 
         # Add payment rail context
         opp["payment_rail_context"] = get_payment_rail_context(geo)
@@ -149,8 +151,7 @@ def apply_geo_adjustments(opp_dict: dict) -> dict:
     elif geo in LATAM_GEOGRAPHIES:
         wtp = opp.get("willingness_to_pay")
         if wtp is not None:
-            opp["willingness_to_pay"] = round(wtp * LATAM_ADJUSTMENTS["wtp_multiplier_vs_us"], 4)
-            opp["willingness_to_pay_raw"] = wtp
+            opp["wtp_pricing_estimate"] = round(wtp * LATAM_ADJUSTMENTS["wtp_multiplier_vs_us"], 4)
 
         # Add payment rail context
         opp["payment_rail_context"] = get_payment_rail_context(geo)

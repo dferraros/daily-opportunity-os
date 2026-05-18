@@ -25,8 +25,6 @@ FIELD_ALIASES: dict[str, str] = {
     "opportunity_name": "name",
     "market": "vertical",
     "geo": "geography",
-    "country": "geography",
-    "region": "geography",
     "tam_usd": "tam",
     "tam_usd_estimate": "tam",
     "score": "attractiveness_score",
@@ -195,10 +193,69 @@ def validate_opportunity(raw: dict) -> tuple:
         return None, errors
 
 
+def infer_bucket(raw: dict) -> dict:
+    """
+    Infer bucket classification (fast_cash | venture_scale | latam_asymmetry)
+    if not already set on the raw signal.
+
+    Priority:
+    1. LATAM/VE geography -> latam_asymmetry (geography is the strongest signal)
+    2. Large TAM (>=100M) or platform/marketplace language -> venture_scale
+    3. Service/consulting/agency language -> fast_cash
+    4. Vertical-based default otherwise
+    """
+    import re as _re
+
+    if raw.get("bucket"):
+        return raw
+
+    result = dict(raw)
+    geo = result.get("geography", "global")
+    vertical = result.get("vertical", "")
+    text = " ".join([
+        result.get("name", ""),
+        result.get("problem_statement", ""),
+        result.get("description", ""),
+        result.get("raw_notes", ""),
+    ]).lower()
+
+    tam = result.get("tam") or result.get("tam_usd_estimate") or 0
+    try:
+        tam_val = float(tam) if tam else 0.0
+    except (ValueError, TypeError):
+        tam_val = 0.0
+
+    # LATAM/VE geography is the clearest asymmetry signal
+    if geo in ("venezuela", "latam", "colombia", "mexico", "argentina", "spain"):
+        result["bucket"] = "latam_asymmetry"
+        return result
+
+    # Large TAM or platform/network language -> venture_scale
+    if tam_val >= 100_000_000:
+        result["bucket"] = "venture_scale"
+        return result
+    if _re.search(r"platform|marketplace|network effect|fundable|series [ab]", text):
+        result["bucket"] = "venture_scale"
+        return result
+
+    # Service/agency language -> fast_cash
+    if _re.search(r"service|consulting|done.for.you|productized|agency|concierge", text):
+        result["bucket"] = "fast_cash"
+        return result
+
+    # Vertical-based defaults
+    if vertical in ("fintech", "marketplace"):
+        result["bucket"] = "venture_scale"
+    else:
+        result["bucket"] = "fast_cash"
+
+    return result
+
+
 def normalize_signal(raw: dict) -> tuple:
     """
     Main entry point: chain normalize_field_names -> normalize_geography
-    -> fill_defaults -> validate_opportunity.
+    -> infer_missing_fields -> infer_bucket -> fill_defaults -> validate_opportunity.
 
     Returns:
         (Opportunity, [])          on success
@@ -207,8 +264,9 @@ def normalize_signal(raw: dict) -> tuple:
     step1 = normalize_field_names(raw)
     step2 = normalize_geography(step1)
     step3 = infer_missing_fields(step2)
-    step4 = fill_defaults(step3)
-    return validate_opportunity(step4)
+    step4 = infer_bucket(step3)
+    step5 = fill_defaults(step4)
+    return validate_opportunity(step5)
 
 
 def normalize_signals_batch(raws: list) -> tuple:

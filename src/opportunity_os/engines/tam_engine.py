@@ -282,7 +282,8 @@ def estimate_tam_from_opp(opp: dict) -> dict:
                               size_ratio=geo_mult)
 
     return {
-        "tam": format_tam_usd(result.get("tam_usd")),
+        "tam": result.get("tam_usd"),
+        "tam_display": format_tam_usd(result.get("tam_usd")),
         "tam_usd_estimate": result.get("tam_usd"),
         "sam_usd": result.get("sam_usd"),
         "som_usd": result.get("som_usd"),
