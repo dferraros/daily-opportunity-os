@@ -12,8 +12,16 @@ Real scraping is performed by the pain-intelligence-agent at runtime using WebSe
 
 from __future__ import annotations
 
+import json
+import logging
+import os
+import re
 from datetime import date
 from typing import Optional
+
+MODEL = "claude-haiku-4-5-20251001"
+
+logger = logging.getLogger(__name__)
 
 
 # ─── Pain Category Queries ────────────────────────────────────────────────────
@@ -335,3 +343,131 @@ def pain_score_label(score: Optional[float]) -> str:
     if score >= 5:
         return "moderate — occasional pain"
     return "low — inconvenience, not pain"
+
+
+# ─── Pain Research Executor ───────────────────────────────────────────────────
+
+def _load_api_key() -> Optional[str]:
+    """Load ANTHROPIC_API_KEY from .env file."""
+    from pathlib import Path
+    for parent in list(Path(__file__).resolve().parents):
+        env_path = parent / ".env"
+        if env_path.exists():
+            with open(env_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("ANTHROPIC_API_KEY="):
+                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        if val:
+                            return val
+            break
+    return None
+
+
+def execute_pain_research(opp: dict, client=None) -> dict:
+    """
+    Execute real pain research via Anthropic API with web search.
+
+    Calls Claude to search for evidence of customer pain matching this opportunity.
+    Returns dict with pain fields populated, or {} on any failure (never raises).
+
+    Args:
+        opp: opportunity dict (not mutated)
+        client: optional pre-built anthropic.Anthropic client (for testing)
+    """
+    # Skip guard: do not re-research within 7 days
+    last_researched = opp.get("pain_researched_at")
+    if last_researched:
+        try:
+            days_ago = (date.today() - date.fromisoformat(str(last_researched)[:10])).days
+            if days_ago < 7:
+                return {}
+        except (ValueError, TypeError):
+            pass
+
+    # Resolve client
+    if client is None:
+        api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_api_key()
+        if not api_key:
+            return {}
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=api_key)
+        except Exception:
+            return {}
+
+    queries = build_pain_queries(opp)
+    geo = opp.get("geography", "global")
+    geo_label = "Venezuela" if geo == "venezuela" else geo.upper()
+    problem = (opp.get("problem_statement") or "")[:200]
+    query_list = "\n".join(f"- {q}" for q in queries[:4])
+
+    prompt = f"""Research customer pain validation for this business opportunity.
+
+Name: {opp.get("name", "")}
+Geography: {geo_label}
+Vertical: {opp.get("vertical", "")}
+Problem: {problem}
+
+Search for real evidence of this pain using these queries (search in Spanish where relevant):
+{query_list}
+
+Score the pain severity based on evidence found (volume of complaints, failed workarounds, daily urgency).
+
+Return ONLY this JSON object — no prose, no markdown fences:
+{{
+  "pain_validation_score": <float 0-10>,
+  "exact_customer_phrases": [<up to 3 real complaint phrases found verbatim>],
+  "pain_evidence_sources": [<source platform or URL descriptions where evidence was found>],
+  "workarounds_found": [<what people do today to solve this pain>]
+}}"""
+
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=800,
+            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as e:
+        logger.warning("Pain research API call failed for '%s': %s", opp.get("name"), e)
+        return {}
+
+    # Extract text content (model may return tool_use + text blocks)
+    raw = ""
+    for block in (response.content or []):
+        if hasattr(block, "type") and block.type == "text":
+            raw = block.text.strip()
+            break
+
+    if not raw:
+        return {}
+
+    # Strip markdown fences if model wrapped the JSON
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        return {}
+
+    try:
+        data = json.loads(match.group())
+    except (json.JSONDecodeError, ValueError):
+        logger.warning("Pain research returned invalid JSON for '%s'", opp.get("name"))
+        return {}
+
+    result: dict = {"pain_researched_at": date.today().isoformat()}
+
+    score_val = data.get("pain_validation_score")
+    if score_val is not None:
+        try:
+            result["pain_validation_score"] = round(float(score_val), 2)
+        except (ValueError, TypeError):
+            pass
+
+    for list_field in ("exact_customer_phrases", "pain_evidence_sources", "workarounds_found"):
+        val = data.get(list_field)
+        if isinstance(val, list):
+            result[list_field] = [str(x)[:200] for x in val[:3] if x]
+
+    return result
