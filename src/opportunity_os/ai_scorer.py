@@ -6,12 +6,15 @@ Replaces the regex heuristic estimator. Falls back to heuristic if API unavailab
 """
 
 import json
+import logging
 import os
 import re
 from datetime import datetime
 from typing import Optional
 
-MODEL = "claude-haiku-4-5-20251001"
+logger = logging.getLogger(__name__)
+
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 AI_SCORER_VERSION = "haiku-4-5-v1"
 
 DIMENSIONS = [
@@ -249,6 +252,10 @@ No prose, no markdown, no code block. Array only."""
         raw = response.content[0].text.strip()
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
+        # Extract JSON array substring — handles prose before/after the array
+        json_match = re.search(r'\[[\s\S]*\]', raw)
+        if json_match:
+            raw = json_match.group(0)
 
         scores_list = json.loads(raw)
         if not isinstance(scores_list, list) or len(scores_list) != len(to_score):
@@ -269,11 +276,12 @@ No prose, no markdown, no code block. Array only."""
             opp["ai_scored_at"] = now
             opp["ai_scorer_version"] = AI_SCORER_VERSION + "-batch"
 
-        print(f"  [ai_scorer] Batch scored {len(to_score)} opps in 1 API call")
+        logger.info("[ai_scorer] Batch scored %d opps in 1 API call", len(to_score))
         return already_done + to_score
 
     except Exception as exc:
-        print(f"  [ai_scorer] Batch failed ({exc}) — heuristic fallback for {len(to_score)} opps")
+        from opportunity_os.pipeline_monitor import log_failure
+        log_failure("ai_scorer.batch", exc, opp_id=f"{len(to_score)}_opps", recovered=True)
         return already_done + [_heuristic_fallback(o) for o in to_score]
 
 
@@ -289,7 +297,7 @@ def score_dimensions_with_ai(opp: dict) -> dict:
 
     api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_env_key()
     if not api_key:
-        print(f"  [ai_scorer] No API key — using heuristic fallback for: {opp.get('name', '?')[:50]}")
+        logger.warning("[ai_scorer] No API key — using heuristic fallback for: %s", opp.get('name', '?')[:50])
         return _heuristic_fallback(opp)
 
     try:
@@ -353,6 +361,10 @@ Return ONLY this JSON (no prose, no markdown, no code block):
         # Strip markdown code fences if present
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
+        # Extract JSON object substring — handles prose before/after the object
+        json_match = re.search(r'\{[\s\S]*\}', raw)
+        if json_match:
+            raw = json_match.group(0)
 
         scores = json.loads(raw)
 
@@ -372,11 +384,12 @@ Return ONLY this JSON (no prose, no markdown, no code block):
         opp["ai_scorer_version"] = AI_SCORER_VERSION
         opp.pop("rescore_requested", None)
 
-        print(f"  [ai_scorer] Scored: {name[:50]}")
+        logger.info("[ai_scorer] Scored: %s", name[:50])
         return opp
 
     except Exception as exc:
-        print(f"  [ai_scorer] Error ({type(exc).__name__}: {exc}) — heuristic fallback for: {opp.get('name','?')[:40]}")
+        from opportunity_os.pipeline_monitor import log_failure
+        log_failure("ai_scorer.single", exc, opp_id=opp.get("id", "unknown"), recovered=True)
         return _heuristic_fallback(opp)
 
 
@@ -541,8 +554,9 @@ def _heuristic_fallback(opp: dict) -> dict:
     if geo == "venezuela": pr += 1
     dims["revenue_speed_score"] = clamp(pr)
 
+    result = dict(opp)
     for k, v in dims.items():
-        if not opp.get(k):
-            opp[k] = v
+        if result.get(k) is None:
+            result[k] = v
 
-    return opp
+    return result

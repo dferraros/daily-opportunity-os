@@ -199,8 +199,8 @@ def apply_caps(score: float, opp: dict, weights: dict) -> float:
     if opp.get("kill_decision") is True:
         return float(caps.get("kill_decision_true", 0.0))
 
-    # Check DecisionFilterResults for should_cap_score flag
-    filter_results = opp.get("DecisionFilterResults") or opp.get("decision_filter_results") or {}
+    # Check decision_filter_results for should_cap_score flag
+    filter_results = opp.get("decision_filter_results") or {}
     should_cap = filter_results.get("should_cap_score", False)
 
     # Also check simple integer counter: decision_filters_failed >= 2
@@ -222,15 +222,19 @@ def normalize_portfolio_scores(
     raw_backup_field: str = "raw_final_score",
     output_min: float = 2.0,
     output_max: float = 10.0,
+    max_inflation: float = 2.5,
 ) -> list:
-    """Remap final_score across a portfolio to use the full output range.
+    """Spread final_score across a portfolio while preserving absolute quality.
 
     Problem: AI scorer clusters all post-kill-gate opps at 7-9 (they passed the gate).
-    Solution: Normalize so the weakest survivor → output_min, strongest → output_max.
+    Solution: Spread scores for differentiation, but cap how much we inflate the top.
+
+    max_inflation: maximum points added to the top scorer (default 2.5).
+    A top raw score of 6.5 can rise to at most 9.0 — not always 10.0.
+    This prevents mediocre batches from looking excellent just because they won locally.
 
     Only operates on non-killed, scored opps.
     Backs up original score to raw_backup_field before overwriting.
-    Returns the same list with scores updated in-place.
     Requires >= 3 opps with spread > 0.1 to activate; otherwise returns unchanged.
     """
     live = [
@@ -247,14 +251,16 @@ def normalize_portfolio_scores(
     if spread < 0.1:  # All scores identical — skip
         return opps
 
-    output_spread = output_max - output_min
+    # Cap output_max so the top scorer rises by at most max_inflation points
+    capped_output_max = min(output_max, max_s + max_inflation)
+    output_spread = capped_output_max - output_min
 
     for opp in opps:
-        raw = opp.get(raw_field)
-        if raw is None or opp.get("kill_decision"):
+        raw_val = opp.get(raw_field)
+        if raw_val is None or opp.get("kill_decision"):
             continue
-        opp[raw_backup_field] = round(float(raw), 4)
-        normalized = ((float(raw) - min_s) / spread) * output_spread + output_min
+        opp[raw_backup_field] = round(float(raw_val), 4)
+        normalized = ((float(raw_val) - min_s) / spread) * output_spread + output_min
         opp[output_field] = round(max(output_min, min(output_max, normalized)), 4)
 
     return opps
