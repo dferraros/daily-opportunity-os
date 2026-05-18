@@ -262,22 +262,28 @@ No prose, no markdown, no code block. Array only."""
             raise ValueError(f"Expected {len(to_score)} items, got {len(scores_list) if isinstance(scores_list, list) else type(scores_list)}")
 
         now = datetime.now().strftime("%Y-%m-%d")
+        scored_to_score = []
         for opp, scores in zip(to_score, scores_list):
+            dims_update = {}
             for dim in DIMENSIONS:
                 val = scores.get(dim)
                 if val is not None:
                     try:
-                        opp[dim] = max(1, min(10, int(val)))
+                        dims_update[dim] = max(1, min(10, int(val)))
                     except (ValueError, TypeError):
                         pass
                 reason = scores.get(f"{dim}_reason")
                 if reason:
-                    opp[f"{dim}_reason"] = str(reason)[:200]
-            opp["ai_scored_at"] = now
-            opp["ai_scorer_version"] = AI_SCORER_VERSION + "-batch"
+                    dims_update[f"{dim}_reason"] = str(reason)[:200]
+            scored_to_score.append({
+                **opp,
+                **dims_update,
+                "ai_scored_at": now,
+                "ai_scorer_version": AI_SCORER_VERSION + "-batch",
+            })
 
         logger.info("[ai_scorer] Batch scored %d opps in 1 API call", len(to_score))
-        return already_done + to_score
+        return already_done + scored_to_score
 
     except Exception as exc:
         from opportunity_os.pipeline_monitor import log_failure
@@ -368,24 +374,30 @@ Return ONLY this JSON (no prose, no markdown, no code block):
 
         scores = json.loads(raw)
 
-        # Write scores + reasons back to opp dict
+        dims_update = {}
         for dim in DIMENSIONS:
             val = scores.get(dim)
             if val is not None:
                 try:
-                    opp[dim] = max(1, min(10, int(val)))
+                    dims_update[dim] = max(1, min(10, int(val)))
                 except (ValueError, TypeError):
                     pass
             reason = scores.get(f"{dim}_reason")
             if reason:
-                opp[f"{dim}_reason"] = str(reason)[:200]
+                dims_update[f"{dim}_reason"] = str(reason)[:200]
 
-        opp["ai_scored_at"] = datetime.now().strftime("%Y-%m-%d")
-        opp["ai_scorer_version"] = AI_SCORER_VERSION
-        opp.pop("rescore_requested", None)
+        result = {
+            k: v for k, v in opp.items() if k != "rescore_requested"
+        }
+        result = {
+            **result,
+            **dims_update,
+            "ai_scored_at": datetime.now().strftime("%Y-%m-%d"),
+            "ai_scorer_version": AI_SCORER_VERSION,
+        }
 
         logger.info("[ai_scorer] Scored: %s", name[:50])
-        return opp
+        return result
 
     except Exception as exc:
         from opportunity_os.pipeline_monitor import log_failure
