@@ -58,6 +58,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         "processed": 0,
         "scored": 0,
         "killed": 0,
+        "deep_dives_produced": 0,
         "reports_written": [],
         "errors": [],
     }
@@ -424,6 +425,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             if not dry_run:
                 result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
                 if "error" not in result:
+                    summary["deep_dives_produced"] += 1
                     logger.info("  Auto deep-dive triggered: %s (score %.1f)",
                                 opp.get("name", "unknown")[:50], opp.get("final_score", 0))
                 else:
@@ -527,7 +529,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             "signals_ingested": len(raw_signals),
             "opportunities_scored": summary["scored"],
             "opportunities_killed": summary["killed"],
-            "deep_dives_produced": 0,  # counted separately via deep-dive command
+            "deep_dives_produced": summary["deep_dives_produced"],
             "validations_run": len(validation_packages_for_sync) if validation_packages_for_sync else 0,
             "quota_targets": {
                 "signals": quotas.get("signals_ingested", {}).get("target", 40),
