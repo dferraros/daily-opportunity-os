@@ -5,8 +5,11 @@ Loads an opportunity by ID, runs the full 8-section validation package,
 writes the markdown file, and builds a Notion sync payload.
 """
 import json
+import logging
 import os
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 
 def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
@@ -39,9 +42,8 @@ def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
     root = get_project_root()
 
     if dry_run:
-        print(f"[DRY RUN] Would write validation for: {opp.get('name')}")
-        print(f"[DRY RUN] Markdown preview (first 400 chars):")
-        print(package["_validation_markdown"][:400])
+        logger.info("[DRY RUN] Would write validation for: %s", opp.get("name"))
+        logger.info("[DRY RUN] Markdown preview (first 400 chars):\n%s", package["_validation_markdown"][:400])
         return {
             "path": "(dry-run)",
             "notion_sync_path": "(dry-run)",

@@ -6,9 +6,12 @@ This module tracks status and blocks pipeline advancement if interviews are miss
 
 from __future__ import annotations
 import json
+import logging
 import os
 from datetime import date, datetime
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ─── Constants ────────────────────────────────────────────────────────────────
@@ -186,9 +189,9 @@ def add_interview(
         f.write(json.dumps(record) + "\n")
 
     quota = get_interview_quota_status()
-    print(
-        f"Interview recorded: {opp_id} / {contact_type} / {status}. "
-        f"Progress: {quota['completed']}/{quota['total_required']}"
+    logger.info(
+        "Interview recorded: %s / %s / %s. Progress: %d/%d",
+        opp_id, contact_type, status, quota["completed"], quota["total_required"],
     )
 
 

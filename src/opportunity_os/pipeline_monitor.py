@@ -1,8 +1,11 @@
 """Pipeline health monitor -- logs failures to data/pipeline_failures.jsonl."""
 
 import json
+import logging
 import os
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 def get_project_root() -> str:
@@ -32,7 +35,7 @@ def log_failure(step: str, error: Exception, opp_id: str = "unknown", recovered:
     }
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
-    print(f"WARNING  [{step}] {type(error).__name__}: {str(error)[:200]} (opp: {opp_id})")
+    logger.warning("[%s] %s: %s (opp: %s)", step, type(error).__name__, str(error)[:200], opp_id)
 
 
 def read_failures() -> list:
