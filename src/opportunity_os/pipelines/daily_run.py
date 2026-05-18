@@ -98,8 +98,8 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         print(f"Step 2.5: Batch AI scoring {len(candidates)}/{len(valid_opps_dicts)} candidates (1 API call)...")
         try:
             scored = score_batch_with_ai(candidates)
-            scored_ids = {id(o) for o in candidates}
-            valid_opps_dicts = [o for o in valid_opps_dicts if id(o) not in scored_ids] + scored
+            scored_ids = {o["id"] for o in candidates if o.get("id")}
+            valid_opps_dicts = [o for o in valid_opps_dicts if o.get("id") not in scored_ids] + scored
             ai_count = sum(1 for o in valid_opps_dicts if o.get("ai_scored_at"))
             print(f"  AI scoring complete: {ai_count} scored by AI, "
                   f"{len(valid_opps_dicts) - ai_count} used heuristic fallback")
@@ -107,6 +107,9 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             log_failure("ai_scoring", exc)
     else:
         print(f"Step 2.5: All {len(valid_opps_dicts)} opps scored by heuristic (no API call needed)")
+
+    # Step 2.6: Field enrichment — populate why_now, daniels_wedge_score, path_to_first_revenue
+    valid_opps_dicts = [_enrich_fields(o) for o in valid_opps_dicts]
 
     # Steps 3-8: Process each opportunity
     lane_assigner = PortfolioLaneAssigner()
@@ -142,17 +145,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         # Step 5: Score
         opp_dict = score_opportunity(opp_dict)
 
-        # Step 5.5: Extra Venezuela lens pass for VE opps
-        if opp_dict.get("geography") == "venezuela":
-            try:
-                opp_dict = apply_geo_adjustments(opp_dict)
-                opp_dict["venezuela_lens_applied"] = True
-                ve_lens_count += 1
-            except Exception as e:
-                log_failure("venezuela_lens_auto", e, opp_id=opp_dict.get("id", "unknown"))
-
-        # Step 6: Geo adjustments
+        # Step 6: Geo adjustments (all geographies — VE handled here, not twice)
         opp_dict = apply_geo_adjustments(opp_dict)
+        if opp_dict.get("geography") == "venezuela":
+            opp_dict["venezuela_lens_applied"] = True
+            ve_lens_count += 1
 
         # Step 7: Portfolio lane
         lane = lane_assigner.assign_from_dict(opp_dict)
@@ -169,7 +166,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             try:
                 final_score = float(opp_dict.get("final_score", 0))
                 if final_score > 0:
-                    append_opp_score_history(opp_dict["id"], final_score)
+                    append_opp_score_history(opp_dict.get("id", "unknown"), final_score)
             except Exception as e:
                 log_failure("score_history_append", e, opp_id=opp_dict.get("id", "unknown"))
 
@@ -196,10 +193,10 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     print(f"Step 9.5: Running TAM estimation on {len(all_opps_sorted)} scored opportunities...")
     try:
         from opportunity_os.engines.tam_engine import estimate_tam_from_opp
-        for opp in all_opps_sorted:
+        for i, opp in enumerate(all_opps_sorted):
             if not opp.get("tam") and not opp.get("tam_usd_estimate"):
                 result = estimate_tam_from_opp(opp)
-                opp.update({k: v for k, v in result.items() if not k.startswith("_")})
+                all_opps_sorted[i] = {**opp, **{k: v for k, v in result.items() if not k.startswith("_")}}
         tam_populated = sum(1 for o in all_opps_sorted if o.get("tam") or o.get("tam_usd_estimate"))
         print(f"  TAM populated for {tam_populated}/{len(all_opps_sorted)} opportunities")
     except ImportError as e:
@@ -212,10 +209,10 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     top_30 = all_opps_sorted[:30]
     try:
         from opportunity_os.engines.benchmark_engine import run_benchmark
-        for opp in top_30:
+        for i, opp in enumerate(top_30):
             if not opp.get("benchmark_archetype"):
                 result = run_benchmark(opp)
-                opp.update({k: v for k, v in result.items() if not k.startswith("_")})
+                top_30[i] = {**opp, **{k: v for k, v in result.items() if not k.startswith("_")}}
         bench_populated = sum(1 for o in top_30 if o.get("benchmark_archetype"))
         print(f"  Benchmark archetypes populated for {bench_populated}/{len(top_30)} opportunities")
     except ImportError as e:
@@ -228,9 +225,9 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     top_20 = all_opps_sorted[:20]
     try:
         from opportunity_os.pain_intelligence import run_pain_intelligence
-        for opp in top_20:
+        for i, opp in enumerate(top_20):
             pain_result = run_pain_intelligence(opp)
-            opp.update({k: v for k, v in pain_result.items() if not k.startswith("_")})
+            top_20[i] = {**opp, **{k: v for k, v in pain_result.items() if not k.startswith("_")}}
             print(f"  Pain queries built for: {opp.get('name', 'unknown')} ({len(pain_result.get('_pain_queries', []))} queries)")
     except ImportError as e:
         print(f"WARNING  Pain intelligence module not available: {e}")
@@ -241,9 +238,9 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     print("Step 11: Running Distribution OS on top 20 opportunities...")
     try:
         from opportunity_os.distribution_intelligence import run_distribution_intelligence
-        for opp in top_20:
+        for i, opp in enumerate(top_20):
             dist_result = run_distribution_intelligence(opp)
-            opp.update({k: v for k, v in dist_result.items() if not k.startswith("_")})
+            top_20[i] = {**opp, **{k: v for k, v in dist_result.items() if not k.startswith("_")}}
             channels = dist_result.get("_recommended_channels", [])
             print(f"  Distribution mapped for: {opp.get('name', 'unknown')} -> top channel: {channels[0] if channels else 'unknown'}")
     except ImportError as e:
@@ -272,11 +269,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     try:
         from opportunity_os.free_research import research_opportunity_free
         free_researched = 0
-        for opp in all_opps_sorted[:20]:
+        for i, opp in enumerate(all_opps_sorted[:20]):
             if not opp.get("research_executed_at") and not opp.get("free_research_at"):
                 updates = research_opportunity_free(opp)
                 if updates:
-                    opp.update(updates)
+                    all_opps_sorted[i] = {**opp, **updates}
                     free_researched += 1
                 time.sleep(0.5)
         print(f"  Free research complete: {free_researched} opps enriched")
@@ -314,6 +311,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             log_failure("save_enriched", e)
 
     # ─── Step 14 (pre-collect): Identify auto-validation candidates ─────────────
+    AUTO_VALIDATION_THRESHOLD = 7.0  # fallback; overwritten by import below if available
     validation_packages_for_sync = []
     try:
         from opportunity_os.validation_engine import run_validation, AUTO_VALIDATION_THRESHOLD
@@ -333,10 +331,10 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
             and not o.get("kill_decision")
             and o.get("stage") == "scout"
         ]
-        for opp in validation_candidates:
+        for i, opp in enumerate(validation_candidates):
             package = run_validation(opp, mode="auto")
-            opp.update({k: v for k, v in package.items() if not k.startswith("_")})
-            validation_packages_for_sync.append((opp, package))
+            validation_candidates[i] = {**opp, **{k: v for k, v in package.items() if not k.startswith("_")}}
+            validation_packages_for_sync.append((validation_candidates[i], package))
     except ImportError:
         validation_candidates = []
     except Exception as e:
@@ -389,11 +387,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                         f"{date}-{safe_id}-validation.md",
                     )
                     with open(md_path, "w", encoding="utf-8") as f:
-                        f.write(package["_validation_markdown"])
+                        f.write(package.get("_validation_markdown", ""))
                 print(f"  Validated: {opp.get('name', 'unknown')} (score {opp.get('final_score', 0):.2f})")
             print(f"  {len(validation_packages_for_sync)} opp(s) promoted to validation stage")
         else:
-            threshold_display = AUTO_VALIDATION_THRESHOLD if "AUTO_VALIDATION_THRESHOLD" in dir() else 7.0
+            threshold_display = AUTO_VALIDATION_THRESHOLD
             print(f"  No scouts above threshold {threshold_display} — no auto-validation triggered")
     except Exception as e:
         log_failure("validation_write", e)
@@ -497,7 +495,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         summary,
     )
 
-    # Step 10: Export CSVs
+    # Step 16: Export CSVs
     if not dry_run:
         all_scored = read_all_opportunities()
         daily_feed_to_csv(all_scored)
@@ -509,20 +507,6 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     print(
         f"   Reports: {', '.join(os.path.basename(r) for r in summary['reports_written'])}"
     )
-
-    # Step 11: Track interview quota
-    from opportunity_os.interview_tracker import get_interview_quota_status
-    quota = get_interview_quota_status()
-    if not quota["on_track"]:
-        print(f"WARNING  Interview quota behind: {quota['completed']}/{quota['total_required']} done, {quota['days_remaining']} days left")
-
-    # Step 12: Outcome calibration check (weekly)
-    from opportunity_os.outcome_tracking import get_calibration_report
-    # Only show if we have tracked outcomes
-    if os.path.exists(os.path.join(_get_project_root(), "data", "outcome_tracking.jsonl")):
-        report = get_calibration_report()
-        if report["total_tracked"] > 0:
-            print(f"Score accuracy: {report['score_accuracy']:.0%} ({report['total_tracked']} tracked outcomes)")
 
     # Step 15: Track quota progress from config
     try:
@@ -553,28 +537,151 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     except Exception as e:
         log_failure("quota_tracking", e)
 
+    # Step 17: Track interview quota
+    from opportunity_os.interview_tracker import get_interview_quota_status
+    quota = get_interview_quota_status()
+    if not quota["on_track"]:
+        print(f"WARNING  Interview quota behind: {quota['completed']}/{quota['total_required']} done, {quota['days_remaining']} days left")
+
+    # Step 18: Outcome calibration check (weekly)
+    from opportunity_os.outcome_tracking import get_calibration_report
+    if os.path.exists(os.path.join(_get_project_root(), "data", "outcome_tracking.jsonl")):
+        report = get_calibration_report()
+        if report["total_tracked"] > 0:
+            print(f"Score accuracy: {report['score_accuracy']:.0%} ({report['total_tracked']} tracked outcomes)")
+
     return summary
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _infer_kill_answers(opp_dict: dict) -> dict:
-    """Infer kill gate answers from available opportunity fields."""
+    """Infer kill gate answers from available opportunity fields.
+
+    KG-03 and KG-05 use geo-aware defaults:
+    - LATAM/VE opps get higher default distribution_accessibility (WhatsApp is ubiquitous)
+    - Threshold lowered to >= 4 so early-stage signals get benefit of the doubt
+    """
     answers: dict = {}
+    geo = opp_dict.get("geography", "global")
+    is_latam_ve = geo in ("venezuela", "latam", "colombia", "mexico", "argentina")
+
     answers["KG-01"] = bool(opp_dict.get("problem_statement"))
     answers["KG-02"] = bool(opp_dict.get("target_customer"))
-    answers["KG-03"] = (opp_dict.get("distribution_accessibility") or 5) >= 5
+
+    # KG-03: distribution accessibility — LATAM/VE defaults to 6 (WhatsApp cold outreach)
+    # NOTE: use explicit None-check to avoid (3 or 5) = 3 Python gotcha
+    da_raw = opp_dict.get("distribution_accessibility")
+    da_default = 6 if is_latam_ve else 5
+    da_score = da_raw if da_raw is not None else da_default
+    answers["KG-03"] = int(da_score) >= 4
+
     pfr = opp_dict.get("path_to_first_revenue")
-    answers["KG-04"] = bool(pfr) if isinstance(pfr, str) else (pfr or 5) >= 5
-    answers["KG-05"] = (opp_dict.get("speed_to_mvp") or 5) >= 5
-    # KG-06: if no TAM yet (raw scout signal), give benefit of the doubt —
-    # TAM estimation runs in step 9.5 after kill gate, so we can't penalise here.
+    answers["KG-04"] = bool(pfr) if isinstance(pfr, str) else ((pfr if pfr is not None else 5) >= 5)
+
+    # KG-05: speed to MVP — lower threshold; early signals get benefit of the doubt
+    speed_raw = opp_dict.get("speed_to_mvp")
+    speed_default = 5 if is_latam_ve else 4
+    speed_score = speed_raw if speed_raw is not None else speed_default
+    answers["KG-05"] = int(speed_score) >= 4
+
+    # KG-06: if no TAM yet, give benefit of the doubt (TAM estimation runs later at step 9.5)
     tam = opp_dict.get("tam_usd_estimate") or opp_dict.get("tam")
     answers["KG-06"] = True if not tam else float(tam) >= 10_000_000
+
     answers["KG-07"] = opp_dict.get("defensibility", 5) >= 5 or bool(
         opp_dict.get("venezuela_wedge_category")
     ) or bool(opp_dict.get("problem_statement"))
     return answers
+
+
+def _enrich_fields(opp_dict: dict) -> dict:
+    """
+    Populate commonly-empty fields via rule-based inference after heuristic/AI scoring.
+
+    Fields populated:
+    - daniels_wedge_score: count of Daniel's 6 wedge dimensions found in text
+    - why_now: infer from timing/AI/geo signals in description text
+    - path_to_first_revenue: infer from vertical + geo + business model signals
+    """
+    import re as _re
+
+    opp = dict(opp_dict)
+    text = " ".join([
+        opp.get("name", ""),
+        opp.get("problem_statement", ""),
+        opp.get("description", ""),
+        opp.get("raw_notes", ""),
+        opp.get("trigger_signal", ""),
+    ]).lower()
+    geo = opp.get("geography", "global")
+
+    # Populate daniels_wedge_score (0-6 count)
+    if opp.get("daniels_wedge_score") is None:
+        wedges = 0
+        if _re.search(r"growth|crm|lifecycle|a/b|paid ads|funnel|acquisition", text):
+            wedges += 1
+        if _re.search(r"narrative|positioning|story|brand|message", text):
+            wedges += 1
+        if _re.search(r"latam|venezuela|spain|colombia|spanish|hispano", text):
+            wedges += 1
+        if _re.search(r"fintech|crypto|usdt|payment|[external]|blockchain", text):
+            wedges += 1
+        if _re.search(r"mvp|prototype|claude|build fast|automation", text):
+            wedges += 1
+        if _re.search(r"whatsapp|referral|distribution|community|viral", text):
+            wedges += 1
+        opp["daniels_wedge_score"] = wedges
+
+    # Populate why_now
+    if not opp.get("why_now"):
+        why_now_parts = []
+        if _re.search(r"2025|2026|this year|recently|new|launch", text):
+            why_now_parts.append("Recent market developments create urgency")
+        if _re.search(r"regulation|mandator|new law|compliance", text):
+            why_now_parts.append("Regulatory changes mandate new solutions")
+        if _re.search(r"\bai\b|automation|llm|gpt|claude", text):
+            why_now_parts.append("AI cost reduction makes this viable in 2026")
+        if geo == "venezuela":
+            why_now_parts.append("Venezuela's economic instability creates necessity-driven demand")
+        if geo in ("latam", "venezuela") or _re.search(r"whatsapp|mobile", text):
+            why_now_parts.append("WhatsApp-first commerce is accelerating across LATAM")
+        if why_now_parts:
+            opp["why_now"] = ". ".join(why_now_parts[:2])
+        elif (opp.get("timing_tailwind") or 0) >= 7:
+            opp["why_now"] = "Strong timing tailwind — market conditions favor entry now"
+        else:
+            opp["why_now"] = "Market opportunity identified; timing validation needed"
+
+    # Populate path_to_first_revenue
+    if not opp.get("path_to_first_revenue"):
+        geo_pricing = {
+            "venezuela": "$5-15/mo SaaS or 0.5-2% transaction fee",
+            "latam": "$20-50/mo SaaS or performance-based fee",
+            "colombia": "$20-50/mo SaaS",
+            "mexico": "$20-50/mo SaaS",
+            "spain": "$30-80/mo SaaS",
+            "global": "$50-200/mo SaaS",
+        }
+        price_hint = geo_pricing.get(geo, geo_pricing["global"])
+        if _re.search(r"saas|subscription|monthly", text):
+            opp["path_to_first_revenue"] = (
+                f"Subscription ({price_hint}) — direct WhatsApp/cold outreach to first 10 customers"
+            )
+        elif _re.search(r"transaction|payment|commission|take rate|fee", text):
+            opp["path_to_first_revenue"] = (
+                "Transaction fee — onboard 3-5 businesses, charge per transaction"
+            )
+        elif _re.search(r"service|consulting|done for you|agency", text):
+            opp["path_to_first_revenue"] = (
+                "Productized service — fixed-scope package, close first customer in 2 weeks via referral"
+            )
+        else:
+            opp["path_to_first_revenue"] = (
+                f"Direct sales via WhatsApp outreach — close first 3 customers in 30 days at {price_hint}"
+            )
+
+    return opp
 
 
 def _render_and_write(content: str, path: str, dry_run: bool, summary: dict):

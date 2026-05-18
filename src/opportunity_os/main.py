@@ -9,8 +9,11 @@ Commands:
   opp-os stats       Show machine metrics summary
 """
 
+import logging
 import sys
 import os
+
+logger = logging.getLogger(__name__)
 
 import click
 
@@ -248,8 +251,8 @@ def stats():
             click.echo(f"   Deep dives:  {week_deep_dives}/{dd_target}")
             click.echo(f"   Validations: {week_validations}/{val_target}")
             click.echo("")
-    except Exception:
-        pass  # quota display is non-critical
+    except Exception as exc:
+        logger.warning("quota display failed: %s", exc)
 
     if not all_opps:
         click.echo(" No opportunities yet. Run 'opp-os daily' to start.")

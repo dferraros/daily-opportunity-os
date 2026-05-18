@@ -412,7 +412,7 @@ def research_opportunity_free(opp: dict) -> dict:
         result["exact_customer_phrases"] = reddit_phrases[:3]
 
     # Score based on evidence volume: 3+ sources = 6+, 5+ = 7+, 8+ = 8+
-    if not opp.get("pain_validation_score"):
+    if opp.get("pain_validation_score") is None:
         evidence_count = len([s for s in pain_snippets if len(s) > 50])
         score = min(6.0 + (evidence_count * 0.3), 8.5) if evidence_count >= 3 else None
         if score:

@@ -4,6 +4,7 @@ Single-file, 5-tab dashboard for the Daily Opportunity OS.
 """
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -331,7 +332,29 @@ section[data-testid="stMain"] > div:first-child {
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
-PROJECT_ROOT = Path(__file__).parent.parent.parent
+from opportunity_os.storage import get_project_root as _get_project_root_str
+PROJECT_ROOT = Path(_get_project_root_str())
+
+
+def _parse_tam(val) -> float | None:
+    """Return TAM as float, handling both numeric and legacy string formats like '$80.0M'."""
+    if val is None:
+        return None
+    if isinstance(val, (int, float)):
+        return float(val)
+    # Strip currency symbols and suffixes (legacy string format)
+    s = str(val).strip().upper().lstrip("$").replace(",", "")
+    multipliers = {"K": 1e3, "M": 1e6, "B": 1e9, "T": 1e12}
+    for suffix, mult in multipliers.items():
+        if s.endswith(suffix):
+            try:
+                return float(s[:-1]) * mult
+            except ValueError:
+                return None
+    try:
+        return float(s)
+    except ValueError:
+        return None
 
 
 # ─── Data Loaders ────────────────────────────────────────────────────────────
@@ -491,8 +514,8 @@ def hero_card(o: dict, rank: int) -> str:
     geo = GEO_LABELS.get(o.get("geography", ""), o.get("geography", "—"))
     name = o.get("name", "—")
     problem = (o.get("problem_statement") or "")[:180]
-    tam = o.get("tam_usd_estimate") or o.get("tam")
-    tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
+    tam = _parse_tam(o.get("tam_usd_estimate") or o.get("tam"))
+    tam_str = f"${tam/1e6:.0f}M" if tam else "—"
     bucket = (o.get("bucket") or "—").replace("_", " ").upper()
     archetype = (o.get("benchmark_archetype") or "—").replace("_", " ").title()
     wedge = o.get("daniels_wedge_score")
@@ -916,7 +939,10 @@ def tab_command_center(opps, filtered_opps, quotas):
             rows = []
             for rank, o in enumerate(top10, 1):
                 tam = o.get("tam_usd_estimate") or o.get("tam")
-                tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
+                try:
+                    tam_str = f"${float(tam)/1e6:.0f}M" if tam else "—"
+                except (TypeError, ValueError):
+                    tam_str = str(tam) if tam else "—"
                 first_seen_raw = o.get("first_seen") or ""
                 discovered_str = str(first_seen_raw)[:10] if first_seen_raw else "—"
                 rows.append({
@@ -1070,13 +1096,13 @@ def tab_all_opportunities(opps, geo_filter, score_range):
                             st.markdown(f"> *{p}*")
 
                 # TAM section
-                tam = o.get("tam_usd_estimate") or o.get("tam")
-                sam = o.get("sam_usd_estimate")
-                som = o.get("som_usd_estimate")
+                tam = _parse_tam(o.get("tam_usd_estimate") or o.get("tam"))
+                sam = _parse_tam(o.get("sam_usd_estimate"))
+                som = _parse_tam(o.get("som_usd_estimate"))
                 if tam:
-                    tam_str = f"${float(tam)/1e6:.0f}M"
-                    sam_str = f"${float(sam)/1e6:.0f}M" if sam else "—"
-                    som_str = f"${float(som)/1e6:.0f}M" if som else "—"
+                    tam_str = f"${tam/1e6:.0f}M"
+                    sam_str = f"${sam/1e6:.0f}M" if sam else "—"
+                    som_str = f"${som/1e6:.0f}M" if som else "—"
                     st.markdown(f"**TAM / SAM / SOM:** {tam_str} / {sam_str} / {som_str}")
                     if o.get("tam_rationale"):
                         st.caption(str(o.get("tam_rationale"))[:200])
@@ -1614,8 +1640,8 @@ def tab_deep_dive(opps: list):
     stage = o.get("stage") or "scout"
     archetype = (o.get("benchmark_archetype") or "—").replace("_", " ").title()
     problem = o.get("problem_statement") or ""
-    tam_raw = o.get("tam_usd_estimate") or o.get("tam")
-    tam_str = f"${float(tam_raw)/1e6:.0f}M" if tam_raw else "—"
+    tam_raw = _parse_tam(o.get("tam_usd_estimate") or o.get("tam"))
+    tam_str = f"${tam_raw/1e6:.0f}M" if tam_raw else "—"
     wedge = o.get("daniels_wedge_score")
     ve_wedge = (o.get("venezuela_wedge_category") or "").replace("_", " ").upper()
 
@@ -1751,10 +1777,10 @@ def tab_deep_dive(opps: list):
         st.markdown(subsection("The Market"), unsafe_allow_html=True)
 
         if tam_raw:
-            sam_raw = o.get("sam_usd_estimate")
-            som_raw = o.get("som_usd_estimate")
+            sam_raw = _parse_tam(o.get("sam_usd_estimate"))
+            som_raw = _parse_tam(o.get("som_usd_estimate"))
             st.plotly_chart(
-                tam_funnel_chart(float(tam_raw), float(sam_raw) if sam_raw else None, float(som_raw) if som_raw else None),
+                tam_funnel_chart(tam_raw, sam_raw, som_raw),
                 use_container_width=True,
                 key=f"dd_tam_{opp_id}",
             )
