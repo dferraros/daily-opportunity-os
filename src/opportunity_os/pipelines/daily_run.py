@@ -279,15 +279,18 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     # Never increase this without checking Anthropic billing first.
     top_3_research = [o for o in all_opps_sorted[:3] if not o.get("research_executed_at")]
     logger.info("Step 11.5: Running Research Executor on top 3 new opportunities (%d unresearched)...", len(top_3_research))
-    try:
-        from opportunity_os.research_executor import run_research_executor
-        for i, opp in enumerate(top_3_research, 1):
-            logger.info("  Researching %d/%d: %s", i, len(top_3_research), opp.get("name", "unknown")[:50])
-            run_research_executor(opp)
-    except ImportError as e:
-        logger.warning("Research executor not available: %s", e)
-    except Exception as e:
-        log_failure("research_executor", e)
+    if dry_run:
+        logger.info("  [dry-run] Skipping research executor (API cost ~$0.08-0.15/opp)")
+    else:
+        try:
+            from opportunity_os.research_executor import run_research_executor
+            for i, opp in enumerate(top_3_research, 1):
+                logger.info("  Researching %d/%d: %s", i, len(top_3_research), opp.get("name", "unknown")[:50])
+                run_research_executor(opp)
+        except ImportError as e:
+            logger.warning("Research executor not available: %s", e)
+        except Exception as e:
+            log_failure("research_executor", e)
 
     # ─── Step 11.6: Free Research — Jina + HN + Reddit for opps 4-20 ───
     # Zero cost. Covers what the paid API executor skips.
