@@ -33,11 +33,9 @@ They are structurally adjacent — could be the same product (VE payment stack) 
 ## Next Actions
 1. [ ] Run next test for Escrow: Reddit post in r/vzla by Thu Apr 9 (see memo)
 2. [ ] Run next test for Payroll: Reddit post in r/dev_venezuela by Thu Apr 9 (see memo)
-3. [ ] Check [external] employment contract for non-compete scope (Spain/EU only? or global?)
-4. [ ] If 5+ positive signals from either test: promote to validation stage, start concierge MVP
+3. [ ] If 5+ positive signals from either test: promote to validation stage, start concierge MVP
 
 ## Blockers
-- Non-compete check: must confirm before building anything VE-adjacent
 - First customer commitment needed before building any code
 
 ## Notes
