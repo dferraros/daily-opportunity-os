@@ -85,35 +85,16 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     for err in failed:
         summary["errors"].append(f"Normalization failed: {err.get('errors', [])}")
 
-    # Step 2.5: Heuristic pre-score → batch AI scoring (1 API call for survivors only)
-    # Cost strategy: heuristic first on all signals, then 1 batch AI call on top candidates.
-    # This replaces N individual API calls (1/opp) with at most 1 batch call for top 10.
+    # Step 2.3: Heuristic pre-score on all signals (no API call)
     from opportunity_os.ai_scorer import _heuristic_fallback, score_batch_with_ai
     valid_opps_dicts = [_heuristic_fallback(opp.model_dump()) for opp in valid_opps]
 
-    # Only batch-score opps that look promising on heuristic (avoids scoring obvious throwaways)
-    candidates = [o for o in valid_opps_dicts if not o.get("ai_scored_at") and
-                  sum(o.get(d, 0) or 0 for d in ["pain_severity", "regional_fit", "market_size"]) >= 12][:10]
-    if candidates:
-        print(f"Step 2.5: Batch AI scoring {len(candidates)}/{len(valid_opps_dicts)} candidates (1 API call)...")
-        try:
-            scored = score_batch_with_ai(candidates)
-            scored_ids = {o["id"] for o in candidates if o.get("id")}
-            valid_opps_dicts = [o for o in valid_opps_dicts if o.get("id") not in scored_ids] + scored
-            ai_count = sum(1 for o in valid_opps_dicts if o.get("ai_scored_at"))
-            print(f"  AI scoring complete: {ai_count} scored by AI, "
-                  f"{len(valid_opps_dicts) - ai_count} used heuristic fallback")
-        except Exception as exc:
-            log_failure("ai_scoring", exc)
-    else:
-        print(f"Step 2.5: All {len(valid_opps_dicts)} opps scored by heuristic (no API call needed)")
-
-    # Step 2.6: Field enrichment — populate why_now, daniels_wedge_score, path_to_first_revenue
+    # Step 2.4: Field enrichment — populate why_now, daniels_wedge_score, path_to_first_revenue
     valid_opps_dicts = [_enrich_fields(o) for o in valid_opps_dicts]
 
-    # Steps 3-8: Process each opportunity
+    # Steps 3-4: Kill gate pass — runs on heuristic scores only (no API tokens spent on throwaways)
     lane_assigner = PortfolioLaneAssigner()
-    scored_opps = []
+    survivors = []
     killed_opps = []
     ve_lens_count = 0
 
@@ -128,19 +109,41 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         if not opp_dict.get("kill_decision") and opp_dict.get("kill_criteria_passed") is None:
             answers = _infer_kill_answers(opp_dict)
             result = evaluate_kill_gate(answers)
-            opp_dict["kill_decision"] = result.kill_decision
-            opp_dict["kill_criteria_passed"] = result.passed_count
+            opp_dict = {**opp_dict, "kill_decision": result.kill_decision, "kill_criteria_passed": result.passed_count}
             if result.kill_decision:
-                opp_dict["kill_reason"] = result.kill_reason
+                opp_dict = {**opp_dict, "kill_reason": result.kill_reason}
 
         if opp_dict.get("kill_decision"):
-            opp_dict["stage"] = "killed"
-            opp_dict["portfolio_lane"] = "no"
+            opp_dict = {**opp_dict, "stage": "killed", "portfolio_lane": "no"}
             killed_opps.append(opp_dict)
             if not dry_run:
                 append_opportunity(opp_dict)
             summary["killed"] += 1
             continue
+
+        survivors.append(opp_dict)
+
+    # Step 2.5 (relocated after kill gate): Batch AI score only kill-gate survivors
+    # Saves API tokens that would have been spent on throwaways.
+    ai_candidates = [o for o in survivors if not o.get("ai_scored_at")][:10]
+    if ai_candidates:
+        print(f"Step 2.5: Batch AI scoring {len(ai_candidates)}/{len(survivors)} kill-gate survivors (1 API call)...")
+        try:
+            ai_scored = score_batch_with_ai(ai_candidates)
+            scored_ids = {o["id"] for o in ai_candidates if o.get("id")}
+            survivors = [o for o in survivors if o.get("id") not in scored_ids] + ai_scored
+            ai_count = sum(1 for o in survivors if o.get("ai_scored_at"))
+            print(f"  AI scoring complete: {ai_count} scored by AI, "
+                  f"{len(survivors) - ai_count} used heuristic fallback")
+        except Exception as exc:
+            log_failure("ai_scoring", exc)
+    else:
+        print(f"Step 2.5: All {len(survivors)} survivors scored by heuristic (no API call needed)")
+
+    # Steps 5-8: Score, adjust, assign lanes, persist for kill-gate survivors
+    scored_opps = []
+
+    for opp_dict in survivors:
 
         # Step 5: Score
         opp_dict = score_opportunity(opp_dict)
@@ -148,12 +151,12 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         # Step 6: Geo adjustments (all geographies — VE handled here, not twice)
         opp_dict = apply_geo_adjustments(opp_dict)
         if opp_dict.get("geography") == "venezuela":
-            opp_dict["venezuela_lens_applied"] = True
+            opp_dict = {**opp_dict, "venezuela_lens_applied": True}
             ve_lens_count += 1
 
         # Step 7: Portfolio lane
         lane = lane_assigner.assign_from_dict(opp_dict)
-        opp_dict["portfolio_lane"] = lane
+        opp_dict = {**opp_dict, "portfolio_lane": lane}
 
         scored_opps.append(opp_dict)
         summary["scored"] += 1
