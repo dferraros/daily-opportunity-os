@@ -6,9 +6,11 @@ weights:
   pain_severity: 0.10
   willingness_to_pay: 0.08
   monetization_clarity: 0.08
+  pain_validation_score: 0.08  # from execute_pain_research; absent = neutral
   speed_to_mvp: 0.08
   capital_efficiency: 0.07
   distribution_accessibility: 0.08
+  distribution_quality: 0.07   # derived from distribution_validated bool; absent = neutral
   competition_intensity: 0.07   # inverted: lower competition → higher score
   defensibility: 0.07
   regional_fit: 0.07
