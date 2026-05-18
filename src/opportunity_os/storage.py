@@ -72,26 +72,26 @@ def append_opportunity(opp: dict, path: str = None) -> str:
     - Auto-generates id if missing.
     - Sets first_seen and last_updated if not already present.
     - Returns the opportunity ID.
+    - Does NOT mutate the caller's dict.
     """
     if path is None:
         path = _default_opps_path()
     _ensure_dir(path)
 
     now_iso = datetime.now().isoformat()
+    opp_id = opp.get("id") or _make_id(opp)
 
-    # Assign id
-    if not opp.get("id"):
-        opp["id"] = _make_id(opp)
-
-    # Timestamps
-    if not opp.get("first_seen"):
-        opp["first_seen"] = now_iso
-    opp["last_updated"] = now_iso
+    record = {
+        **opp,
+        "id": opp_id,
+        "first_seen": opp.get("first_seen") or now_iso,
+        "last_updated": now_iso,
+    }
 
     with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(opp, default=str) + "\n")
+        f.write(json.dumps(record, default=str) + "\n")
 
-    return opp["id"]
+    return opp_id
 
 
 def read_all_opportunities(path: str = None) -> list[dict]:
@@ -169,14 +169,15 @@ def update_opportunity(opp_id: str, updates: dict, path: str = None) -> bool:
         path = _default_opps_path()
     all_opps = read_all_opportunities(path)
     found = False
+    updated_opps = []
     for opp in all_opps:
         if opp.get("id") == opp_id:
-            opp.update(updates)
-            opp["last_updated"] = datetime.now().isoformat()
+            opp = {**opp, **updates, "last_updated": datetime.now().isoformat()}
             found = True
-            break
+        updated_opps.append(opp)
     if not found:
         return False
+    all_opps = updated_opps
     _ensure_dir(path)
     tmp_path = path + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
@@ -229,22 +230,22 @@ def append_opp_score_history(opp_id: str, new_score: float, path: str = None) ->
     all_opps = read_all_opportunities(path)
 
     found = False
+    updated_opps = []
     for opp in all_opps:
-        if opp.get("id") != opp_id:
-            continue
-        found = True
-        today = datetime.now().strftime("%Y-%m-%d")
-        history = opp.get("score_history") or []
+        if opp.get("id") == opp_id and not found:
+            found = True
+            today = datetime.now().strftime("%Y-%m-%d")
+            history = list(opp.get("score_history") or [])
 
-        if history and history[-1].get("date") == today:
-            return True
+            if history and history[-1].get("date") == today:
+                return True
 
-        prev_score = history[-1]["score"] if history else new_score
-        delta = round(new_score - prev_score, 4)
-        history.append({"date": today, "score": round(new_score, 4), "delta": delta})
-        opp["score_history"] = history
-        opp["last_updated"] = datetime.now().isoformat()
-        break
+            prev_score = history[-1]["score"] if history else new_score
+            delta = round(new_score - prev_score, 4)
+            history = [*history, {"date": today, "score": round(new_score, 4), "delta": delta}]
+            opp = {**opp, "score_history": history, "last_updated": datetime.now().isoformat()}
+        updated_opps.append(opp)
+    all_opps = updated_opps
 
     if not found:
         return False
@@ -308,6 +309,6 @@ def append_machine_metrics(metrics: dict, path: str = None) -> None:
     if path is None:
         path = _default_metrics_path()
     _ensure_dir(path)
-    metrics.setdefault("timestamp", datetime.now().isoformat())
+    record = {"timestamp": datetime.now().isoformat(), **metrics}
     with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(metrics, default=str) + "\n")
+        f.write(json.dumps(record, default=str) + "\n")
