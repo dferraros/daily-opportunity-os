@@ -1,6 +1,7 @@
 """Tab 3: Pipeline Health — automation runs, failure counts, metrics history, score trends."""
 
 import json
+import os
 from collections import Counter
 from datetime import date as _date
 from pathlib import Path
@@ -243,3 +244,93 @@ def tab_pipeline_health():
                     st.caption(f"Notes: {_sig['raw_notes'][:120]}")
             with col_badge:
                 st.markdown(_quality_badge(_q), unsafe_allow_html=True)
+
+    st.divider()
+    _render_backup_section()
+
+
+# ── Backup & Recovery section ─────────────────────────────────────────────────
+
+def _render_backup_section():
+    """Show available snapshots and allow one-click restore from the dashboard."""
+    import pandas as pd
+    from .components import subsection
+
+    st.markdown(subsection("Backup & Recovery"), unsafe_allow_html=True)
+
+    try:
+        from opportunity_os.backup import create_backup, list_backups, restore_backup
+    except ImportError:
+        st.error("backup module not found — run `pip install -e .` to reinstall.")
+        return
+
+    backups = list_backups()
+
+    col_info, col_snap = st.columns([3, 1])
+    with col_info:
+        if backups:
+            newest = backups[0]
+            st.caption(
+                f"{len(backups)} snapshot(s) available  ·  "
+                f"Newest: **{newest['filename']}**  ·  "
+                f"{newest['record_count']} records"
+            )
+        else:
+            st.caption("No snapshots yet. Click **Create Snapshot** to make one.")
+
+    with col_snap:
+        if st.button("Create Snapshot", key="ph_create_backup"):
+            result = create_backup("dashboard")
+            if result:
+                st.success(f"Saved {result['record_count']} records → {result['filename']}")
+            else:
+                st.warning("Snapshot skipped: opportunities store is empty or missing.")
+            st.rerun()
+
+    if not backups:
+        st.info("Snapshots are created automatically before each `opp-os daily` run.")
+        return
+
+    # Table of available backups
+    rows = []
+    for b in backups:
+        size_kb = b["size_bytes"] // 1024
+        rows.append({
+            "Timestamp": b["timestamp"].replace("-", " ", 3).replace("-", ":"),
+            "Label": b["label"],
+            "Records": b["record_count"],
+            "Size (KB)": size_kb,
+            "Filename": b["filename"],
+        })
+    df = pd.DataFrame(rows)
+    st.dataframe(df, width="stretch", hide_index=True)
+
+    # Restore selector
+    st.markdown("**Restore from snapshot:**")
+    filenames = [b["filename"] for b in backups]
+    selected = st.selectbox(
+        "Select snapshot to restore",
+        options=filenames,
+        format_func=lambda f: f,
+        key="ph_restore_select",
+        label_visibility="collapsed",
+    )
+
+    selected_meta = next((b for b in backups if b["filename"] == selected), None)
+    if selected_meta:
+        st.caption(
+            f"This will overwrite opportunities.jsonl with **{selected_meta['record_count']} records** "
+            f"from {selected_meta['timestamp']}."
+        )
+
+    confirmed = st.checkbox(
+        "I understand this will overwrite the current opportunities store.",
+        key="ph_restore_confirm",
+    )
+
+    if st.button("Restore Selected Snapshot", key="ph_restore_btn", disabled=not confirmed):
+        result = restore_backup(selected)
+        if result["success"]:
+            st.success(result["message"])
+        else:
+            st.error(result["message"])
