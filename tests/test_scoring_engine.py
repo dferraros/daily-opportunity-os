@@ -277,3 +277,35 @@ def test_pain_signal_count_fallback_does_not_override_existing(base_opp):
     with_existing = score_opportunity({**base_opp, "pain_validation_score": 9.0, "pain_signal_count": 5})
     without_count = score_opportunity({**base_opp, "pain_validation_score": 9.0})
     assert with_existing["final_score"] == pytest.approx(without_count["final_score"])
+
+
+# ─── VC moat fields ───────────────────────────────────────────────────────────
+
+def test_gross_margin_potential_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "gross_margin_potential": 2.0})
+    high = score_opportunity({**base_opp, "gross_margin_potential": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_network_effect_strength_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "network_effect_strength": 2.0})
+    high = score_opportunity({**base_opp, "network_effect_strength": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_switching_cost_score_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "switching_cost_score": 2.0})
+    high = score_opportunity({**base_opp, "switching_cost_score": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_vc_fields_absent_no_penalty(base_opp):
+    """New VC fields absent must not change score vs. baseline — None-safe."""
+    baseline = score_opportunity(base_opp)
+    with_none = score_opportunity({
+        **base_opp,
+        "gross_margin_potential": None,
+        "network_effect_strength": None,
+        "switching_cost_score": None,
+    })
+    assert baseline["final_score"] == pytest.approx(with_none["final_score"])
