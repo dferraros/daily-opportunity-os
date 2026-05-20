@@ -243,6 +243,57 @@ def estimate_tam(
 
 
 # ---------------------------------------------------------------------------
+# Pipeline adapter — single-dict interface used by daily_run.py
+# ---------------------------------------------------------------------------
+
+def estimate_tam_from_opp(opp: dict) -> dict:
+    """
+    Pipeline adapter: accepts an opportunity dict and returns TAM enrichment.
+
+    Auto-selects bottom_up if tam_target_customers and tam_annual_price_usd are set,
+    otherwise falls back to top_down using tam_total_market_usd if set,
+    otherwise uses a proxy via geo multiplier on a $10B global baseline.
+
+    Returns a flat dict suitable for opp.update():
+      tam, tam_usd_estimate, sam_usd, som_usd, tam_method, tam_confidence, tam_notes
+    """
+    geography = opp.get("geography", "global")
+
+    # Bottom-up (preferred)
+    target_customers = opp.get("tam_target_customers")
+    annual_price = opp.get("tam_annual_price_usd")
+    if target_customers and annual_price:
+        result = estimate_tam("bottom_up", geography=geography,
+                              target_customers=int(target_customers),
+                              annual_price_usd=float(annual_price))
+    # Top-down
+    elif opp.get("tam_total_market_usd"):
+        addressable_pct = float(opp.get("tam_addressable_pct", 0.15))
+        result = estimate_tam("top_down", geography=geography,
+                              total_market_usd=float(opp["tam_total_market_usd"]),
+                              addressable_pct=addressable_pct)
+    # Proxy fallback: $10B global baseline × geo multiplier
+    else:
+        geo_mult = GEO_TAM_MULTIPLIERS.get(geography.lower(), 1.0)
+        result = estimate_tam("proxy", geography=geography,
+                              analog_tam_usd=10_000_000_000,
+                              analog_market="global",
+                              target_market=geography,
+                              size_ratio=geo_mult)
+
+    return {
+        "tam": result.get("tam_usd"),
+        "tam_display": format_tam_usd(result.get("tam_usd")),
+        "tam_usd_estimate": result.get("tam_usd"),
+        "sam_usd": result.get("sam_usd"),
+        "som_usd": result.get("som_usd"),
+        "tam_method": result.get("method"),
+        "tam_confidence": result.get("confidence"),
+        "tam_notes": result.get("notes", []),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Formatter
 # ---------------------------------------------------------------------------
 

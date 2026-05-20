@@ -14,9 +14,34 @@ The normalization pipeline:
 
 from __future__ import annotations
 
+import re as _re
 import uuid
 from datetime import datetime
 from typing import Optional
+
+# -- Noise signal filter -------------------------------------------------------
+
+_SIGNAL_NOISE_RE = _re.compile(
+    r"""
+    (?:^|\b)(ask|show|tell)\s+hn\b   # HN meta-posts (Ask HN, Show HN, Tell HN)
+    |\?\s*$                            # name ends with a question mark
+    |\braised?\s+\$[\d,\.]+[kKmMbB]   # funding-news ("raised $50M")
+    |\bseries\s+[a-e]\b                # funding rounds ("Series A")
+    |\bacquired?\s+by\b                # acquisition news
+    |^is\s+[a-z]                       # "Is X..." rhetorical questions
+    |\bwho\s+is\s+hiring\b             # HN hiring threads
+    |\bipo\s+filed?\b                  # IPO announcements
+    """,
+    _re.VERBOSE | _re.IGNORECASE,
+)
+
+
+def _is_noise_signal(name: str) -> bool:
+    """Return True if name looks like news/discussion, not a business opportunity."""
+    name = (name or "").strip()
+    if not name:
+        return True
+    return bool(_SIGNAL_NOISE_RE.search(name))
 
 # -- Alias maps ---------------------------------------------------------------
 
@@ -25,8 +50,6 @@ FIELD_ALIASES: dict[str, str] = {
     "opportunity_name": "name",
     "market": "vertical",
     "geo": "geography",
-    "country": "geography",
-    "region": "geography",
     "tam_usd": "tam",
     "tam_usd_estimate": "tam",
     "score": "attractiveness_score",
@@ -41,14 +64,20 @@ GEO_NORMALIZER: dict[str, str] = {
     "ve": "venezuela",
     "vzla": "venezuela",
     "ven": "venezuela",
-    "co": "colombia",
-    "col": "colombia",
-    "mx": "mexico",
-    "mex": "mexico",
-    "ar": "argentina",
-    "arg": "argentina",
-    "br": "brazil",
-    "bra": "brazil",
+    # Colombia, Mexico, Argentina, Brazil all roll up to "latam" —
+    # the Opportunity.geography Literal has no individual country values for these.
+    "co": "latam",
+    "col": "latam",
+    "colombia": "latam",
+    "mx": "latam",
+    "mex": "latam",
+    "mexico": "latam",
+    "ar": "latam",
+    "arg": "latam",
+    "argentina": "latam",
+    "br": "latam",
+    "bra": "latam",
+    "brazil": "latam",
     "es": "spain",
     "esp": "spain",
     "latam": "latam",
@@ -111,16 +140,19 @@ def infer_missing_fields(raw: dict) -> dict:
     """
     raw = dict(raw)
 
-    # problem_statement <- description if missing
-    if not raw.get("problem_statement") and raw.get("description"):
-        raw["problem_statement"] = raw["description"]
+    # problem_statement <- raw_text / description / raw_notes if missing
+    if not raw.get("problem_statement"):
+        for src in ("raw_text", "description", "raw_notes"):
+            if raw.get(src):
+                raw["problem_statement"] = raw[src]
+                break
 
-    # trigger_signal <- raw_notes (or description) if missing
+    # trigger_signal <- raw_text / raw_notes / description if missing
     if not raw.get("trigger_signal"):
-        if raw.get("raw_notes"):
-            raw["trigger_signal"] = raw["raw_notes"][:300]
-        elif raw.get("description"):
-            raw["trigger_signal"] = raw["description"][:300]
+        for src in ("raw_text", "raw_notes", "description"):
+            if raw.get(src):
+                raw["trigger_signal"] = str(raw[src])[:300]
+                break
 
     # target_customer <- infer from vertical + geography if missing
     if not raw.get("target_customer"):
@@ -138,7 +170,7 @@ def fill_defaults(raw: dict) -> dict:
     """
     Fill in computable defaults before validation:
     - id: auto-generate if missing
-    - first_seen: current ISO timestamp if missing
+    - first_seen: prefer harvested_at from raw signal, fallback to now
     - last_updated: always set to now
     - stage: 'scout' if missing
     - kill_decision: False if missing
@@ -153,7 +185,8 @@ def fill_defaults(raw: dict) -> dict:
         raw["id"] = f"opp_{date_str}_{geo}_{str(uuid.uuid4())[:8]}"
 
     if not raw.get("first_seen"):
-        raw["first_seen"] = now_iso
+        # Preserve the harvested_at timestamp from raw signals as the discovery date
+        raw["first_seen"] = raw.get("harvested_at") or now_iso
 
     raw["last_updated"] = now_iso
 
@@ -191,20 +224,89 @@ def validate_opportunity(raw: dict) -> tuple:
         return None, errors
 
 
+def infer_bucket(raw: dict) -> dict:
+    """
+    Infer bucket classification (fast_cash | venture_scale | latam_asymmetry)
+    if not already set on the raw signal.
+
+    Priority:
+    1. LATAM/VE geography -> latam_asymmetry (geography is the strongest signal)
+    2. Large TAM (>=100M) or platform/marketplace language -> venture_scale
+    3. Service/consulting/agency language -> fast_cash
+    4. Vertical-based default otherwise
+    """
+    import re as _re
+
+    if raw.get("bucket"):
+        return raw
+
+    result = dict(raw)
+    geo = result.get("geography", "global")
+    vertical = result.get("vertical", "")
+    text = " ".join([
+        result.get("name", ""),
+        result.get("problem_statement", ""),
+        result.get("description", ""),
+        result.get("raw_notes", ""),
+    ]).lower()
+
+    tam = result.get("tam") or result.get("tam_usd_estimate") or 0
+    try:
+        tam_val = float(tam) if tam else 0.0
+    except (ValueError, TypeError):
+        tam_val = 0.0
+
+    # LATAM/VE geography is the clearest asymmetry signal
+    if geo in ("venezuela", "latam", "colombia", "mexico", "argentina", "spain"):
+        result["bucket"] = "latam_asymmetry"
+        return result
+
+    # Large TAM or platform/network language -> venture_scale
+    if tam_val >= 100_000_000:
+        result["bucket"] = "venture_scale"
+        return result
+    if _re.search(r"platform|marketplace|network effect|fundable|series [ab]", text):
+        result["bucket"] = "venture_scale"
+        return result
+
+    # Service/agency language -> fast_cash
+    if _re.search(r"service|consulting|done.for.you|productized|agency|concierge", text):
+        result["bucket"] = "fast_cash"
+        return result
+
+    # Vertical-based defaults
+    if vertical in ("fintech", "marketplace"):
+        result["bucket"] = "venture_scale"
+    else:
+        result["bucket"] = "fast_cash"
+
+    return result
+
+
 def normalize_signal(raw: dict) -> tuple:
     """
     Main entry point: chain normalize_field_names -> normalize_geography
-    -> fill_defaults -> validate_opportunity.
+    -> infer_missing_fields -> infer_bucket -> fill_defaults -> validate_opportunity.
 
     Returns:
         (Opportunity, [])          on success
         (None, [error_msg, ...])   on failure
     """
+    # Reject noise before any field enrichment runs.
+    # This stops HN/Reddit meta-posts from being manufactured into valid opportunities
+    # by downstream inferencing (infer_missing_fields, _enrich_fields, kill gate defaults).
+    raw_name = raw.get("name") or raw.get("title") or ""
+    if _is_noise_signal(raw_name):
+        return None, [
+            f"Rejected: name pattern suggests news/discussion, not a business opportunity: {raw_name[:80]!r}"
+        ]
+
     step1 = normalize_field_names(raw)
     step2 = normalize_geography(step1)
     step3 = infer_missing_fields(step2)
-    step4 = fill_defaults(step3)
-    return validate_opportunity(step4)
+    step4 = infer_bucket(step3)
+    step5 = fill_defaults(step4)
+    return validate_opportunity(step5)
 
 
 def normalize_signals_batch(raws: list) -> tuple:

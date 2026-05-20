@@ -52,8 +52,9 @@ def main():
     # Try to import scoring engine; skip silently if unavailable
     try:
         sys.path.insert(0, str(root / "src"))
-        from scoring_engine import score_opportunity  # type: ignore
-        from storage import update_opportunity  # type: ignore
+        from opportunity_os.engines.scoring_engine import score_opportunity  # type: ignore
+        from opportunity_os import storage  # type: ignore
+        update_opportunity = storage.update_opportunity
     except ImportError:
         sys.exit(0)
 

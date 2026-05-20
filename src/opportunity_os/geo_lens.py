@@ -44,6 +44,7 @@ LATAM_ADJUSTMENTS = {
 }
 
 LATAM_GEOGRAPHIES = [
+    "latam",
     "venezuela",
     "colombia",
     "brazil",
@@ -79,6 +80,31 @@ VENEZUELA_WEDGE_CATEGORIES = [
     "ai_labor_replacement_tools",
 ]
 
+# Map vertical values to the most fitting Venezuela wedge category.
+# Used as fallback when venezuela_wedge_category is not set by AI scoring.
+VERTICAL_TO_WEDGE_CATEGORY: dict[str, str] = {
+    "fintech": "payments_and_collections",
+    "payments": "payments_and_collections",
+    "remittances": "remittances_and_diaspora_finance",
+    "diaspora": "diaspora_finance_and_commerce",
+    "smb_software": "smb_software_informal_operators",
+    "b2b_saas": "smb_software_informal_operators",
+    "saas": "smb_software_informal_operators",
+    "ecommerce": "commerce_trust_layers",
+    "marketplace": "commerce_trust_layers",
+    "retail": "retail_inventory_working_capital",
+    "inventory": "retail_inventory_working_capital",
+    "logistics": "logistics_coordination",
+    "delivery": "logistics_coordination",
+    "creator": "creator_monetization",
+    "media": "creator_monetization",
+    "content": "creator_monetization",
+    "cross_border": "cross_border_service_businesses",
+    "services": "cross_border_service_businesses",
+    "ai": "ai_labor_replacement_tools",
+    "automation": "ai_labor_replacement_tools",
+}
+
 
 def apply_geo_adjustments(opp_dict: dict) -> dict:
     """Apply regional adjustments to a raw opportunity dict.
@@ -92,14 +118,26 @@ def apply_geo_adjustments(opp_dict: dict) -> dict:
     geo = (opp.get("geography") or "").lower().strip()
 
     if geo == "venezuela":
-        # Apply WTP multiplier
+        # Pricing context: store geo-adjusted WTP estimate for TAM/pricing calculations.
+        # willingness_to_pay (1-10 scoring dimension) is intentionally NOT overwritten —
+        # it reflects customer willingness relative to their own market, not vs. US prices.
         wtp = opp.get("willingness_to_pay")
         if wtp is not None:
-            opp["willingness_to_pay"] = round(wtp * VENEZUELA_ADJUSTMENTS["wtp_multiplier"], 4)
-            opp["willingness_to_pay_raw"] = wtp
+            opp["wtp_pricing_estimate"] = round(wtp * VENEZUELA_ADJUSTMENTS["wtp_multiplier"], 4)
 
         # Add payment rail context
         opp["payment_rail_context"] = get_payment_rail_context(geo)
+
+        # Infer venezuela_wedge_category from vertical if not already set
+        if not opp.get("venezuela_wedge_category"):
+            vertical = (opp.get("vertical") or "").lower().strip()
+            inferred = VERTICAL_TO_WEDGE_CATEGORY.get(vertical)
+            if inferred:
+                opp["venezuela_wedge_category"] = inferred
+
+        # Bucket fallback: Venezuela records default to latam_asymmetry
+        if not opp.get("bucket"):
+            opp["bucket"] = "latam_asymmetry"
 
         # Apply regional_fit bonus if wedge category is set
         category = opp.get("venezuela_wedge_category") or opp.get("category")
@@ -113,8 +151,7 @@ def apply_geo_adjustments(opp_dict: dict) -> dict:
     elif geo in LATAM_GEOGRAPHIES:
         wtp = opp.get("willingness_to_pay")
         if wtp is not None:
-            opp["willingness_to_pay"] = round(wtp * LATAM_ADJUSTMENTS["wtp_multiplier_vs_us"], 4)
-            opp["willingness_to_pay_raw"] = wtp
+            opp["wtp_pricing_estimate"] = round(wtp * LATAM_ADJUSTMENTS["wtp_multiplier_vs_us"], 4)
 
         # Add payment rail context
         opp["payment_rail_context"] = get_payment_rail_context(geo)

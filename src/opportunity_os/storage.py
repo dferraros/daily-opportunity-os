@@ -16,9 +16,12 @@ File paths (relative to project root):
 from __future__ import annotations
 
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 # -- Path helpers -------------------------------------------------------------
@@ -69,26 +72,26 @@ def append_opportunity(opp: dict, path: str = None) -> str:
     - Auto-generates id if missing.
     - Sets first_seen and last_updated if not already present.
     - Returns the opportunity ID.
+    - Does NOT mutate the caller's dict.
     """
     if path is None:
         path = _default_opps_path()
     _ensure_dir(path)
 
     now_iso = datetime.now().isoformat()
+    opp_id = opp.get("id") or _make_id(opp)
 
-    # Assign id
-    if not opp.get("id"):
-        opp["id"] = _make_id(opp)
-
-    # Timestamps
-    if not opp.get("first_seen"):
-        opp["first_seen"] = now_iso
-    opp["last_updated"] = now_iso
+    record = {
+        **opp,
+        "id": opp_id,
+        "first_seen": opp.get("first_seen") or now_iso,
+        "last_updated": now_iso,
+    }
 
     with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(opp, default=str) + "\n")
+        f.write(json.dumps(record, default=str) + "\n")
 
-    return opp["id"]
+    return opp_id
 
 
 def read_all_opportunities(path: str = None) -> list[dict]:
@@ -104,8 +107,8 @@ def read_all_opportunities(path: str = None) -> list[dict]:
             if line:
                 try:
                     opps.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
+                except json.JSONDecodeError as exc:
+                    logger.warning("Skipping malformed JSON line in %s: %s", path, exc)
     return opps
 
 
@@ -119,15 +122,15 @@ def query_by_geo(geography: str, path: str = None) -> list[dict]:
 
 
 def query_by_score(min_score: float = 6.0, path: str = None) -> list[dict]:
-    """Return opportunities with attractiveness_score (or final_score) >= min_score, sorted desc."""
+    """Return opportunities with final_score (or attractiveness_score fallback) >= min_score, sorted desc."""
     all_opps = read_all_opportunities(path)
     results = []
     for o in all_opps:
-        score = o.get("attractiveness_score") or o.get("final_score")
+        score = o.get("final_score") or o.get("attractiveness_score")
         if score is not None and float(score) >= min_score:
             results.append(o)
     results.sort(
-        key=lambda o: float(o.get("attractiveness_score") or o.get("final_score") or 0),
+        key=lambda o: float(o.get("final_score") or o.get("attractiveness_score") or 0),
         reverse=True,
     )
     return results
@@ -158,25 +161,29 @@ def get_opportunity_by_id(opp_id: str, path: str = None) -> dict | None:
 def update_opportunity(opp_id: str, updates: dict, path: str = None) -> bool:
     """
     Update fields of an existing opportunity by ID.
-    Rewrites the full JSONL file (dataset is small).
+    Rewrites the full JSONL file via write-to-temp + atomic rename to
+    prevent corruption on crash mid-write.
     Returns True if found and updated, False otherwise.
     """
     if path is None:
         path = _default_opps_path()
     all_opps = read_all_opportunities(path)
     found = False
+    updated_opps = []
     for opp in all_opps:
         if opp.get("id") == opp_id:
-            opp.update(updates)
-            opp["last_updated"] = datetime.now().isoformat()
+            opp = {**opp, **updates, "last_updated": datetime.now().isoformat()}
             found = True
-            break
+        updated_opps.append(opp)
     if not found:
         return False
+    all_opps = updated_opps
     _ensure_dir(path)
-    with open(path, "w", encoding="utf-8") as f:
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         for opp in all_opps:
             f.write(json.dumps(opp, default=str) + "\n")
+    os.replace(tmp_path, path)
     return True
 
 
@@ -203,6 +210,53 @@ def append_score_history(
     }
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
+
+
+def append_opp_score_history(opp_id: str, new_score: float, path: str = None) -> bool:
+    """
+    Append a score entry to the opportunity's own score_history list field.
+
+    Format: {"date": "YYYY-MM-DD", "score": float, "delta": float}
+    Delta = new_score - previous score. First entry delta = 0.
+
+    Single file scan: reads all opps once, mutates the matching record in-place,
+    then writes back atomically — avoiding the double-scan of get_opportunity_by_id
+    followed by update_opportunity.
+
+    Returns True if updated, False if opp not found.
+    """
+    if path is None:
+        path = _default_opps_path()
+    all_opps = read_all_opportunities(path)
+
+    found = False
+    updated_opps = []
+    for opp in all_opps:
+        if opp.get("id") == opp_id and not found:
+            found = True
+            today = datetime.now().strftime("%Y-%m-%d")
+            history = list(opp.get("score_history") or [])
+
+            if history and history[-1].get("date") == today:
+                return True
+
+            prev_score = history[-1]["score"] if history else new_score
+            delta = round(new_score - prev_score, 4)
+            history = [*history, {"date": today, "score": round(new_score, 4), "delta": delta}]
+            opp = {**opp, "score_history": history, "last_updated": datetime.now().isoformat()}
+        updated_opps.append(opp)
+    all_opps = updated_opps
+
+    if not found:
+        return False
+
+    _ensure_dir(path)
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        for opp in all_opps:
+            f.write(json.dumps(opp, default=str) + "\n")
+    os.replace(tmp_path, path)
+    return True
 
 
 # -- Deduplication ------------------------------------------------------------
@@ -239,7 +293,7 @@ def dedupe_check(
                 ts_str = str(first_seen_raw).split("+")[0].replace("Z", "")
                 first_seen_dt = datetime.fromisoformat(ts_str)
                 if first_seen_dt >= cutoff:
-                    return opp["id"]
+                    return opp.get("id")
             except (ValueError, AttributeError):
                 # Cannot parse date -- treat as match to be safe
                 return opp.get("id")
@@ -255,6 +309,6 @@ def append_machine_metrics(metrics: dict, path: str = None) -> None:
     if path is None:
         path = _default_metrics_path()
     _ensure_dir(path)
-    metrics.setdefault("timestamp", datetime.now().isoformat())
+    record = {"timestamp": datetime.now().isoformat(), **metrics}
     with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(metrics, default=str) + "\n")
+        f.write(json.dumps(record, default=str) + "\n")

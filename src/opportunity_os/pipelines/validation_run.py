@@ -5,8 +5,11 @@ Loads an opportunity by ID, runs the full 8-section validation package,
 writes the markdown file, and builds a Notion sync payload.
 """
 import json
+import logging
 import os
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 
 def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
@@ -39,9 +42,8 @@ def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
     root = get_project_root()
 
     if dry_run:
-        print(f"[DRY RUN] Would write validation for: {opp.get('name')}")
-        print(f"[DRY RUN] Markdown preview (first 400 chars):")
-        print(package["_validation_markdown"][:400])
+        logger.info("[DRY RUN] Would write validation for: %s", opp.get("name"))
+        logger.info("[DRY RUN] Markdown preview (first 400 chars):\n%s", package["_validation_markdown"][:400])
         return {
             "path": "(dry-run)",
             "notion_sync_path": "(dry-run)",
@@ -58,16 +60,18 @@ def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(package["_validation_markdown"])
 
-    # Build Notion sync payload
+    # Build Notion sync payload — pass the real opp + stats derived from it
+    final_score = float(opp.get("final_score", 0) or 0)
+    geo = opp.get("geography", "global")
     sync_payload = build_sync_payload(
-        opportunities=[],
+        opportunities=[opp],
         run_stats={
-            "signals_total": 0,
-            "new_opps": 0,
+            "signals_total": 1,
+            "new_opps": 1,
             "killed": 0,
-            "top_score": 0,
-            "score_range": "N/A",
-            "by_geo": {},
+            "top_score": final_score,
+            "score_range": f"{final_score:.2f}-{final_score:.2f}",
+            "by_geo": {geo: 1},
             "top_opportunity": opp.get("name", ""),
             "notes": "Manual validation run",
         },

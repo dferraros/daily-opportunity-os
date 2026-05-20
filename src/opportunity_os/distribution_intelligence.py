@@ -20,8 +20,16 @@ using WebSearch/WebFetch tools.
 
 from __future__ import annotations
 
-from datetime import date
+import json
+import logging
+import os
+import re
+from datetime import date, datetime
 from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+MODEL = "claude-haiku-4-5-20251001"
 
 
 # ─── Channel Map by Geography ─────────────────────────────────────────────────
@@ -404,6 +412,248 @@ def run_distribution_intelligence(opp: dict) -> dict:
     }
 
     return template
+
+
+# ─── Distribution Executor (Tavily-powered) ──────────────────────────────────
+
+def run_distribution_executor(opp: dict) -> dict:
+    """
+    Run dedicated distribution research using Tavily + Claude.
+
+    Separate from run_research_executor (which focuses on pain+dist combined).
+    This pass uses distribution-specific queries for sharper channel evidence.
+
+    Returns dict with updated distribution fields, or empty dict if unavailable.
+    Fields populated: distribution_validated, top_distribution_channels,
+    estimated_cac_logic, first_10_customer_path, trust_mechanism_latam,
+    distribution_validated_date
+    """
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_api_key()
+    if not api_key:
+        return {}
+
+    template = run_distribution_intelligence(opp)
+    queries = template.get("_distribution_queries") or []
+    if not queries:
+        return {}
+
+    # Step 1: Tavily search with distribution-specific queries
+    # max_results_per_query=2 keeps cost at ~$0.008 vs $0.016 for 4 results
+    tavily_context = ""
+    try:
+        from opportunity_os import tavily_client
+        if tavily_client.is_available():
+            tavily_context = tavily_client.search_multi(queries[:3], max_results_per_query=2)
+    except Exception:
+        pass
+
+    if not tavily_context:
+        return {}
+
+    # Step 2: Claude extracts distribution fields from Tavily results
+    geo = opp.get("geography", "latam")
+    geo_label = "Venezuela" if geo == "venezuela" else geo.upper()
+    channels = template.get("_recommended_channels", [])
+    benchmarks = template.get("_cac_benchmarks", {})
+    channel_info = "; ".join(
+        f"{ch}: ~${benchmarks.get(ch, {}).get('approx_cac_usd', '?')} CAC"
+        for ch in channels
+    )
+
+    prompt = f"""You are analyzing distribution channels for a business opportunity in {geo_label}.
+
+Opportunity: {opp.get("name", "")}
+Vertical: {opp.get("vertical", "")}
+Target customer: {opp.get("target_customer", "")}
+Recommended channels: {channel_info}
+
+RESEARCH RESULTS:
+{tavily_context[:3000]}
+
+Extract and return ONLY this JSON (no prose, no code block):
+{{
+  "distribution_validated": <true if research confirms at least 1 viable channel, else false>,
+  "top_distribution_channels": [<up to 3 channels with evidence from the research>],
+  "estimated_cac_logic": "<primary channel + realistic CAC estimate based on research, 1 sentence>",
+  "first_10_customer_path": "<concrete step-by-step path to first 10 customers in {geo_label}, 2-3 sentences>",
+  "trust_mechanism_latam": "<primary trust signal needed to convert first buyer in {geo_label}>"
+}}"""
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=800,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = response.content[0].text.strip() if response.content else ""
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if not match:
+            return {}
+        data = json.loads(match.group())
+    except Exception:
+        return {}
+
+    result = {"distribution_validated_date": datetime.now().date().isoformat()}
+
+    for field, cast in [
+        ("distribution_validated", bool),
+        ("estimated_cac_logic", lambda v: str(v)[:300]),
+        ("first_10_customer_path", lambda v: str(v)[:500]),
+        ("trust_mechanism_latam", lambda v: str(v)[:300]),
+    ]:
+        val = data.get(field)
+        if val is not None:
+            try:
+                result[field] = cast(val)
+            except (ValueError, TypeError):
+                pass
+
+    channels_out = data.get("top_distribution_channels")
+    if isinstance(channels_out, list):
+        result["top_distribution_channels"] = [str(x)[:100] for x in channels_out[:3] if x]
+
+    return result
+
+
+def execute_distribution_research(opp: dict, client=None) -> dict:
+    """
+    Execute real distribution research via Anthropic API with web search.
+
+    Calls Claude to validate distribution channels for this opportunity.
+    Returns dict with distribution fields populated, or {} on any failure (never raises).
+
+    Args:
+        opp: opportunity dict (not mutated)
+        client: optional pre-built anthropic.Anthropic client (for testing)
+
+    Returns populated fields:
+        - distribution_validated: bool
+        - top_distribution_channels: list[str]
+        - estimated_cac_logic: str
+        - first_10_customer_path: str
+        - trust_mechanism_latam: str
+        - distribution_researched_at: str (ISO date)
+    """
+    from datetime import date as _date
+
+    # Skip guard: do not re-research within 7 days
+    last_researched = opp.get("distribution_researched_at")
+    if last_researched:
+        try:
+            days_ago = (_date.today() - _date.fromisoformat(str(last_researched)[:10])).days
+            if days_ago < 7:
+                return {}
+        except (ValueError, TypeError):
+            pass
+
+    # Resolve client
+    if client is None:
+        api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_api_key()
+        if not api_key:
+            return {}
+        try:
+            import anthropic as _anthropic
+            client = _anthropic.Anthropic(api_key=api_key)
+        except Exception:
+            return {}
+
+    template = run_distribution_intelligence(opp)
+    queries = template.get("_distribution_queries") or []
+    geo = opp.get("geography", "latam")
+    geo_label = "Venezuela" if geo == "venezuela" else geo.upper()
+    channels = template.get("_recommended_channels", [])
+    channel_str = ", ".join(channels[:3]) if channels else "WhatsApp, direct sales"
+    query_list = "\n".join(f"- {q}" for q in queries[:3])
+
+    prompt = f"""Research distribution channels for this business opportunity in {geo_label}.
+
+Name: {opp.get("name", "")}
+Vertical: {opp.get("vertical", "")}
+Target customer: {opp.get("target_customer", "")}
+Recommended channels to validate: {channel_str}
+
+Search for evidence of whether these channels work in {geo_label} for similar products:
+{query_list}
+
+Return ONLY this JSON object — no prose, no markdown fences:
+{{
+  "distribution_validated": <true if research confirms at least 1 viable channel, else false>,
+  "top_distribution_channels": [<up to 3 channels confirmed by evidence>],
+  "estimated_cac_logic": "<primary channel + realistic CAC estimate, 1 sentence>",
+  "first_10_customer_path": "<concrete step-by-step path to first 10 customers in {geo_label}, 2-3 sentences>",
+  "trust_mechanism_latam": "<primary trust signal needed to convert first buyer in {geo_label}>"
+}}"""
+
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=800,
+            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as e:
+        logger.warning(
+            "Distribution research API call failed for '%s': %s", opp.get("name"), e
+        )
+        return {}
+
+    raw = ""
+    for block in (response.content or []):
+        if hasattr(block, "type") and block.type == "text":
+            raw = block.text.strip()
+            break
+
+    if not raw:
+        return {}
+
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        return {}
+
+    try:
+        data = json.loads(match.group())
+    except (json.JSONDecodeError, ValueError):
+        return {}
+
+    result: dict = {"distribution_researched_at": _date.today().isoformat()}
+
+    validated_val = data.get("distribution_validated")
+    if validated_val is not None:
+        result["distribution_validated"] = bool(validated_val)
+
+    for str_field in ("estimated_cac_logic", "first_10_customer_path", "trust_mechanism_latam"):
+        val = data.get(str_field)
+        if val is not None:
+            result[str_field] = str(val)[:400]
+
+    channels_out = data.get("top_distribution_channels")
+    if isinstance(channels_out, list):
+        result["top_distribution_channels"] = [str(x)[:100] for x in channels_out[:3] if x]
+
+    return result
+
+
+def _load_api_key() -> Optional[str]:
+    """Load ANTHROPIC_API_KEY from .env file."""
+    from pathlib import Path
+    for parent in [Path(__file__).resolve().parent] + list(Path(__file__).resolve().parents):
+        env_path = parent / ".env"
+        if env_path.exists():
+            with open(env_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("ANTHROPIC_API_KEY="):
+                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        if val:
+                            return val
+            break
+    return None
 
 
 # ─── Convenience Helpers ──────────────────────────────────────────────────────

@@ -6,12 +6,15 @@ Replaces the regex heuristic estimator. Falls back to heuristic if API unavailab
 """
 
 import json
+import logging
 import os
 import re
 from datetime import datetime
 from typing import Optional
 
-MODEL = "claude-haiku-4-5-20251001"
+logger = logging.getLogger(__name__)
+
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 AI_SCORER_VERSION = "haiku-4-5-v1"
 
 DIMENSIONS = [
@@ -30,7 +33,7 @@ DIMENSIONS = [
     "ai_leverage",
     "operational_simplicity",
     "regulatory_simplicity",
-    "path_to_first_revenue",
+    "revenue_speed_score",
 ]
 
 RUBRIC = """
@@ -133,7 +136,7 @@ DIMENSION RUBRICS:
     1. Growth & GTM edge (lifecycle, CRM, paid, organic, A/B testing)
     2. Narrative & positioning edge (frame and sell a story fast)
     3. LATAM + Spanish intuition (VE, Spain, Colombia patterns)
-    4. Fintech & crypto adjacency (Bit2Me, payment rails, USDT)
+    4. Fintech & crypto adjacency (crypto exchange ops, payment rails, USDT)
     5. Speed to prototype (Claude Code, MVP systems fast)
     6. Distribution instincts (WhatsApp funnels, performance, referral)
     Score = 4 + matching wedges. <2 matching wedges = flag "founder-fit risk".
@@ -161,7 +164,7 @@ DIMENSION RUBRICS:
     LATAM bonus: +2 base (informal market = less scrutiny)
     Fintech penalty: -1 (always more regulated)
 
-16. path_to_first_revenue (1-10)
+16. revenue_speed_score (1-10)
     10: First revenue in <7 days. Service business, existing customer, immediate payment.
     7-9: First revenue in 7-30 days. Direct outreach + quick close.
     5-6: First revenue in 30-90 days. Need product, some sales cycle.
@@ -172,13 +175,120 @@ DIMENSION RUBRICS:
 
 FOUNDER_WEDGES_CONTEXT = """
 Daniel's background for founder_fit scoring:
-- 10+ years lifecycle marketing, CRM, paid acquisition, A/B testing at crypto fintech (Bit2Me)
+- 10+ years lifecycle marketing, CRM, paid acquisition, A/B testing at crypto fintech
 - Deep LATAM/Spanish market intuition (Venezuela, Spain, Colombia patterns)
-- Crypto/fintech adjacency: Bit2Me operations, USDT payment rails, DeFi familiarity
+- Crypto/fintech adjacency: exchange operations, USDT payment rails, DeFi familiarity
 - Can build MVP-level systems fast using Claude Code and modern tools
 - Strong distribution instincts: WhatsApp funnels, performance marketing, referral programs
 - Narrative & positioning: can frame and sell a story quickly
 """
+
+
+def score_batch_with_ai(opps: list[dict]) -> list[dict]:
+    """
+    Score multiple opportunities in ONE API call instead of one call per opp.
+    Costs: 1 call × (rubric + N × opp context) vs N calls × (rubric + opp context).
+    For N=5 this saves ~75% of API cost. Falls back to per-opp heuristic on failure.
+    """
+    if not opps:
+        return opps
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_env_key()
+    if not api_key:
+        return [_heuristic_fallback(o) for o in opps]
+
+    # Skip already-scored ones, only pass unscored to API
+    to_score = [o for o in opps if not o.get("ai_scored_at")]
+    already_done = [o for o in opps if o.get("ai_scored_at")]
+    if not to_score:
+        return opps
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+
+        opp_blocks = []
+        for i, opp in enumerate(to_score):
+            geo = opp.get("geography", "global")
+            geo_note = ""
+            if geo == "venezuela":
+                geo_note = " [VE: WTP=0.25x, WhatsApp-first, no competition, informal 55%]"
+            elif geo == "latam":
+                geo_note = " [LATAM: WTP=0.40x, WhatsApp 90%, informal 45%]"
+            opp_blocks.append(
+                f"OPP_{i}: {opp.get('name', '?')[:80]} | geo={geo}{geo_note}\n"
+                f"  problem={str(opp.get('problem_statement', ''))[:200]}\n"
+                f"  vertical={opp.get('vertical', '')} bucket={opp.get('bucket', '')}"
+            )
+
+        opps_text = "\n\n".join(opp_blocks)
+        dim_list = ", ".join(DIMENSIONS)
+
+        prompt = f"""Score these {len(to_score)} opportunities on 16 dimensions each.
+
+{RUBRIC}
+
+{FOUNDER_WEDGES_CONTEXT}
+
+OPPORTUNITIES:
+{opps_text}
+
+Return ONLY a JSON array with {len(to_score)} objects (index 0 to {len(to_score)-1}).
+Each object must have exactly these fields: {dim_list}
+Plus _reason fields: {', '.join(d + '_reason' for d in DIMENSIONS[:4])} (first 4 dims only, to save tokens).
+No prose, no markdown, no code block. Array only."""
+
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=min(8000, 800 * len(to_score)),
+            system=(
+                "You are a hard-nosed business analyst. Score opportunities on 16 dimensions. "
+                "Use the FULL 1-10 range. 30% scores ≤5 (real weaknesses), 30% above 7 (genuine strengths). "
+                "Return ONLY a valid JSON array — no prose, no markdown."
+            ),
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        raw = response.content[0].text.strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+        # Extract JSON array substring — handles prose before/after the array
+        json_match = re.search(r'\[[\s\S]*\]', raw)
+        if json_match:
+            raw = json_match.group(0)
+
+        scores_list = json.loads(raw)
+        if not isinstance(scores_list, list) or len(scores_list) != len(to_score):
+            raise ValueError(f"Expected {len(to_score)} items, got {len(scores_list) if isinstance(scores_list, list) else type(scores_list)}")
+
+        now = datetime.now().strftime("%Y-%m-%d")
+        scored_to_score = []
+        for opp, scores in zip(to_score, scores_list):
+            dims_update = {}
+            for dim in DIMENSIONS:
+                val = scores.get(dim)
+                if val is not None:
+                    try:
+                        dims_update[dim] = max(1, min(10, int(val)))
+                    except (ValueError, TypeError):
+                        pass
+                reason = scores.get(f"{dim}_reason")
+                if reason:
+                    dims_update[f"{dim}_reason"] = str(reason)[:200]
+            scored_to_score.append({
+                **opp,
+                **dims_update,
+                "ai_scored_at": now,
+                "ai_scorer_version": AI_SCORER_VERSION + "-batch",
+            })
+
+        logger.info("[ai_scorer] Batch scored %d opps in 1 API call", len(to_score))
+        return already_done + scored_to_score
+
+    except Exception as exc:
+        from opportunity_os.pipeline_monitor import log_failure
+        log_failure("ai_scorer.batch", exc, opp_id=f"{len(to_score)}_opps", recovered=True)
+        return already_done + [_heuristic_fallback(o) for o in to_score]
 
 
 def score_dimensions_with_ai(opp: dict) -> dict:
@@ -193,7 +303,7 @@ def score_dimensions_with_ai(opp: dict) -> dict:
 
     api_key = os.environ.get("ANTHROPIC_API_KEY") or _load_env_key()
     if not api_key:
-        print(f"  [ai_scorer] No API key — using heuristic fallback for: {opp.get('name', '?')[:50]}")
+        logger.warning("[ai_scorer] No API key — using heuristic fallback for: %s", opp.get('name', '?')[:50])
         return _heuristic_fallback(opp)
 
     try:
@@ -243,8 +353,11 @@ Return ONLY this JSON (no prose, no markdown, no code block):
             model=MODEL,
             max_tokens=2000,
             system=(
-                "You are a business opportunity scoring analyst. Score opportunities on 16 dimensions "
-                "using the rubrics provided. Use the FULL 1-10 range — do not cluster around 5-6. "
+                "You are a hard-nosed business opportunity scoring analyst. Score on 16 dimensions. "
+                "DISTRIBUTION RULE: 30% of scores must be <= 5 (real weaknesses), 40% in 5-7 (neutral), "
+                "30% above 7 (genuine strengths). DO NOT cluster at 7-9. A new business idea has MANY weaknesses. "
+                "Score 3-4 means this dimension is a real headwind. Score 8-9 means exceptional edge. "
+                "Score 5 means neutral/unknown. When uncertain, score 5, not 7. "
                 "Return ONLY valid JSON with exactly the fields requested."
             ),
             messages=[{"role": "user", "content": prompt}],
@@ -254,30 +367,41 @@ Return ONLY this JSON (no prose, no markdown, no code block):
         # Strip markdown code fences if present
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
+        # Extract JSON object substring — handles prose before/after the object
+        json_match = re.search(r'\{[\s\S]*\}', raw)
+        if json_match:
+            raw = json_match.group(0)
 
         scores = json.loads(raw)
 
-        # Write scores + reasons back to opp dict
+        dims_update = {}
         for dim in DIMENSIONS:
             val = scores.get(dim)
             if val is not None:
                 try:
-                    opp[dim] = max(1, min(10, int(val)))
+                    dims_update[dim] = max(1, min(10, int(val)))
                 except (ValueError, TypeError):
                     pass
             reason = scores.get(f"{dim}_reason")
             if reason:
-                opp[f"{dim}_reason"] = str(reason)[:200]
+                dims_update[f"{dim}_reason"] = str(reason)[:200]
 
-        opp["ai_scored_at"] = datetime.now().strftime("%Y-%m-%d")
-        opp["ai_scorer_version"] = AI_SCORER_VERSION
-        opp.pop("rescore_requested", None)
+        result = {
+            k: v for k, v in opp.items() if k != "rescore_requested"
+        }
+        result = {
+            **result,
+            **dims_update,
+            "ai_scored_at": datetime.now().strftime("%Y-%m-%d"),
+            "ai_scorer_version": AI_SCORER_VERSION,
+        }
 
-        print(f"  [ai_scorer] Scored: {name[:50]}")
-        return opp
+        logger.info("[ai_scorer] Scored: %s", name[:50])
+        return result
 
     except Exception as exc:
-        print(f"  [ai_scorer] Error ({type(exc).__name__}: {exc}) — heuristic fallback for: {opp.get('name','?')[:40]}")
+        from opportunity_os.pipeline_monitor import log_failure
+        log_failure("ai_scorer.single", exc, opp_id=opp.get("id", "unknown"), recovered=True)
         return _heuristic_fallback(opp)
 
 
@@ -327,7 +451,7 @@ def _heuristic_fallback(opp: dict) -> dict:
 
     dims = {}
 
-    # pain_severity
+    # pain_severity — baseline 2 (not 5); must earn higher score
     pain_s = sum([
         has(r"no tool", r"no software", r"excel", r"manual", r"paper"),
         has(r"daily", r"every day", r"urgent"),
@@ -335,24 +459,24 @@ def _heuristic_fallback(opp: dict) -> dict:
         geo == "venezuela",
         has(r"forum", r"complaint", r"frustrated"),
     ])
-    dims["pain_severity"] = clamp(5 + pain_s)
+    dims["pain_severity"] = clamp(2 + pain_s)
 
-    # market_size
-    ms = 5
+    # market_size — baseline 3 (not 5)
+    ms = 3
     if has(r"\$[0-9]+b", r"billion"): ms = 8
-    elif has(r"\$[0-9]+m", r"million"): ms = 6
+    elif has(r"\$[0-9]+m", r"million"): ms = 5
     if bucket == "venture_scale": ms += 1
     dims["market_size"] = clamp(ms)
 
-    # timing_tailwind
-    tt = 5
-    if has(r"regulation", r"mandator", r"new law"): tt += 2
+    # timing_tailwind — baseline 3 (not 5)
+    tt = 3
+    if has(r"regulation", r"mandator", r"new law"): tt += 3
     if has(r"growing fast", r"2025", r"2026"): tt += 1
     if geo == "venezuela": tt += 1
     dims["timing_tailwind"] = clamp(tt)
 
-    # willingness_to_pay
-    wtp_base = 4 if geo == "venezuela" else 5
+    # willingness_to_pay — Venezuela baseline 2 (was 4); global baseline 3 (was 5)
+    wtp_base = 2 if geo == "venezuela" else 3
     wtp_s = sum([
         has(r"pay", r"subscription", r"pricing"),
         has(r"currently paying", r"already pay"),
@@ -360,54 +484,54 @@ def _heuristic_fallback(opp: dict) -> dict:
     ])
     dims["willingness_to_pay"] = clamp(wtp_base + wtp_s)
 
-    # monetization_clarity
-    mc = 5
-    if has(r"subscription", r"saas", r"per month", r"per user"): mc += 1
-    if has(r"take rate", r"commission", r"transaction fee"): mc += 2
+    # monetization_clarity — baseline 3 (not 5)
+    mc = 3
+    if has(r"subscription", r"saas", r"per month", r"per user"): mc += 2
+    if has(r"take rate", r"commission", r"transaction fee"): mc += 3
     if bucket in ("fast_cash", "latam_asymmetry"): mc += 1
     dims["monetization_clarity"] = clamp(mc)
 
-    # speed_to_mvp
-    sm = 5
-    if has(r"whatsapp", r"bot", r"zapier", r"no-code"): sm += 2
+    # speed_to_mvp — baseline 3 (not 5)
+    sm = 3
+    if has(r"whatsapp", r"bot", r"zapier", r"no-code"): sm += 3
     if has(r"simple", r"lightweight", r"minimal"): sm += 1
     if bucket == "fast_cash": sm += 1
     dims["speed_to_mvp"] = clamp(sm)
 
-    # capital_efficiency
-    ce = 6
-    if has(r"bootstrap", r"no inventory", r"software only"): ce += 1
+    # capital_efficiency — baseline 4 (not 6)
+    ce = 4
+    if has(r"bootstrap", r"no inventory", r"software only"): ce += 2
     if bucket in ("fast_cash", "latam_asymmetry"): ce += 1
     dims["capital_efficiency"] = clamp(ce)
 
-    # distribution_accessibility
-    da = 5
-    if has(r"whatsapp", r"community", r"referral"): da += 2
+    # distribution_accessibility — baseline 3 (not 5)
+    da = 3
+    if has(r"whatsapp", r"community", r"referral"): da += 3
     if geo in ("venezuela", "latam"): da += 1
     dims["distribution_accessibility"] = clamp(da)
 
-    # competition_intensity (inverted — higher = less competition = better)
-    ci = 6
-    if has(r"fragmented", r"no leader", r"no direct"): ci += 1
+    # competition_intensity (inverted — higher = less competition = better) — baseline 4 (not 6)
+    ci = 4
+    if has(r"fragmented", r"no leader", r"no direct"): ci += 2
     if geo == "venezuela": ci += 2
     if bucket == "latam_asymmetry": ci += 1
     dims["competition_intensity"] = clamp(ci)
 
-    # defensibility
-    de = 5
-    if has(r"data moat", r"network effect", r"switching cost"): de += 2
+    # defensibility — baseline 3 (not 5)
+    de = 3
+    if has(r"data moat", r"network effect", r"switching cost"): de += 3
     if has(r"first mover", r"brand trust"): de += 1
     dims["defensibility"] = clamp(de)
 
-    # regional_fit
-    rf = 5
+    # regional_fit — baseline 3 (not 5)
+    rf = 3
     if geo == "venezuela": rf += 3
     elif geo == "latam": rf += 2
     if bucket == "latam_asymmetry": rf += 1
     if has(r"usdt", r"bolivar", r"zelle", r"informal"): rf += 1
     dims["regional_fit"] = clamp(rf)
 
-    # founder_fit
+    # founder_fit — stays formula-based (4 + wedges); min 4 is intentional
     ff = 4
     if has(r"growth", r"crm", r"lifecycle", r"a/b", r"paid ads"): ff += 1
     if has(r"latam", r"venezuela", r"spain", r"spanish"): ff += 1
@@ -415,35 +539,36 @@ def _heuristic_fallback(opp: dict) -> dict:
     if has(r"whatsapp", r"referral", r"distribution"): ff += 1
     dims["founder_fit"] = clamp(ff)
 
-    # ai_leverage
-    al = 5
-    if has(r"ai", r"automation", r"machine learning", r"nlp"): al += 2
+    # ai_leverage — baseline 3 (not 5)
+    al = 3
+    if has(r"ai", r"automation", r"machine learning", r"nlp"): al += 3
     if has(r"manual", r"human in the loop"): al += 1
     dims["ai_leverage"] = clamp(al)
 
-    # operational_simplicity
-    os_score = 6
-    if has(r"async", r"automated", r"self-service"): os_score += 1
+    # operational_simplicity — baseline 4 (not 6)
+    os_score = 4
+    if has(r"async", r"automated", r"self-service"): os_score += 2
     if has(r"physical", r"local team", r"warehouse"): os_score -= 2
     dims["operational_simplicity"] = clamp(os_score)
 
-    # regulatory_simplicity
-    rs = 6
+    # regulatory_simplicity — baseline 4 (not 6)
+    rs = 4
     if geo in ("venezuela", "latam") and bucket == "latam_asymmetry": rs += 2
     if has(r"fintech", r"banking", r"insurance", r"securities"): rs -= 2
     if has(r"license", r"regulated", r"compliance"): rs -= 1
     dims["regulatory_simplicity"] = clamp(rs)
 
-    # path_to_first_revenue
-    pr = 5
+    # revenue_speed_score — baseline 3 (not 5)
+    pr = 3
     if has(r"service", r"consulting", r"done for you"): pr += 2
     if has(r"whatsapp", r"direct outreach"): pr += 1
     if bucket == "fast_cash": pr += 2
     if geo == "venezuela": pr += 1
-    dims["path_to_first_revenue"] = clamp(pr)
+    dims["revenue_speed_score"] = clamp(pr)
 
+    result = dict(opp)
     for k, v in dims.items():
-        if not opp.get(k):
-            opp[k] = v
+        if result.get(k) is None:
+            result[k] = v
 
-    return opp
+    return result
