@@ -233,3 +233,47 @@ def test_non_obviousness_absent_no_bonus(base_opp):
     result = score_opportunity(base_opp)
     assert "final_score" in result
     assert result["final_score"] <= 10.0
+
+
+# ─── pain_signal_count fallback ───────────────────────────────────────────────
+
+def test_pain_signal_count_fallback_raises_score(base_opp):
+    """pain_signal_count >= 3 raises score vs. no count when attractiveness is sparse.
+
+    Uses an opp with no other attractiveness evidence so the fallback is the sole signal.
+    This reflects the real use-case: free research ran but paid research hasn't yet.
+    """
+    sparse = {
+        **base_opp,
+        "pain_severity": None,
+        "market_size": None,
+        "timing_tailwind": None,
+        "willingness_to_pay": None,
+        "monetization_clarity": None,
+        "pain_validation_score": None,
+    }
+    no_signals = score_opportunity({**sparse, "pain_signal_count": 0})
+    with_signals = score_opportunity({**sparse, "pain_signal_count": 5})
+    assert with_signals["final_score"] > no_signals["final_score"]
+
+
+def test_pain_signal_count_below_threshold_no_effect(base_opp):
+    """pain_signal_count < 3 must not set pain_validation_score fallback."""
+    no_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 0})
+    two_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 2})
+    assert two_signals["final_score"] == pytest.approx(no_signals["final_score"])
+
+
+def test_pain_signal_count_fallback_capped_at_6(base_opp):
+    """Fallback score must be capped at 6.0 — paid research (7-9) must always win."""
+    # 100 signals -> 4.0 + 100*0.3 = 34.0 -> capped at 6.0
+    many_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 100})
+    paid_research = score_opportunity({**base_opp, "pain_validation_score": 7.0})
+    assert paid_research["final_score"] > many_signals["final_score"]
+
+
+def test_pain_signal_count_fallback_does_not_override_existing(base_opp):
+    """Existing pain_validation_score must not be touched by the fallback."""
+    with_existing = score_opportunity({**base_opp, "pain_validation_score": 9.0, "pain_signal_count": 5})
+    without_count = score_opportunity({**base_opp, "pain_validation_score": 9.0})
+    assert with_existing["final_score"] == pytest.approx(without_count["final_score"])
