@@ -65,15 +65,16 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
     analogs = get_analog_benchmarks(opp.get("vertical", ""), opp.get("geography", ""))
     whitespace = detect_whitespace(opp)
 
-    # Run TAM estimate if missing
+    # Run TAM estimate if missing — derive inputs from opp instead of hardcoding
     if not opp.get("tam_usd_estimate"):
+        target_customers, annual_price_usd = _derive_tam_inputs(opp)
         tam_result = estimate_tam(
             method="bottom_up",
-            geography=opp.get("geography", "global"),
-            target_customers=1000,
-            annual_price_usd=60,
+            geography="global",  # geo already baked into inputs by _derive_tam_inputs
+            target_customers=target_customers,
+            annual_price_usd=annual_price_usd,
         )
-        opp["tam_usd_estimate"] = tam_result.get("tam_usd")
+        opp = {**opp, "tam_usd_estimate": tam_result.get("tam_usd")}
 
     date = datetime.now().strftime("%Y-%m-%d")
     lines = _build_deep_dive_content(opp, opp_id, date, archetype, analogs, whitespace)
@@ -127,16 +128,16 @@ def _build_deep_dive_content(opp: dict, opp_id: str, date: str, archetype: str, 
     lines += _section_benchmarks(opp, archetype, analogs, whitespace)
 
     # --- Founder fit & Daniel's wedges ---
-    lines += _section_founder_fit(opp)
+    lines += _section_founder_fit(opp).split("\n")
 
     # --- Decision filters ---
-    lines += _section_decision_filters(opp)
+    lines += _section_decision_filters(opp).split("\n")
 
     # --- First revenue path ---
     lines += _section_first_revenue(opp)
 
     # --- Kill gate summary ---
-    lines += _section_kill_gate(opp)
+    lines += _section_kill_gate(opp).split("\n")
 
     # --- Next actions ---
     lines += _section_next_actions(opp)
@@ -350,7 +351,7 @@ def _section_benchmarks(opp: dict, archetype: str, analogs: list, whitespace: di
     return lines
 
 
-def _section_founder_fit(opp: dict) -> list:
+def _section_founder_fit(opp: dict) -> str:
     lines = ["## Founder Fit", ""]
 
     daniels_wedge = opp.get("daniels_wedge_score")
@@ -372,34 +373,35 @@ def _section_founder_fit(opp: dict) -> list:
         "Distribution instincts (WhatsApp funnels, performance, community)",
     ]
 
-    if daniels_wedge is not None:
-        lines.append("**Daniel's 6 wedges — match assessment:**")
-        for i, label in enumerate(wedge_labels, 1):
-            lines.append(f"- {label}")
-        lines.append(f"  → **{daniels_wedge}/6 matching**")
-        lines.append("")
+    wedge_matches = _infer_wedge_matches(opp)
+    matched = sum(wedge_matches)
+    risk_flag = " ⚠ founder-fit risk" if matched < 2 else ""
+    lines.append(f"**Daniel's 6 wedges — match assessment ({matched}/6{risk_flag}):**")
+    for label, is_match in zip(wedge_labels, wedge_matches):
+        icon = "[+]" if is_match else "[ ]"
+        lines.append(f"- {icon} {label}")
+    lines.append("")
 
-    return lines
+    return "\n".join(lines)
 
 
-def _section_decision_filters(opp: dict) -> list:
+def _section_decision_filters(opp: dict) -> str:
     lines = ["## Decision Filters", ""]
 
-    filter_results = (
-        opp.get("DecisionFilterResults")
-        or opp.get("decision_filter_results")
-        or {}
-    )
+    filter_results = opp.get("decision_filter_results") or {}
 
     filter_labels = {
         "can_sell_fast": "Can Daniel reach the buyer and get real interest in < 2 weeks?",
         "can_build_lean": "MVP < $2K, < 2 people, < 6 weeks?",
         "can_compound": "Can this compound? (software, data, network, repeatable distribution)",
     }
+    _FILTER_KEYS = ("can_sell_fast", "can_build_lean", "can_compound")
 
     if isinstance(filter_results, dict):
-        passed = sum(1 for v in filter_results.values() if v is True)
-        failed = sum(1 for v in filter_results.values() if v is False)
+        # Scope count to known filter keys only — avoids Pydantic computed fields
+        # (e.g. should_cap_score=True) being counted as passing filters.
+        passed = sum(1 for k in _FILTER_KEYS if filter_results.get(k) is True)
+        failed = sum(1 for k in _FILTER_KEYS if filter_results.get(k) is False)
 
         should_cap = filter_results.get("should_cap_score") or failed >= 2
         cap_warning = " — **SCORE CAPPED AT 5.0**" if should_cap else ""
@@ -424,7 +426,7 @@ def _section_decision_filters(opp: dict) -> list:
     if filters_failed:
         lines += [f"**Filters failed count:** {filters_failed}", ""]
 
-    return lines
+    return "\n".join(lines)
 
 
 def _section_first_revenue(opp: dict) -> list:
@@ -455,7 +457,7 @@ def _section_first_revenue(opp: dict) -> list:
     return lines
 
 
-def _section_kill_gate(opp: dict) -> list:
+def _section_kill_gate(opp: dict) -> str:
     lines = ["## Kill Gate Summary", ""]
 
     kill_decision = opp.get("kill_decision")
@@ -467,7 +469,10 @@ def _section_kill_gate(opp: dict) -> list:
         if kill_reasons:
             reasons = kill_reasons if isinstance(kill_reasons, list) else [kill_reasons]
             for r in reasons:
-                lines.append(f"- {r}")
+                # Sanitize embedded newlines from LLM-sourced fields — a bare \n
+                # inside a list item corrupts the section when joined then split.
+                sanitized = str(r).replace("\n", " ").replace("\r", " ")
+                lines.append(f"- {sanitized}")
     else:
         gate_str = f"{kill_criteria_passed}/7" if kill_criteria_passed is not None else "N/A"
         lines.append(f"**Kill gate:** PASSED | Criteria met: {gate_str}")
@@ -494,7 +499,21 @@ def _section_kill_gate(opp: dict) -> list:
             lines.append(f"| **Final score** | **{f}/10** |")
         lines.append("")
 
-    return lines
+    # VC moat fields — only shown when present (optional fields, absent = neutral)
+    gm = opp.get("gross_margin_potential")
+    ne = opp.get("network_effect_strength")
+    sw = opp.get("switching_cost_score")
+    if any(v is not None for v in [gm, ne, sw]):
+        lines.append("**VC moat signals:**")
+        if gm is not None:
+            lines.append(f"- Gross margin potential: {gm}/10")
+        if ne is not None:
+            lines.append(f"- Network effect strength: {ne}/10")
+        if sw is not None:
+            lines.append(f"- Switching cost score: {sw}/10")
+        lines.append("")
+
+    return "\n".join(lines)
 
 
 def _section_next_actions(opp: dict) -> list:
@@ -582,3 +601,65 @@ def _get_project_root() -> str:
         if (parent / "pyproject.toml").exists():
             return str(parent)
     return str(current.parents[4])
+
+
+def _derive_tam_inputs(opp: dict) -> tuple:
+    """Derive TAM estimation inputs from opp fields instead of using hardcoded values.
+
+    Returns (target_customers: int, annual_price_usd: int).
+    """
+    geo = (opp.get("geography") or "global").lower()
+    wtp = float(opp.get("willingness_to_pay") or 5)
+
+    geo_market_size = {
+        "venezuela": 50_000,
+        "latam": 500_000,
+        "colombia": 100_000,
+        "mexico": 200_000,
+        "spain": 150_000,
+        "global": 1_000_000,
+    }
+    geo_price_mult = {
+        "venezuela": 0.25,
+        "latam": 0.5,
+        "colombia": 0.6,
+        "mexico": 0.6,
+        "spain": 1.1,
+        "global": 1.0,
+    }
+    base_customers = geo_market_size.get(geo, 500_000)
+    mult = geo_price_mult.get(geo, 1.0)
+    annual_price_usd = max(36, int(wtp * 10 * mult * 12))
+    return base_customers, annual_price_usd
+
+
+def _infer_wedge_matches(opp: dict) -> list:
+    """Infer per-wedge match for Daniel's 6 wedges. Returns 6-element list of bools."""
+    geo = (opp.get("geography") or "").lower()
+    vertical = (opp.get("vertical") or "").lower()
+    tags = " ".join([
+        str(opp.get("vertical", "")),
+        str(opp.get("business_model_type", "")),
+        str(opp.get("problem_statement", "")),
+        str(opp.get("path_to_first_revenue", "")),
+    ]).lower()
+
+    wedge_1 = any(t in tags for t in ["saas", "crm", "lifecycle", "marketing", "growth", "acquisition"])
+    # wedge_2: narrative + positioning — requires a concrete revenue hypothesis AND timing signal.
+    # The previous proxy (len > 40) matched almost every opp and was meaningless.
+    wedge_2 = bool(
+        opp.get("path_to_first_revenue") and
+        (opp.get("why_now") or opp.get("trigger_signal"))
+    )
+    wedge_3 = geo in ("venezuela", "latam", "colombia", "mexico", "spain")
+    wedge_4 = vertical == "fintech" or any(
+        t in tags for t in ["payment", "crypto", "usdt", "remittance", "banking", "wallet"]
+    )
+    wedge_5 = float(opp.get("speed_to_mvp") or 0) >= 7
+    channels = opp.get("top_distribution_channels") or []
+    channel_str = " ".join(str(c).lower() for c in channels)
+    wedge_6 = (
+        any(t in channel_str for t in ["whatsapp", "community", "telegram", "reddit"])
+        or geo == "venezuela"
+    )
+    return [wedge_1, wedge_2, wedge_3, wedge_4, wedge_5, wedge_6]

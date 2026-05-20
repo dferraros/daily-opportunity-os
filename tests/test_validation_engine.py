@@ -7,6 +7,7 @@ from opportunity_os.validation_engine import (
     validation_status_label,
     AUTO_SECTION_COUNT,
     FULL_SECTION_COUNT,
+    AUTO_VALIDATION_THRESHOLD,
 )
 
 
@@ -53,6 +54,22 @@ def scout_opp_minimal():
     }
 
 
+@pytest.fixture
+def scout_opp_low_score():
+    """Opp below AUTO_VALIDATION_THRESHOLD — for section count tests."""
+    return {
+        "id": "opp_test_003",
+        "name": "Low Score Test Opp",
+        "stage": "scout",
+        "kill_decision": False,
+        "final_score": 5.0,
+        "geography": "venezuela",
+        "vertical": "fintech",
+        "target_customer": "SMB owners",
+        "problem_statement": "Manual processes waste time",
+    }
+
+
 # ─── run_validation — auto mode (sections 1-7) ───────────────────────────────
 
 class TestRunValidationAuto:
@@ -66,8 +83,8 @@ class TestRunValidationAuto:
         assert isinstance(result["_validation_markdown"], str)
         assert len(result["_validation_markdown"]) > 100
 
-    def test_auto_has_correct_section_count(self, scout_opp):
-        result = run_validation(scout_opp, mode="auto")
+    def test_auto_has_correct_section_count(self, scout_opp_low_score):
+        result = run_validation(scout_opp_low_score, mode="auto")
         md = result["_validation_markdown"]
         section_count = md.count("\n## ")
         assert section_count == AUTO_SECTION_COUNT  # 7
@@ -149,3 +166,112 @@ class TestHelpers:
     def test_validation_status_label_returns_string(self):
         assert isinstance(validation_status_label("in_progress"), str)
         assert isinstance(validation_status_label(None), str)
+
+
+# ─── Section 7: outreach channel lookup ──────────────────────────────────────
+
+class TestSection7OutreachChannel:
+    def test_uses_flat_top_distribution_channels(self, scout_opp):
+        """Section 7 must read top_distribution_channels (flat list), not distribution_profile.top_channels."""
+        opp = {**scout_opp, "top_distribution_channels": ["Telegram", "WhatsApp"]}
+        result = run_validation(opp, mode="auto")
+        md = result["_validation_markdown"]
+        # The first channel from the flat list should appear in the outreach section
+        assert "Telegram" in md
+
+    def test_nested_dict_key_is_not_used(self, scout_opp):
+        """distribution_profile.top_channels (nested) must NOT override flat list."""
+        opp = {
+            **scout_opp,
+            "top_distribution_channels": ["LinkedIn"],
+            "distribution_profile": {"top_channels": ["ShouldNotAppear"]},
+        }
+        result = run_validation(opp, mode="auto")
+        md = result["_validation_markdown"]
+        assert "ShouldNotAppear" not in md
+
+    def test_fallback_venezuela_uses_whatsapp(self):
+        """When no channels supplied and geo=venezuela, fallback is WhatsApp."""
+        opp = {
+            "id": "opp_ch_001",
+            "name": "No Channel Venezuela Opp Test Signal",
+            "stage": "scout",
+            "kill_decision": False,
+            "final_score": 5.5,
+            "geography": "venezuela",
+            "vertical": "fintech",
+            "target_customer": "SMB owners",
+            "problem_statement": "Manual payment tracking waste time",
+        }
+        result = run_validation(opp, mode="auto")
+        md = result["_validation_markdown"]
+        assert "WhatsApp" in md
+
+
+# ─── Currency symbol by geography ────────────────────────────────────────────
+
+class TestCurrencyByGeo:
+    def test_venezuela_uses_usd_symbol(self, scout_opp):
+        result = run_validation(scout_opp, mode="auto")
+        md = result["_validation_markdown"]
+        # Section 4 WTP line must use $ for Venezuela
+        assert "$" in md
+
+    def test_global_opp_uses_eur_symbol(self):
+        opp = {
+            "id": "opp_cur_001",
+            "name": "Global SaaS Platform Tool Integration Test",
+            "stage": "scout",
+            "kill_decision": False,
+            "final_score": 6.0,
+            "geography": "global",
+            "vertical": "saas",
+            "target_customer": "Enterprise teams",
+            "problem_statement": "Workflow fragmentation slows teams down",
+        }
+        result = run_validation(opp, mode="auto")
+        md = result["_validation_markdown"]
+        assert "€" in md
+
+    def test_latam_opp_uses_usd_symbol(self):
+        opp = {
+            "id": "opp_cur_002",
+            "name": "LATAM SMB Payments Infrastructure Market Gap",
+            "stage": "scout",
+            "kill_decision": False,
+            "final_score": 6.5,
+            "geography": "latam",
+            "vertical": "fintech",
+            "target_customer": "SMB owners",
+            "problem_statement": "SMBs across LATAM cannot access payment rails",
+        }
+        result = run_validation(opp, mode="auto")
+        md = result["_validation_markdown"]
+        assert "$" in md
+
+
+# ─── Auto Section 8 inclusion for high-scoring opps ──────────────────────────
+
+class TestAutoSection8:
+    def test_auto_high_score_includes_section_8(self, scout_opp):
+        """Opps scoring >= AUTO_VALIDATION_THRESHOLD (7.0) in auto mode get Section 8."""
+        assert scout_opp["final_score"] >= AUTO_VALIDATION_THRESHOLD, "fixture must be above threshold"
+        result = run_validation(scout_opp, mode="auto")
+        md = result["_validation_markdown"]
+        section_count = md.count("\n## ")
+        assert section_count == FULL_SECTION_COUNT  # 8
+
+    def test_auto_low_score_excludes_section_8(self, scout_opp_low_score):
+        """Opps scoring < AUTO_VALIDATION_THRESHOLD in auto mode get only 7 sections."""
+        assert scout_opp_low_score["final_score"] < AUTO_VALIDATION_THRESHOLD, "fixture must be below threshold"
+        result = run_validation(scout_opp_low_score, mode="auto")
+        md = result["_validation_markdown"]
+        section_count = md.count("\n## ")
+        assert section_count == AUTO_SECTION_COUNT  # 7
+
+    def test_full_mode_always_includes_section_8(self, scout_opp_low_score):
+        """full mode always includes Section 8 regardless of score."""
+        result = run_validation(scout_opp_low_score, mode="full")
+        md = result["_validation_markdown"]
+        section_count = md.count("\n## ")
+        assert section_count == FULL_SECTION_COUNT  # 8

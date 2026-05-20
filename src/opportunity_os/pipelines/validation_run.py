@@ -60,16 +60,18 @@ def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(package["_validation_markdown"])
 
-    # Build Notion sync payload
+    # Build Notion sync payload — pass the real opp + stats derived from it
+    final_score = float(opp.get("final_score", 0) or 0)
+    geo = opp.get("geography", "global")
     sync_payload = build_sync_payload(
-        opportunities=[],
+        opportunities=[opp],
         run_stats={
-            "signals_total": 0,
-            "new_opps": 0,
+            "signals_total": 1,
+            "new_opps": 1,
             "killed": 0,
-            "top_score": 0,
-            "score_range": "N/A",
-            "by_geo": {},
+            "top_score": final_score,
+            "score_range": f"{final_score:.2f}-{final_score:.2f}",
+            "by_geo": {geo: 1},
             "top_opportunity": opp.get("name", ""),
             "notes": "Manual validation run",
         },
