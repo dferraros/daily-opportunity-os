@@ -210,3 +210,26 @@ def test_distribution_validated_absent_unchanged(base_opp):
     without = score_opportunity(base_opp)
     with_none = score_opportunity({**base_opp, "distribution_validated": None})
     assert without["final_score"] == with_none["final_score"]
+
+
+# ─── non_obviousness_high modifier ───────────────────────────────────────────
+
+def test_non_obviousness_high_applies_bonus(base_opp):
+    """non_obviousness_score >= 6 must add +0.5 to final_score."""
+    below = score_opportunity({**base_opp, "non_obviousness_score": 5.0})
+    above = score_opportunity({**base_opp, "non_obviousness_score": 7.0})
+    assert above["final_score"] > below["final_score"]
+
+
+def test_non_obviousness_below_threshold_no_bonus(base_opp):
+    """non_obviousness_score < 6 must not change the score vs. field absent."""
+    without_field = score_opportunity(base_opp)
+    with_low = score_opportunity({**base_opp, "non_obviousness_score": 4.9})
+    assert with_low["final_score"] == pytest.approx(without_field["final_score"])
+
+
+def test_non_obviousness_absent_no_bonus(base_opp):
+    """No non_obviousness_score field must not crash or add bonus."""
+    result = score_opportunity(base_opp)
+    assert "final_score" in result
+    assert result["final_score"] <= 10.0
