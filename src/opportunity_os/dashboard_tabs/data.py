@@ -33,12 +33,22 @@ def _parse_tam(val) -> float | None:
         return None
 
 
-@st.cache_data(ttl=60)
-def load_opportunities():
-    path = PROJECT_ROOT / "data" / "opportunities" / "opportunities.jsonl"
+_OPPS_PATH = PROJECT_ROOT / "data" / "opportunities" / "opportunities.jsonl"
+
+
+def _opps_mtime() -> float:
+    """Return file mtime so callers can bust the cache when the file changes."""
+    try:
+        return _OPPS_PATH.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
+@st.cache_data(ttl=300)
+def _load_opportunities_cached(file_mtime: float):  # noqa: ARG001
     opps = []
-    if path.exists():
-        with open(path, encoding="utf-8") as f:
+    if _OPPS_PATH.exists():
+        with open(_OPPS_PATH, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -47,6 +57,11 @@ def load_opportunities():
                     except json.JSONDecodeError as exc:
                         logger.debug("Skipping malformed opportunities line: %s", exc)
     return opps
+
+
+def load_opportunities():
+    """Load opportunities, re-reading from disk whenever the file has been modified."""
+    return _load_opportunities_cached(_opps_mtime())
 
 
 @st.cache_data(ttl=60)

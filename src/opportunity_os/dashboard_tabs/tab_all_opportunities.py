@@ -194,12 +194,8 @@ def tab_all_opportunities(opps, geo_filter, score_range):
                     use_container_width=True,
                 ):
                     st.session_state["deep_dive_opp_name"] = o.get("name")
-                    st.session_state["active_tab_hint"] = True
             with hint_col:
-                if (
-                    st.session_state.get("active_tab_hint")
-                    and st.session_state.get("deep_dive_opp_name") == o.get("name")
-                ):
+                if st.session_state.get("deep_dive_opp_name") == o.get("name"):
                     st.info(
-                        "↑ Switch to the **Deep Dive** tab above to see the full intelligence brief."
+                        "✓ Ready in **Deep Dive** tab — click the tab above to view the full brief for this opportunity."
                     )

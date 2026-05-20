@@ -138,7 +138,7 @@ def build_validation_queries(opp: dict) -> list:
         if len(result) >= 8:
             break
 
-    return result[:8] if len(result) > 5 else result
+    return result
 
 
 # ─── Section renderers ────────────────────────────────────────────────────────
@@ -262,7 +262,7 @@ def _render_section_4_assumptions(opp: dict) -> str:
     assumptions = [
         f"**A1 — Reachability:** We can identify and contact 10 {_safe(opp.get('target_customer', 'potential buyers'), max_len=40)} within 7 days via existing channels.",
         f"**A2 — Pain is real:** At least 4 of 5 interviewees confirm the pain is severe enough that they have already tried to solve it.",
-        f"**A3 — WTP exists:** At least 2 of 5 interviewees express willingness to pay €{_estimate_price(opp)}/mo or more.",
+        f"**A3 — WTP exists:** At least 2 of 5 interviewees express willingness to pay {_currency_symbol(opp)}{_estimate_price(opp)}/mo or more.",
     ]
 
     kill_criteria = [
@@ -288,11 +288,12 @@ def _render_section_4_assumptions(opp: dict) -> str:
 
 
 def _render_section_5_pricing(opp: dict) -> str:
-    """Section 5: 3 pricing options with EUR amounts."""
+    """Section 5: 3 pricing options — currency derived from geography."""
     base = _estimate_price(opp)
     low = max(9, int(base * 0.5))
     mid = base
     high = int(base * 2.5)
+    currency = _currency_symbol(opp)
 
     geo = opp.get("geography", "global")
     frp = opp.get("first_revenue_path") or {}
@@ -307,13 +308,13 @@ def _render_section_5_pricing(opp: dict) -> str:
 
 **Model:** {model}
 **First offer:** {first_offer}
-**Geography:** {geo} (adjust EUR/USD if needed)
+**Geography:** {geo}
 
 | Option | Price | Framing | Test signal |
 |--------|-------|---------|-------------|
-| **Option A — Anchor** | €{high}/mo | Premium tier, full feature set | Baseline willingness to pay |
-| **Option B — Target** | €{mid}/mo | Standard access, core value | Primary conversion target |
-| **Option C — Entry** | €{low}/mo | Starter / first 10 customers discount | Remove price as objection |
+| **Option A — Anchor** | {currency}{high}/mo | Premium tier, full feature set | Baseline willingness to pay |
+| **Option B — Target** | {currency}{mid}/mo | Standard access, core value | Primary conversion target |
+| **Option C — Entry** | {currency}{low}/mo | Starter / first 10 customers discount | Remove price as objection |
 
 **Test method:** Present all three options in interviews. Ask: "If this existed tomorrow, which would you choose?" Note hesitation, not just answer.
 
@@ -364,9 +365,8 @@ def _render_section_7_outreach(opp: dict) -> str:
     target = _safe(opp.get("target_customer"), "operators")
     problem = _safe(opp.get("problem_statement"), "manual processes")[:80]
 
-    # Get distribution channel
-    dist = opp.get("distribution_profile") or {}
-    channels = dist.get("top_channels") if isinstance(dist, dict) else []
+    # Get distribution channel from flat list (populated by distribution_intelligence)
+    channels = opp.get("top_distribution_channels") or []
     channel = channels[0] if channels else ("WhatsApp" if geo == "venezuela" else "LinkedIn")
 
     trust_note = TRUST_SNIPPETS.get(geo, TRUST_SNIPPETS["global"])
@@ -486,6 +486,13 @@ def _estimate_price(opp: dict) -> int:
     return 199
 
 
+def _currency_symbol(opp: dict) -> str:
+    """Return currency symbol based on geography — USD/USDT markets use $, others use €."""
+    geo = (opp.get("geography") or "global").lower()
+    usd_geos = {"venezuela", "latam", "colombia", "mexico", "peru", "brazil", "brasil", "argentina", "chile"}
+    return "$" if geo in usd_geos else "€"
+
+
 # ─── Main runner ─────────────────────────────────────────────────────────────
 
 def run_validation(opp: dict, mode: str = "auto") -> dict:
@@ -514,7 +521,8 @@ def run_validation(opp: dict, mode: str = "auto") -> dict:
         _render_section_6_landing_page(opp),
         _render_section_7_outreach(opp),
     ]
-    if mode == "full":
+    score = float(opp.get("final_score", 0) or 0)
+    if mode == "full" or (mode == "auto" and score >= AUTO_VALIDATION_THRESHOLD):
         sections.append(_render_section_8_mvp(opp))
 
     header = (

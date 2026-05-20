@@ -110,12 +110,18 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
     logger.info("Step 11.6: Running free research (Jina + HN + Reddit) on top 20...")
     try:
         from opportunity_os.free_research import research_opportunity_free
+        from opportunity_os.engines.scoring_engine import score_opportunity
+        from opportunity_os.geo_lens import apply_geo_adjustments
         free_researched = 0
         for i, opp in enumerate(all_opps_sorted[:20]):
-            if not opp.get("research_executed_at") and not opp.get("free_research_at"):
+            if not opp.get("free_research_at"):  # independent of paid research
                 updates = research_opportunity_free(opp)
                 if updates:
-                    all_opps_sorted[i] = {**opp, **updates}
+                    enriched = {**opp, **updates}
+                    if not enriched.get("kill_decision"):
+                        enriched = score_opportunity(enriched)
+                        enriched = apply_geo_adjustments(enriched)
+                    all_opps_sorted[i] = enriched
                     free_researched += 1
                 time.sleep(0.5)
         logger.info("  Free research complete: %d opps enriched", free_researched)
