@@ -245,11 +245,14 @@ def tab_deep_dive(opps: list):
         if tam_raw:
             sam_raw = _parse_tam(o.get("sam_usd_estimate"))
             som_raw = _parse_tam(o.get("som_usd_estimate"))
+            _funnel_fig, _has_est = tam_funnel_chart(tam_raw, sam_raw, som_raw)
             st.plotly_chart(
-                tam_funnel_chart(tam_raw, sam_raw, som_raw),
+                _funnel_fig,
                 use_container_width=True,
                 key=f"dd_tam_{opp_id}",
             )
+            if _has_est:
+                st.caption("(est.) = modeled at 12% TAM / 18% SAM — not field-validated")
             if o.get("tam_rationale"):
                 st.caption(str(o.get("tam_rationale"))[:200])
 
