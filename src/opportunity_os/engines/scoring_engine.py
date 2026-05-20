@@ -306,6 +306,22 @@ def _derive_distribution_quality(opp: dict) -> dict:
     return {**opp, "distribution_quality": quality_score}
 
 
+def _apply_pain_signal_fallback(opp: dict) -> dict:
+    """Derive a pain_validation_score proxy from pain_signal_count when paid research is absent.
+
+    Formula: min(6.0, 4.0 + pain_signal_count * 0.3)
+    Capped at 6.0 so paid research results (typically 7-9) always dominate.
+    Only fires when pain_validation_score is None and pain_signal_count >= 3.
+    """
+    if opp.get("pain_validation_score") is not None:
+        return opp
+    count = opp.get("pain_signal_count")
+    if count is None or int(count) < 3:
+        return opp
+    fallback = min(6.0, 4.0 + int(count) * 0.3)
+    return {**opp, "pain_validation_score": round(fallback, 2)}
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
@@ -317,6 +333,7 @@ def score_opportunity(opp_dict: dict) -> dict:
     """
     opp = dict(opp_dict)  # shallow copy
     opp = _derive_distribution_quality(opp)
+    opp = _apply_pain_signal_fallback(opp)
 
     if opp.get("kill_criteria_passed") is None:
         logger.warning(
