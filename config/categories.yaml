@@ -1,0 +1,70 @@
+verticals:
+  - fintech
+  - payments
+  - remittances
+  - wallets
+  - lending
+  - insurance
+  - accounting
+  - erp
+  - smb_software
+  - consumer_apps
+  - productivity_apps
+  - local_services
+  - marketplaces
+  - logistics
+  - commerce_enablement
+  - retail_tech
+  - ai_tools
+  - workflow_automation
+  - healthcare
+  - education
+  - legal_tech
+  - hr_tech
+  - real_estate_tools
+  - media_businesses
+  - creator_tools
+  - agencies_with_software
+  - vertical_saas
+  - travel
+  - mobility
+  - food_and_restaurant_tech
+  - telecom_and_connectivity
+  - cybersecurity
+  - crypto_web3  # only if demand and monetization are credible
+
+business_model_types:
+  - saas
+  - marketplace
+  - productized_service
+  - agency_plus_software
+  - concierge_first
+  - data_as_a_service
+  - done_for_you
+  - consumer_app
+  - b2b_software
+  - infrastructure
+
+benchmark_archetypes:
+  - local_clone            # proven US/EU model adapted for LATAM
+  - regional_wedge         # exploits broken local infrastructure
+  - workflow_unbundling    # takes one painful workflow from big software
+  - trust_compliance_layer # adds trust/compliance where market lacks it
+  - ai_operator_replacement # AI reduces labor cost for a specific job
+  - fragmented_supply_marketplace  # connects supply that can't find demand
+  - smb_operating_system   # core OS for a specific SMB vertical
+  - diaspora_bridge        # connects two sides of a diaspora market
+
+pain_clusters:
+  - payments_friction
+  - inventory_chaos
+  - customer_acquisition_pain
+  - trust_problems
+  - cash_flow_visibility
+  - bad_tooling
+  - manual_workflows
+  - cross_border_friction
+  - compliance_confusion
+  - labor_bottlenecks
+  - working_capital_gaps
+  - visibility_gaps

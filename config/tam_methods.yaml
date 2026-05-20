@@ -1,0 +1,39 @@
+methods:
+  bottom_up:
+    description: "Preferred method — most accurate"
+    formula: "target_customers x annual_price_per_customer x conversion_rate"
+    when_to_use: "When you can estimate customer count and pricing independently"
+    confidence: high
+
+  top_down:
+    description: "Quick sizing — use for sanity check only"
+    formula: "total_market_value x addressable_pct x som_pct"
+    when_to_use: "When market report data exists"
+    confidence: medium
+
+  proxy:
+    description: "Use when no direct data available"
+    formula: "analog_company_revenue x (target_market_size / analog_market_size)"
+    when_to_use: "When a comparable company exists in a known market"
+    confidence: low
+
+  competitor_revenue:
+    description: "Cross-check method"
+    formula: "competitor_ARR / estimated_competitor_market_share"
+    when_to_use: "When competitor revenue is known or estimable"
+    confidence: medium
+
+rules:
+  - Always state which method was used
+  - Always show the formula with actual numbers plugged in
+  - Always list assumptions explicitly
+  - Do not reuse US pricing in Venezuela without justification
+  - Assign confidence: high / medium / low based on data quality
+  - Show base case + upside + downside when possible
+
+venezuela_pricing_defaults:
+  b2c_app: "$1-5/month or one-time $5-20"
+  b2b_smb: "$15-50/month"
+  b2b_mid_market: "$50-200/month"
+  productized_service: "$50-200 one-time or $30-100/month"
+  note: "Adjust for dollarized economy — Venezuelans pay in USD or USDT, not bolivars"

@@ -1,0 +1,47 @@
+# 🇻🇪 Venezuela Report — {{ date }}
+
+*Mandatory section. Always present regardless of signal volume.*
+
+---
+
+{% if ve_opps %}
+## New Venezuela Signals — {{ ve_opps | length }} today
+
+{% for opp in ve_opps | sort(attribute='final_score', reverse=True) %}
+### {{ opp.name }} · {{ opp.final_score | default(0) | round(1) }}/10
+
+**Wedge:** `{{ opp.venezuela_wedge_category | default('unclassified') }}` | **Bucket:** `{{ opp.bucket | default('') }}` | **Lane:** `{{ opp.portfolio_lane | default('') }}`
+
+{{ opp.problem_statement | default('') }}
+
+**WTP note:** 0.25× US baseline. Pricing ceiling: $3–15/month.
+**Primary rail:** Zelle / USDT | **Distribution:** WhatsApp-first
+
+{% if opp.why_now_venezuela %}
+> **Why now:** {{ opp.why_now_venezuela.recent_change | default('') }}
+> **Who suffers:** {{ opp.why_now_venezuela.who_suffers_most | default('') }}
+{% endif %}
+
+---
+{% endfor %}
+
+## Wedge Category Summary
+{% for category, count in wedge_summary.items() %}
+- `{{ category }}`: {{ count }} signal(s)
+{% endfor %}
+
+{% else %}
+## No New Venezuela Signals Today
+
+Standing signals from previous days:
+{% if standing_signals %}
+{% for s in standing_signals[:3] %}
+- **{{ s.name }}** ({{ s.first_seen }}) — {{ s.final_score | default(0) | round(1) }}/10 · `{{ s.venezuela_wedge_category | default('') }}`
+{% endfor %}
+{% else %}
+No standing signals. Run signal-harvester skill for Venezuela.
+{% endif %}
+{% endif %}
+
+---
+*Venezuela section — daily-opportunity-os · {{ date }}*
