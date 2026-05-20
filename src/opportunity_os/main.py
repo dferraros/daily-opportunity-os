@@ -327,5 +327,65 @@ def audit():
     click.echo(audit_report())
 
 
+@cli.command("backup")
+@click.option("--label", default="manual", help="Short tag for the backup filename.")
+def backup(label):
+    """Snapshot opportunities.jsonl to data/opportunities/backups/."""
+    from opportunity_os.backup import create_backup
+
+    result = create_backup(label)
+    if result is None:
+        click.echo("Snapshot skipped: opportunities store is empty or missing.", err=True)
+        return
+    click.echo(
+        f"Snapshot created: {result['filename']} "
+        f"({result['record_count']} records, {result['size_bytes'] // 1024} KB)"
+    )
+
+
+@cli.command("backups")
+def list_backups():
+    """List all available opportunity snapshots."""
+    from opportunity_os.backup import list_backups as _list
+
+    items = _list()
+    if not items:
+        click.echo("No backups found. Run 'opp-os backup' to create one.")
+        return
+    click.echo(f"\n{'='*60}")
+    click.echo(f" {'#':>3}  {'Timestamp':<20}  {'Label':<18}  {'Records':>7}  {'Size':>6}")
+    click.echo(f"{'='*60}")
+    for i, b in enumerate(items, 1):
+        size_kb = b["size_bytes"] // 1024
+        click.echo(
+            f" {i:>3}  {b['timestamp']:<20}  {b['label']:<18}  {b['record_count']:>7}  {size_kb:>5}K"
+        )
+    click.echo(f"{'='*60}")
+    click.echo(f" {len(items)} backup(s). Use 'opp-os restore <filename>' to recover.\n")
+
+
+@cli.command("restore")
+@click.argument("filename")
+@click.option("--dry-run", is_flag=True, help="Validate without writing.")
+def restore(filename, dry_run):
+    """Restore opportunities.jsonl from a backup snapshot.
+
+    FILENAME is the backup basename, e.g. 2026-05-20-143000-pre-daily.jsonl.
+    Run 'opp-os backups' to list available snapshots.
+    """
+    from opportunity_os.backup import restore_backup
+
+    if not dry_run:
+        click.echo(f"WARNING: This will overwrite opportunities.jsonl with {filename}.")
+        click.confirm("Continue?", abort=True)
+
+    result = restore_backup(filename, dry_run=dry_run)
+    if result["success"]:
+        click.echo(result["message"])
+    else:
+        click.echo(f"Restore failed: {result['message']}", err=True)
+        raise SystemExit(1)
+
+
 if __name__ == "__main__":
     cli()

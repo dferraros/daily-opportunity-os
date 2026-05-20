@@ -210,3 +210,102 @@ def test_distribution_validated_absent_unchanged(base_opp):
     without = score_opportunity(base_opp)
     with_none = score_opportunity({**base_opp, "distribution_validated": None})
     assert without["final_score"] == with_none["final_score"]
+
+
+# ─── non_obviousness_high modifier ───────────────────────────────────────────
+
+def test_non_obviousness_high_applies_bonus(base_opp):
+    """non_obviousness_score >= 6 must add +0.5 to final_score."""
+    below = score_opportunity({**base_opp, "non_obviousness_score": 5.0})
+    above = score_opportunity({**base_opp, "non_obviousness_score": 7.0})
+    assert above["final_score"] > below["final_score"]
+
+
+def test_non_obviousness_below_threshold_no_bonus(base_opp):
+    """non_obviousness_score < 6 must not change the score vs. field absent."""
+    without_field = score_opportunity(base_opp)
+    with_low = score_opportunity({**base_opp, "non_obviousness_score": 4.9})
+    assert with_low["final_score"] == pytest.approx(without_field["final_score"])
+
+
+def test_non_obviousness_absent_no_bonus(base_opp):
+    """No non_obviousness_score field must not crash or add bonus."""
+    result = score_opportunity(base_opp)
+    assert "final_score" in result
+    assert result["final_score"] <= 10.0
+
+
+# ─── pain_signal_count fallback ───────────────────────────────────────────────
+
+def test_pain_signal_count_fallback_raises_score(base_opp):
+    """pain_signal_count >= 3 raises score vs. no count when attractiveness is sparse.
+
+    Uses an opp with no other attractiveness evidence so the fallback is the sole signal.
+    This reflects the real use-case: free research ran but paid research hasn't yet.
+    """
+    sparse = {
+        **base_opp,
+        "pain_severity": None,
+        "market_size": None,
+        "timing_tailwind": None,
+        "willingness_to_pay": None,
+        "monetization_clarity": None,
+        "pain_validation_score": None,
+    }
+    no_signals = score_opportunity({**sparse, "pain_signal_count": 0})
+    with_signals = score_opportunity({**sparse, "pain_signal_count": 5})
+    assert with_signals["final_score"] > no_signals["final_score"]
+
+
+def test_pain_signal_count_below_threshold_no_effect(base_opp):
+    """pain_signal_count < 3 must not set pain_validation_score fallback."""
+    no_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 0})
+    two_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 2})
+    assert two_signals["final_score"] == pytest.approx(no_signals["final_score"])
+
+
+def test_pain_signal_count_fallback_capped_at_6(base_opp):
+    """Fallback score must be capped at 6.0 — paid research (7-9) must always win."""
+    # 100 signals -> 4.0 + 100*0.3 = 34.0 -> capped at 6.0
+    many_signals = score_opportunity({**base_opp, "pain_validation_score": None, "pain_signal_count": 100})
+    paid_research = score_opportunity({**base_opp, "pain_validation_score": 7.0})
+    assert paid_research["final_score"] > many_signals["final_score"]
+
+
+def test_pain_signal_count_fallback_does_not_override_existing(base_opp):
+    """Existing pain_validation_score must not be touched by the fallback."""
+    with_existing = score_opportunity({**base_opp, "pain_validation_score": 9.0, "pain_signal_count": 5})
+    without_count = score_opportunity({**base_opp, "pain_validation_score": 9.0})
+    assert with_existing["final_score"] == pytest.approx(without_count["final_score"])
+
+
+# ─── VC moat fields ───────────────────────────────────────────────────────────
+
+def test_gross_margin_potential_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "gross_margin_potential": 2.0})
+    high = score_opportunity({**base_opp, "gross_margin_potential": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_network_effect_strength_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "network_effect_strength": 2.0})
+    high = score_opportunity({**base_opp, "network_effect_strength": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_switching_cost_score_raises_score(base_opp):
+    low = score_opportunity({**base_opp, "switching_cost_score": 2.0})
+    high = score_opportunity({**base_opp, "switching_cost_score": 9.0})
+    assert high["final_score"] > low["final_score"]
+
+
+def test_vc_fields_absent_no_penalty(base_opp):
+    """New VC fields absent must not change score vs. baseline — None-safe."""
+    baseline = score_opportunity(base_opp)
+    with_none = score_opportunity({
+        **base_opp,
+        "gross_margin_potential": None,
+        "network_effect_strength": None,
+        "switching_cost_score": None,
+    })
+    assert baseline["final_score"] == pytest.approx(with_none["final_score"])

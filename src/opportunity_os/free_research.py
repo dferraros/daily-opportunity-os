@@ -404,6 +404,11 @@ def research_opportunity_free(opp: dict) -> dict:
             reddit_phrases.append(r["title"])
             evidence_sources.append(r["url"])
 
+    # Count meaningful evidence pieces (>50 chars) — the only real-data signal
+    # this function produces. Always stored regardless of existing pain scores.
+    evidence_count = len([s for s in pain_snippets if len(s) > 50])
+    result["pain_signal_count"] = evidence_count
+
     # Populate result fields (don't overwrite existing non-null values)
     if pain_snippets and not opp.get("pain_evidence_sources"):
         result["pain_evidence_sources"] = evidence_sources[:3]
@@ -411,9 +416,9 @@ def research_opportunity_free(opp: dict) -> dict:
     if reddit_phrases and not opp.get("exact_customer_phrases"):
         result["exact_customer_phrases"] = reddit_phrases[:3]
 
-    # Score based on evidence volume: 3+ sources = 6+, 5+ = 7+, 8+ = 8+
+    # Score based on evidence volume only when pain_validation_score is unset
+    # (i.e., no paid research ran). Already-researched opps keep their real score.
     if opp.get("pain_validation_score") is None:
-        evidence_count = len([s for s in pain_snippets if len(s) > 50])
         score = min(6.0 + (evidence_count * 0.3), 8.5) if evidence_count >= 3 else None
         if score:
             result["pain_validation_score"] = round(score, 1)
@@ -430,8 +435,10 @@ def research_opportunity_free(opp: dict) -> dict:
         if not opp.get(field):
             result[field] = value
 
-    if result:
-        result["free_research_at"] = __import__("datetime").datetime.now().isoformat()
+    # Always stamp free_research_at — this is an idempotency marker, not a "something changed"
+    # marker. Without it, the enrichment pipeline re-runs expensively on every daily cycle for
+    # fully-enriched opps that correctly produce no new fields.
+    result["free_research_at"] = __import__("datetime").datetime.now().isoformat()
 
     return result
 

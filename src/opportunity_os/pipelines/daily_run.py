@@ -53,6 +53,15 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     if date is None:
         date = datetime.now().strftime("%Y-%m-%d")
 
+    # Auto-backup before any pipeline mutation (protects against step-12 full rewrite)
+    if not dry_run:
+        from opportunity_os.backup import create_backup
+        snap = create_backup("pre-daily")
+        if snap:
+            logger.info("Pre-run snapshot: %d records -> %s", snap["record_count"], snap["filename"])
+        else:
+            logger.warning("Pre-run snapshot skipped (store empty or missing)")
+
     summary = {
         "date": date,
         "processed": 0,
@@ -261,7 +270,11 @@ def _infer_kill_answers(opp_dict: dict) -> dict:
     geo = opp_dict.get("geography", "global")
     is_latam_ve = geo in ("venezuela", "latam", "colombia", "mexico", "argentina")
 
-    answers["KG-01"] = bool(opp_dict.get("problem_statement"))
+    # KG-01: require a substantive problem statement (not just a copied signal name)
+    ps = (opp_dict.get("problem_statement") or "").strip()
+    name = (opp_dict.get("name") or "").strip()
+    answers["KG-01"] = len(ps) > 40 and ps != name
+
     answers["KG-02"] = bool(opp_dict.get("target_customer"))
 
     # KG-03: distribution accessibility — LATAM/VE defaults to 6 (WhatsApp cold outreach)

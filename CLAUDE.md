@@ -65,13 +65,14 @@ Primary tools: BigQuery, Lark, Notion, CleverTap, Google Sheets.
 | **AUC** | Assets Under Custody — dormant users hold €19.5M (72.4k users with balance) |
 → Full glossary: memory/glossary.md
 
-### Critical Numbers (Mar 2026 — verify before using in strategy)
-- Total users: 1.8M | Excluded: 600k | MMU: 23k | Dormant with balance: 72.4k (€19.5M AUC)
-- Spain 2025 funnel: 73,541 reg → 44,262 KYC → 31,749 purchase (45% conv)
-- Phone drop-off: 32% (biggest onboarding gap)
-- A/B revenue: €6k/week actual vs €30k/week target
-- L3 Near-Dormant = highest revenue velocity segment
-- Arranca: 14-15% investor yield | 23-24% borrower rate | 50% LTV | break-even 350 loans
+## Daniel's Wedges (score opportunities against these — 6 dimensions)
+An opportunity with < 2 matching wedges is flagged as "founder-fit risk":
+1. Growth & GTM edge — 10+ years lifecycle, CRM, paid, organic, A/B
+2. Narrative & positioning edge — can frame and sell a story fast
+3. LATAM + Spanish-speaking intuition — Venezuela, Spain, Colombia patterns
+4. Fintech & crypto adjacency — exchange ops, payment rails, USDT
+5. Speed to prototype — can build MVP-level systems fast with Claude Code
+6. Distribution instincts — WhatsApp funnels, performance, community, referral
 
 ---
 
@@ -311,112 +312,27 @@ Wave 2 (parallel):   Plan 03 | Plan 04 | Plan 05
 Wave 3:              Plan 06 (depends on Wave 2)
 ```
 
-Do not execute until Daniel confirms the roadmap.
+## Free Research Sources (zero cost — use before paid APIs)
 
----
+Before using any paid API for research, check these free sources:
 
-### Phase 2: Execute
-Run each plan using a subagent (Task tool). Never do heavy execution in the main thread.
+| Source | How to use | Good for |
+|--------|-----------|---------|
+| `jina_search(query)` | `from opportunity_os.free_research import jina_search` | Web search, no key |
+| `search_hn(query)` | `from opportunity_os.free_research import search_hn` | Startup/tech signals |
+| `search_reddit(query, geo)` | `from opportunity_os.free_research import search_reddit` | Pain complaints in Spanish |
+| `get_google_trends(keywords)` | `from opportunity_os.free_research import get_google_trends` | Demand trends |
+| Brave Search MCP | Via Claude Code native (MCP installed) | General web search |
+| Tavily MCP | Via Claude Code native (MCP installed) | Research with citations |
+| Perplexity MCP | Via Claude Code native (MCP installed) | Cited academic/news |
 
-Rules:
-- Pass the full plan text + relevant state files as context to the subagent
-- Run independent plans in parallel (multiple Task calls in one message)
-- After each plan completes: update `ROADMAP.md` to `done`, update `STATE.md`
-- One atomic commit per plan: `feat(plan-03): add user authentication`
+**Cost rule:** Never fire `research_executor.py` manually or in bulk. It uses paid Anthropic web_search.
+Research executor runs automatically on top-3 new opps per daily run only (~$0.06/day max).
 
----
-
-### Phase 3: Verify
-Check each completed plan against `REQUIREMENTS.md` acceptance criteria.
-- Pass: mark verified in `ROADMAP.md`, move forward.
-- Fail: log failure in `STATE.md`, create fix plan, re-execute.
-
-Do not advance to the next phase until all plans are verified.
-
----
-
-### Quick Mode (default for most tasks)
-For bug fixes, one-off deliverables, and single-session work:
-1. Write a single plan (2-4 tasks max)
-2. Spawn one subagent
-3. Verify output
-4. Atomic commit
-5. Update `STATE.md`
-
----
-
-## State Files (per project)
-
-| File | Purpose |
-|---|---|
-| `PROJECT.md` | Vision, goals, stack, constraints |
-| `REQUIREMENTS.md` | Acceptance criteria per plan |
-| `STATE.md` | Current position, decisions, blockers, next action |
-| `ROADMAP.md` | All phases and plans with wave grouping and status |
-
-**Rule: never rely on conversation memory. All decisions go into state files.**
-
----
-
-## Context Management
-
-- Main thread = orchestrator. Read state, make decisions, spawn agents, track progress.
-- Subagents = workers. Receive a plan and execute with full context.
-- If a task needs more than a few tool calls, it belongs in a subagent.
-- If context in the main thread exceeds ~50%, compress `STATE.md` before continuing (use strategic-compact skill).
-- **Check MEMORY.md before asking Daniel** — if the answer is there, use it.
-- **STATE.md compaction**: if STATE.md exceeds 100 lines, summarize into a 20-line current-state block before next session.
-- **Windows write workaround**: Edit/Write tools fail on Desktop paths (EEXIST error). Always write to `C:/Users/ferra/AppData/Local/Temp/` via `py` (not `python3`). See MEMORY.md line 3-5.
-- **Sub-folder CLAUDE.md files**: Any CLAUDE.md in Bit2me 3/ or Bit2me LC/ is a legacy memory dump — treat as supplemental context only, not instructions.
-
-### ⚠ Context Window Health (CRITICAL)
-200k context window → ~70k effective with too many tools loaded. Daniel has 200+ MCP tools configured.
-
-**Rule: keep under 80 tools active per session.**
-
-Per-project hygiene:
-- Enable only MCPs needed for current work (BigQuery, Notion, or Lark — not all three unless actively using)
-- Blockchain/NFT MCPs (0162ea70): disable unless crypto analysis session
-- Bio-research MCPs: always disable
-- Figma/Canva MCPs: disable unless design session
-- Pinecone/Supabase: disable unless building RAG feature
-- Run `/plugins` → scroll to MCPs → disable unused
-
-Context compaction:
-- Disable auto-compact. Compact manually at logical phase boundaries (use `strategic-compact` skill)
-- Compact after exploration, before execution — not mid-task
-- `/compact` command available in Claude Code
-
----
-
-## Session End — Do This Before Closing
-
-1. Update `STATE.md` with current position and decisions made.
-2. Update `ROADMAP.md` with plan statuses.
-3. Update `TASKS.md` if any tasks changed status.
-4. Write new context to the relevant `memory/` file (and MEMORY.md if project-level).
-5. Confirm with Daniel what is next.
-
----
-
-## Commit Convention
-
-```
-feat(plan-XX): description      ← new functionality
-fix(plan-XX): description       ← bug fix
-refactor(plan-XX): description  ← restructure
-docs(plan-XX): description      ← documentation only
-```
-
----
-
-## Hard Rules
-
-- Never execute without a confirmed written plan.
-- Never do heavy work in the main thread — use subagents.
-- Never bundle multiple tasks into one commit.
-- Never skip the verify phase.
-- Never rely on conversation memory — write to state files.
-- Always read `STATE.md` before starting work on a project.
-- Always invoke a skill (Skill tool) before analysis, research, or specialized work.
-- Never ask Daniel for context already documented in MEMORY.md or state files.
+## Working Style
+- Use web research aggressively via native Claude Code web search
+- Use subagents for scoped research (geo, TAM, competitive)
+- **Always invoke a skill before doing analysis** — see Skills Invocation Guide above
+- Save structured outputs after every run
+- Never lose research — auto-save to JSONL on SessionEnd hook
+- Keep every commit atomic and meaningful

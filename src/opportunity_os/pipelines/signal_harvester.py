@@ -94,6 +94,21 @@ QUALITY_KEYWORDS = frozenset({
     "millon", "fondos", "clientes", "usuarios", "problema",
 })
 
+# Prefixes that indicate a personal social post, not a market opportunity
+NOISE_PREFIXES = (
+    "i ", "i'", "my ", "me ", "we ", "our ",
+    "how do i", "how can i", "how to ",
+    "does anyone", "anyone know", "anyone here",
+    "is there a", "is there any",
+    "what is ", "what are ", "what's ",
+    "where can", "where do",
+    "help with", "need help",
+    "can anyone", "can someone",
+    "looking for ", "trying to ",
+)
+
+MIN_OPPORTUNITY_WORDS = 5
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -137,7 +152,7 @@ def _is_duplicate(name: str, existing_names: list[str], threshold: float = 0.78)
     return False
 
 
-def _quality_score(signal: dict) -> float:
+def quality_score(signal: dict) -> float:
     """Heuristic quality score 0.0-1.0. Higher = more likely a real opportunity."""
     score = 0.0
     text = " ".join([
@@ -156,6 +171,20 @@ def _quality_score(signal: dict) -> float:
         score += 0.15
 
     return min(score, 1.0)
+
+
+def _is_noise_signal(signal: dict) -> bool:
+    """Return True if this signal looks like a raw social post, not a real opportunity.
+
+    Blocks: first-person questions, personal help requests, names under 5 words.
+    Allowed: market observations, startup news, funding signals, problem statements.
+    """
+    name = (signal.get("name") or "").strip().lower()
+    if len(name.split()) < MIN_OPPORTUNITY_WORDS:
+        return True
+    if any(name.startswith(prefix) for prefix in NOISE_PREFIXES):
+        return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -385,7 +414,7 @@ def harvest_signals(
 
     # Score, filter, deduplicate (best quality first)
     scored = sorted(
-        [(s, _quality_score(s)) for s in all_raw],
+        [(s, quality_score(s)) for s in all_raw],
         key=lambda x: x[1],
         reverse=True,
     )
@@ -400,6 +429,8 @@ def harvest_signals(
             continue
         name = signal.get("name", "").strip()
         if len(name) < 15:
+            continue
+        if _is_noise_signal(signal):
             continue
         if _is_duplicate(name, seen_names):
             continue

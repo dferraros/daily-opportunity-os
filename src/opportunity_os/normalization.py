@@ -14,9 +14,34 @@ The normalization pipeline:
 
 from __future__ import annotations
 
+import re as _re
 import uuid
 from datetime import datetime
 from typing import Optional
+
+# -- Noise signal filter -------------------------------------------------------
+
+_SIGNAL_NOISE_RE = _re.compile(
+    r"""
+    (?:^|\b)(ask|show|tell)\s+hn\b   # HN meta-posts (Ask HN, Show HN, Tell HN)
+    |\?\s*$                            # name ends with a question mark
+    |\braised?\s+\$[\d,\.]+[kKmMbB]   # funding-news ("raised $50M")
+    |\bseries\s+[a-e]\b                # funding rounds ("Series A")
+    |\bacquired?\s+by\b                # acquisition news
+    |^is\s+[a-z]                       # "Is X..." rhetorical questions
+    |\bwho\s+is\s+hiring\b             # HN hiring threads
+    |\bipo\s+filed?\b                  # IPO announcements
+    """,
+    _re.VERBOSE | _re.IGNORECASE,
+)
+
+
+def _is_noise_signal(name: str) -> bool:
+    """Return True if name looks like news/discussion, not a business opportunity."""
+    name = (name or "").strip()
+    if not name:
+        return True
+    return bool(_SIGNAL_NOISE_RE.search(name))
 
 # -- Alias maps ---------------------------------------------------------------
 
@@ -267,6 +292,15 @@ def normalize_signal(raw: dict) -> tuple:
         (Opportunity, [])          on success
         (None, [error_msg, ...])   on failure
     """
+    # Reject noise before any field enrichment runs.
+    # This stops HN/Reddit meta-posts from being manufactured into valid opportunities
+    # by downstream inferencing (infer_missing_fields, _enrich_fields, kill gate defaults).
+    raw_name = raw.get("name") or raw.get("title") or ""
+    if _is_noise_signal(raw_name):
+        return None, [
+            f"Rejected: name pattern suggests news/discussion, not a business opportunity: {raw_name[:80]!r}"
+        ]
+
     step1 = normalize_field_names(raw)
     step2 = normalize_geography(step1)
     step3 = infer_missing_fields(step2)

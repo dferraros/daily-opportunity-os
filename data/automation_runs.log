@@ -112,3 +112,9 @@ Done: 0 scored, 0 killed, 1 reports.
 No raw signals found for 2026-05-18. Add signals to C:\Users\ferra\OneDrive\Desktop\Projects\.worktrees\daily-opportunity-os\data\raw\2026-05-18-signals.jsonl
 
 Done: 0 scored, 0 killed, 1 reports.
+
+Done: 0 scored, 0 killed, 1 reports.
+Pain research API call failed for 'Kontigo y Meru cuentas americanas?': Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 852af55f-ed3b-42f1-8359-e72d98140368, model: claude-haiku-4-5-20251001). For details, refer to: https://docs.claude.com/en/api/rate-limits. You can see the response headers for current usage. Reduce the prompt length or the maximum tokens requested, or try again later. View your current limits at https://console.anthropic.com/settings/limits. To raise this limit, purchase credits to advance to the next usage tier at https://console.anthropic.com/settings/billing."}, 'request_id': 'req_011CbDqVedLDo9ZyS7ER3DX3'}
+Interview quota behind: 0/15 done, 0 days left
+
+Done: 23 scored, 2 killed, 3 reports.

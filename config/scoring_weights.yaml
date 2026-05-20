@@ -1,24 +1,34 @@
-# Scoring weights — must sum to 1.0
-# Edit to adjust what matters most for your investment thesis
+# Scoring weights — relative within each layer (score_layer normalises by total_weight)
+# Rebalanced 2026-05-20: shifted weight toward high-variance discriminators,
+# reduced weight on near-zero-variance dimensions that add noise without signal.
+#
+# Variance audit (95 live opps):
+#   HIGH variance (useful): willingness_to_pay=2.5, monetization_clarity=2.0,
+#                           defensibility=1.7, competition_intensity=1.6
+#   LOW variance (noise):   capital_efficiency=0.8, speed_to_mvp=0.9,
+#                           timing_tailwind=1.1, pain_severity=1.1
 weights:
   market_size: 0.10
-  timing_tailwind: 0.08
-  pain_severity: 0.10
-  willingness_to_pay: 0.08
-  monetization_clarity: 0.08
-  pain_validation_score: 0.08  # from execute_pain_research; absent = neutral
-  speed_to_mvp: 0.08
-  capital_efficiency: 0.07
+  timing_tailwind: 0.06        # was 0.08 — clusters high (avg 8.3), low discrimination
+  pain_severity: 0.08          # was 0.10 — clusters high (avg 8.5), not a real differentiator
+  willingness_to_pay: 0.12     # was 0.08 — best discriminator (stdev=2.5), real commitment signal
+  monetization_clarity: 0.09   # was 0.08 — stdev=2.0, strongly separates real opps from ideas
+  pain_validation_score: 0.10  # was 0.08 — from execute_pain_research; absent = neutral
+  speed_to_mvp: 0.04           # was 0.08 — clusters at 8+ for everything; near-useless for ranking
+  capital_efficiency: 0.03     # was 0.07 — lowest variance (0.8); basically constant across opps
   distribution_accessibility: 0.08
   distribution_quality: 0.07   # derived from distribution_validated bool; absent = neutral
-  competition_intensity: 0.07   # inverted: lower competition → higher score
-  defensibility: 0.07
+  competition_intensity: 0.09  # was 0.07 — stdev=1.6; inverted: lower competition → higher score
+  defensibility: 0.10          # was 0.07 — stdev=1.7, real moat signal worth emphasising
   regional_fit: 0.07
   founder_fit: 0.05
   ai_leverage: 0.04
-  operational_simplicity: 0.05
-  regulatory_simplicity: 0.04
+  operational_simplicity: 0.03 # was 0.05 — near-constant across opps
+  regulatory_simplicity: 0.03  # was 0.04 — near-constant; almost never kills an opp
   revenue_speed_score: 0.04
+  gross_margin_potential: 0.06   # SaaS/software=9, services=4, hardware=3; absent = neutral
+  network_effect_strength: 0.05  # marketplace=9, single-player=2; strong moat signal
+  switching_cost_score: 0.05     # data lock-in=9, commodity tools=2; retention predictor
 
 # Bonus modifiers applied after base score
 modifiers:

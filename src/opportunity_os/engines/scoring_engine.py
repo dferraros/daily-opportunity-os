@@ -65,6 +65,9 @@ STRATEGIC_VALUE_FIELDS = [
     "operational_simplicity",
     "regulatory_simplicity",
     "revenue_speed_score",
+    "gross_margin_potential",   # SaaS/software=9, services=4, hardware=3
+    "network_effect_strength",  # marketplace=9, single-player=2; strong moat signal
+    "switching_cost_score",     # data lock-in=9, commodity tools=2; retention predictor
 ]
 
 # ---------------------------------------------------------------------------
@@ -90,6 +93,9 @@ DEFAULT_WEIGHTS = {
         "operational_simplicity": 0.05,
         "regulatory_simplicity": 0.04,
         "revenue_speed_score": 0.04,
+        "gross_margin_potential": 0.06,    # SaaS/software=9, services=4, hardware=3
+        "network_effect_strength": 0.05,   # marketplace=9, single-player=2
+        "switching_cost_score": 0.05,      # data lock-in=9, commodity tools=2
     },
     "modifiers": {
         "venezuela_wedge_match": 1.5,
@@ -204,6 +210,11 @@ def apply_modifiers(score: float, opp: dict, weights: dict) -> float:
     if daniels_wedge is not None and float(daniels_wedge) < 2:
         adjusted += float(mods.get("daniels_wedge_low", -1.0))
 
+    # Non-obviousness bonus
+    non_obviousness = opp.get("non_obviousness_score")
+    if non_obviousness is not None and float(non_obviousness) >= 6.0:
+        adjusted += float(mods.get("non_obviousness_high", 0.5))
+
     return adjusted
 
 
@@ -241,16 +252,18 @@ def normalize_portfolio_scores(
     output_field: str = "final_score",
     raw_backup_field: str = "raw_final_score",
     output_min: float = 2.0,
-    output_max: float = 10.0,
-    max_inflation: float = 2.5,
+    output_max: float = 9.5,
+    max_inflation: float = 1.5,
 ) -> list:
     """Spread final_score across a portfolio while preserving absolute quality.
 
     Problem: AI scorer clusters all post-kill-gate opps at 7-9 (they passed the gate).
     Solution: Spread scores for differentiation, but cap how much we inflate the top.
 
-    max_inflation: maximum points added to the top scorer (default 2.5).
-    A top raw score of 6.5 can rise to at most 9.0 — not always 10.0.
+    max_inflation: maximum points added to the top scorer (default 1.5, was 2.5).
+    Lowered 2026-05-20: max_inflation=2.5 allowed raw 6.9 → 8.0+, making 63% of opps
+    look like top-tier. With 1.5 + output_max=9.5, a raw 7.2+ is needed to reach 8+.
+    A top raw score of 6.5 can rise to at most 8.0 — not always 9.5.
     This prevents mediocre batches from looking excellent just because they won locally.
 
     Only operates on non-killed, scored opps.
@@ -299,6 +312,22 @@ def _derive_distribution_quality(opp: dict) -> dict:
     return {**opp, "distribution_quality": quality_score}
 
 
+def _apply_pain_signal_fallback(opp: dict) -> dict:
+    """Derive a pain_validation_score proxy from pain_signal_count when paid research is absent.
+
+    Formula: min(6.0, 4.0 + pain_signal_count * 0.3)
+    Capped at 6.0 so paid research results (typically 7-9) always dominate.
+    Only fires when pain_validation_score is None and pain_signal_count >= 3.
+    """
+    if opp.get("pain_validation_score") is not None:
+        return opp
+    count = opp.get("pain_signal_count")
+    if count is None or int(count) < 3:
+        return opp
+    fallback = min(6.0, 4.0 + int(count) * 0.3)
+    return {**opp, "pain_validation_score": round(fallback, 2)}
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
@@ -310,6 +339,7 @@ def score_opportunity(opp_dict: dict) -> dict:
     """
     opp = dict(opp_dict)  # shallow copy
     opp = _derive_distribution_quality(opp)
+    opp = _apply_pain_signal_fallback(opp)
 
     if opp.get("kill_criteria_passed") is None:
         logger.warning(

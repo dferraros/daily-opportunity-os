@@ -285,24 +285,37 @@ def score_gauge(value: float, title: str, max_val: float = 10.0):
 
 
 def tam_funnel_chart(tam: float, sam: float | None, som: float | None):
-    """TAM → SAM → SOM bar chart."""
-    def fmt(v):
-        if v >= 1e9:
-            return f"${v/1e9:.1f}B"
-        if v >= 1e6:
-            return f"${v/1e6:.0f}M"
-        return f"${v/1e3:.0f}K"
+    """TAM -> SAM -> SOM bar chart. Estimated values shown at reduced opacity with (est.) label."""
+    is_sam_estimated = sam is None
+    is_som_estimated = som is None
 
-    _sam = sam if sam else tam * 0.12
-    _som = som if som else _sam * 0.18
+    _sam = sam if sam is not None else tam * 0.12
+    _som = som if som is not None else _sam * 0.18
+
+    def fmt(v: float, estimated: bool) -> str:
+        if v >= 1e9:
+            base = f"${v/1e9:.1f}B"
+        elif v >= 1e6:
+            base = f"${v/1e6:.0f}M"
+        else:
+            base = f"${v/1e3:.0f}K"
+        return f"{base} (est.)" if estimated else base
+
     labels = ["TAM", "SAM", "SOM"]
     values = [tam, _sam, _som]
-    colors = ["rgba(59,130,246,0.85)", "rgba(34,197,94,0.6)", "rgba(245,158,11,0.55)"]
+    estimated_flags = [False, is_sam_estimated, is_som_estimated]
+    colors = [
+        "rgba(59,130,246,0.85)",
+        "rgba(34,197,94,0.35)" if is_sam_estimated else "rgba(34,197,94,0.6)",
+        "rgba(245,158,11,0.25)" if is_som_estimated else "rgba(245,158,11,0.55)",
+    ]
+    texts = [fmt(v, est) for v, est in zip(values, estimated_flags)]
+
     fig = go.Figure(go.Bar(
         x=labels,
         y=values,
         marker_color=colors,
-        text=[fmt(v) for v in values],
+        text=texts,
         textposition="inside",
         insidetextanchor="middle",
         textfont=dict(family="JetBrains Mono", size=12, color="#F8FAFC"),
@@ -316,7 +329,7 @@ def tam_funnel_chart(tam: float, sam: float | None, som: float | None):
         xaxis=dict(tickfont=dict(family="JetBrains Mono", size=10, color="#9CA3AF"), showgrid=False),
         yaxis=dict(visible=False),
     )
-    return fig
+    return fig, (is_sam_estimated or is_som_estimated)
 
 
 def score_breakdown_chart(o: dict):
