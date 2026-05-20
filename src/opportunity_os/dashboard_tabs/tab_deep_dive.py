@@ -470,7 +470,7 @@ def tab_deep_dive(opps: list):
                         ["uv", "run", "--no-sync", "opp-os", "validate", opp_id],
                         "Validation",
                     )
-                    st.session_state[f"super_val_{selected_idx}"] = (ok, out)
+                    st.session_state[f"super_val_{opp_id}"] = (ok, out)
                     st.cache_data.clear()
 
         if run_res:
@@ -482,12 +482,12 @@ def tab_deep_dive(opps: list):
                         ["uv", "run", "--no-sync", "opp-os", "research", opp_id],
                         "Research",
                     )
-                    st.session_state[f"super_res_{selected_idx}"] = (ok, out)
+                    st.session_state[f"super_res_{opp_id}"] = (ok, out)
                     st.cache_data.clear()
 
         for sess_key, label in [
-            (f"super_val_{selected_idx}", "Validation"),
-            (f"super_res_{selected_idx}", "Research"),
+            (f"super_val_{opp_id}", "Validation"),
+            (f"super_res_{opp_id}", "Research"),
         ]:
             if sess_key in st.session_state:
                 ok, out = st.session_state[sess_key]
@@ -528,7 +528,7 @@ def tab_deep_dive(opps: list):
             ("Revenue < 90 days?",    bool(
                 o.get("path_to_first_revenue_description") or o.get("path_to_first_revenue")
             )),
-            ("MVP in 2–6 weeks?",     (
+            ("Speed to MVP score ≥ 6",     (
                 o.get("speed_to_mvp") is not None
                 and float(o.get("speed_to_mvp") or 0) >= 6
             )),

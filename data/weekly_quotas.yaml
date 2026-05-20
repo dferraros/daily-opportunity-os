@@ -1,8 +1,0 @@
-weekly_quotas:
-  raw_signals_min: 30
-  raw_signals_max: 50
-  structured_opportunities: 10
-  deep_dives: 3
-  market_validations_min: 1
-  market_validations_max: 2
-  build_candidates_per_weeks: 2  # 1 every 2-4 weeks
