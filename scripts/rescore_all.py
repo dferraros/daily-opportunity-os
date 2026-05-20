@@ -109,6 +109,12 @@ def main(dry_run: bool = False) -> None:
     for opp in records:
         was_killed = bool(opp.get("kill_decision"))
 
+        # Preserve manual kills — humans reviewed these and overrode the kill gate.
+        # Do not re-evaluate; do not score; carry forward as-is.
+        if opp.get("manual_kill"):
+            results.append(opp)
+            continue
+
         # Enrich first (same order as daily_run)
         opp = _enrich_fields(opp)
 
