@@ -79,9 +79,12 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
                         summary["errors"].append(f"JSON parse error: {exc}")
 
     if not raw_signals:
-        logger.info("No raw signals found for %s. Add signals to %s", date, raw_file)
-        _write_empty_venezuela_report(date, dry_run, summary)
-        return summary
+        logger.info("No raw signals file for %s -- attempting auto-harvest...", date)
+        raw_signals = _auto_harvest(date, raw_file, dry_run)
+        if not raw_signals:
+            logger.info("Auto-harvest produced 0 signals. Writing empty report.")
+            _write_empty_venezuela_report(date, dry_run, summary)
+            return summary
 
     # Step 2: Normalize
     valid_opps, failed = normalize_signals_batch(raw_signals)
@@ -419,6 +422,33 @@ def _write_empty_venezuela_report(date: str, dry_run: bool, summary: dict):
     }
     content = render_template("venezuela_report.md.j2", ve_context)
     _render_and_write(content, report_path("venezuela", date), dry_run, summary)
+
+
+def _auto_harvest(date: str, raw_file: str, dry_run: bool) -> list[dict]:
+    """
+    Attempt to auto-harvest signals from free sources when no signals file exists.
+    Writes harvested signals to raw_file (unless dry_run).
+    Returns the list of harvested signal dicts (empty list on failure).
+    """
+    try:
+        from opportunity_os.pipelines.signal_harvester import harvest_signals
+        from opportunity_os.storage import read_all_opportunities
+
+        existing_names = [o.get("name", "") for o in read_all_opportunities()]
+        signals = harvest_signals(today=date, existing_names=existing_names)
+        logger.info("Auto-harvest: %d signals found", len(signals))
+
+        if signals and not dry_run:
+            os.makedirs(os.path.dirname(raw_file), exist_ok=True)
+            with open(raw_file, "w", encoding="utf-8") as f:
+                for s in signals:
+                    f.write(json.dumps(s, ensure_ascii=False) + "\n")
+            logger.info("Auto-harvest wrote %d signals to %s", len(signals), os.path.basename(raw_file))
+
+        return signals
+    except Exception as exc:
+        logger.warning("Auto-harvest failed: %s", exc)
+        return []
 
 
 # ─── Pipeline step helpers ────────────────────────────────────────────────────
