@@ -260,6 +260,67 @@ def stats():
 
 
 @cli.command()
+@click.option("--date", default=None, help="Date string YYYY-MM-DD. Default: today.")
+@click.option("--dry-run", is_flag=True, help="Print signals without writing to disk.")
+@click.option("--min-quality", default=0.30, type=float, help="Heuristic quality threshold 0-1.")
+@click.option("--max-signals", default=25, type=int, help="Cap on signals returned.")
+def harvest(date, dry_run, min_quality, max_signals):
+    """Auto-harvest opportunity signals from HN, Reddit, and Serper (free sources)."""
+    from datetime import date as date_cls
+    from pathlib import Path
+    import json as _json
+
+    from opportunity_os.pipelines.signal_harvester import harvest_signals
+    from opportunity_os.storage import read_all_opportunities
+
+    if date is None:
+        date = date_cls.today().isoformat()
+
+    existing_names = [o.get("name", "") for o in read_all_opportunities()]
+    click.echo(f"Harvesting signals for {date} (existing={len(existing_names)} opps)...")
+
+    signals = harvest_signals(
+        today=date,
+        existing_names=existing_names,
+        min_quality=min_quality,
+        max_signals=max_signals,
+    )
+
+    if not signals:
+        click.echo("No new signals found.")
+        return
+
+    click.echo(f"Found {len(signals)} signals:")
+    for i, s in enumerate(signals, 1):
+        geo = s.get("geography", "?")
+        vertical = s.get("vertical", "?")
+        name = s.get("name", "")[:80].encode("ascii", errors="replace").decode("ascii")
+        click.echo(f"  {i:2}. [{geo}/{vertical}] {name}")
+
+    if dry_run:
+        click.echo("\n[dry-run] No files written.")
+        return
+
+    root = Path(__file__).resolve().parent.parent.parent
+    raw_dir = root / "data" / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    out_file = raw_dir / f"{date}-signals.jsonl"
+
+    if out_file.exists():
+        click.echo(f"\nFile already exists: {out_file.name} -- appending.")
+        mode = "a"
+    else:
+        mode = "w"
+
+    with open(out_file, mode, encoding="utf-8") as f:
+        for s in signals:
+            f.write(_json.dumps(s, ensure_ascii=False) + "\n")
+
+    click.echo(f"\nWrote {len(signals)} signals to {out_file.name}")
+    click.echo("Run 'opp-os daily' to score them.")
+
+
+@cli.command()
 def audit():
     """Show pipeline failure audit -- failure rates by step and error type."""
     from opportunity_os.pipeline_monitor import audit_report
