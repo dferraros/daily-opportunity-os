@@ -204,6 +204,11 @@ def apply_modifiers(score: float, opp: dict, weights: dict) -> float:
     if daniels_wedge is not None and float(daniels_wedge) < 2:
         adjusted += float(mods.get("daniels_wedge_low", -1.0))
 
+    # Non-obviousness bonus
+    non_obviousness = opp.get("non_obviousness_score")
+    if non_obviousness is not None and float(non_obviousness) >= 6.0:
+        adjusted += float(mods.get("non_obviousness_high", 0.5))
+
     return adjusted
 
 
