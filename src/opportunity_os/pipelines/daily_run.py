@@ -453,9 +453,11 @@ def _auto_harvest(date: str, raw_file: str, dry_run: bool) -> list[dict]:
 
         if signals and not dry_run:
             os.makedirs(os.path.dirname(raw_file), exist_ok=True)
-            with open(raw_file, "w", encoding="utf-8") as f:
+            tmp_raw = raw_file + ".tmp"
+            with open(tmp_raw, "w", encoding="utf-8") as f:
                 for s in signals:
                     f.write(json.dumps(s, ensure_ascii=False) + "\n")
+            os.replace(tmp_raw, raw_file)
             logger.info("Auto-harvest wrote %d signals to %s", len(signals), os.path.basename(raw_file))
 
         return signals
@@ -491,9 +493,11 @@ def _step_validate_and_sync(
             enriched_ids = {o["id"]: o for o in top_20 if o.get("id")}
             updated_opps = [enriched_ids.get(o.get("id"), o) for o in all_stored_opps]
             opps_path = os.path.join(_get_project_root(), "data", "opportunities", "opportunities.jsonl")
-            with open(opps_path, "w", encoding="utf-8") as f:
+            tmp_path = opps_path + ".tmp"
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 for o in updated_opps:
                     f.write(json.dumps(o, default=str) + "\n")
+            os.replace(tmp_path, opps_path)
             logger.info("  Saved %d enriched records", len(top_20))
         except Exception as e:
             log_failure("save_enriched", e)
