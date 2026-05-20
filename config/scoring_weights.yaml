@@ -1,0 +1,43 @@
+# Scoring weights — relative within each layer (score_layer normalises by total_weight)
+# Rebalanced 2026-05-20: shifted weight toward high-variance discriminators,
+# reduced weight on near-zero-variance dimensions that add noise without signal.
+#
+# Variance audit (95 live opps):
+#   HIGH variance (useful): willingness_to_pay=2.5, monetization_clarity=2.0,
+#                           defensibility=1.7, competition_intensity=1.6
+#   LOW variance (noise):   capital_efficiency=0.8, speed_to_mvp=0.9,
+#                           timing_tailwind=1.1, pain_severity=1.1
+weights:
+  market_size: 0.10
+  timing_tailwind: 0.06        # was 0.08 — clusters high (avg 8.3), low discrimination
+  pain_severity: 0.08          # was 0.10 — clusters high (avg 8.5), not a real differentiator
+  willingness_to_pay: 0.12     # was 0.08 — best discriminator (stdev=2.5), real commitment signal
+  monetization_clarity: 0.09   # was 0.08 — stdev=2.0, strongly separates real opps from ideas
+  pain_validation_score: 0.10  # was 0.08 — from execute_pain_research; absent = neutral
+  speed_to_mvp: 0.04           # was 0.08 — clusters at 8+ for everything; near-useless for ranking
+  capital_efficiency: 0.03     # was 0.07 — lowest variance (0.8); basically constant across opps
+  distribution_accessibility: 0.08
+  distribution_quality: 0.07   # derived from distribution_validated bool; absent = neutral
+  competition_intensity: 0.09  # was 0.07 — stdev=1.6; inverted: lower competition → higher score
+  defensibility: 0.10          # was 0.07 — stdev=1.7, real moat signal worth emphasising
+  regional_fit: 0.07
+  founder_fit: 0.05
+  ai_leverage: 0.04
+  operational_simplicity: 0.03 # was 0.05 — near-constant across opps
+  regulatory_simplicity: 0.03  # was 0.04 — near-constant; almost never kills an opp
+  revenue_speed_score: 0.04
+
+# Bonus modifiers applied after base score
+modifiers:
+  venezuela_wedge_match: +1.5  # added to regional_fit when wedge category matches
+  daniels_wedge_low: -1.0      # subtracted when < 2 of Daniel's 6 wedges match
+  non_obviousness_high: +0.5   # added when non_obviousness_score >= 6
+
+# Hard caps
+caps:
+  kill_decision_true: 0.0        # killed opportunities score 0 regardless
+  decision_filter_2_failed: 5.0  # capped at 5.0 if 2+ decision filters fail
+
+# Promotion thresholds
+thresholds:
+  auto_validation: 7.0   # opps scoring >= this are auto-promoted in daily Step 14
