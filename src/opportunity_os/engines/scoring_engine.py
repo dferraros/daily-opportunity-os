@@ -65,6 +65,9 @@ STRATEGIC_VALUE_FIELDS = [
     "operational_simplicity",
     "regulatory_simplicity",
     "revenue_speed_score",
+    "gross_margin_potential",   # SaaS/software=9, services=4, hardware=3
+    "network_effect_strength",  # marketplace=9, single-player=2; strong moat signal
+    "switching_cost_score",     # data lock-in=9, commodity tools=2; retention predictor
 ]
 
 # ---------------------------------------------------------------------------
@@ -90,6 +93,9 @@ DEFAULT_WEIGHTS = {
         "operational_simplicity": 0.05,
         "regulatory_simplicity": 0.04,
         "revenue_speed_score": 0.04,
+        "gross_margin_potential": 0.06,    # SaaS/software=9, services=4, hardware=3
+        "network_effect_strength": 0.05,   # marketplace=9, single-player=2
+        "switching_cost_score": 0.05,      # data lock-in=9, commodity tools=2
     },
     "modifiers": {
         "venezuela_wedge_match": 1.5,
