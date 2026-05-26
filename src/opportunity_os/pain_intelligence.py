@@ -19,7 +19,7 @@ import re
 from datetime import date
 from typing import Optional
 
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 logger = logging.getLogger(__name__)
 
