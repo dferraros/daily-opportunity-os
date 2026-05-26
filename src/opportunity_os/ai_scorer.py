@@ -224,29 +224,39 @@ def score_batch_with_ai(opps: list[dict]) -> list[dict]:
         opps_text = "\n\n".join(opp_blocks)
         dim_list = ", ".join(DIMENSIONS)
 
-        prompt = f"""Score these {len(to_score)} opportunities on 16 dimensions each.
-
-{RUBRIC}
-
-{FOUNDER_WEDGES_CONTEXT}
-
-OPPORTUNITIES:
-{opps_text}
-
-Return ONLY a JSON array with {len(to_score)} objects (index 0 to {len(to_score)-1}).
-Each object must have exactly these fields: {dim_list}
-Plus _reason fields: {', '.join(d + '_reason' for d in DIMENSIONS[:4])} (first 4 dims only, to save tokens).
-No prose, no markdown, no code block. Array only."""
+        dynamic_prompt = (
+            f"Score these {len(to_score)} opportunities on 16 dimensions each.\n\n"
+            f"OPPORTUNITIES:\n{opps_text}\n\n"
+            f"Return ONLY a JSON array with {len(to_score)} objects "
+            f"(index 0 to {len(to_score) - 1}).\n"
+            f"Each object must have exactly these fields: {dim_list}\n"
+            f"Plus _reason fields: {', '.join(d + '_reason' for d in DIMENSIONS[:4])} "
+            "(first 4 dims only, to save tokens).\n"
+            "No prose, no markdown, no code block. Array only."
+        )
 
         response = client.messages.create(
             model=MODEL,
-            max_tokens=min(8000, 800 * len(to_score)),
+            max_tokens=min(4000, 600 * len(to_score)),
             system=(
                 "You are a hard-nosed business analyst. Score opportunities on 16 dimensions. "
                 "Use the FULL 1-10 range. 30% scores ≤5 (real weaknesses), 30% above 7 (genuine strengths). "
                 "Return ONLY a valid JSON array — no prose, no markdown."
             ),
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": RUBRIC + "\n\n" + FOUNDER_WEDGES_CONTEXT,
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                    {
+                        "type": "text",
+                        "text": dynamic_prompt,
+                    },
+                ],
+            }],
         )
 
         raw = response.content[0].text.strip()
@@ -336,18 +346,15 @@ def score_dimensions_with_ai(opp: dict) -> dict:
             for d in DIMENSIONS
         ) + "\n}"
 
-        prompt = f"""Geography: {geo} | Vertical: {vertical} | Bucket: {bucket}
-Name: {name}
-Problem: {problem}
-Signal: {trigger}
-Notes: {notes}
-{geo_context}
-{FOUNDER_WEDGES_CONTEXT}
-
-{RUBRIC}
-
-Return ONLY this JSON (no prose, no markdown, no code block):
-{json_template}"""
+        dynamic_prompt = (
+            f"Geography: {geo} | Vertical: {vertical} | Bucket: {bucket}\n"
+            f"Name: {name}\n"
+            f"Problem: {problem}\n"
+            f"Signal: {trigger}\n"
+            f"Notes: {notes}\n"
+            f"{geo_context}\n"
+            f"Return ONLY this JSON (no prose, no markdown, no code block):\n{json_template}"
+        )
 
         response = client.messages.create(
             model=MODEL,
@@ -360,7 +367,20 @@ Return ONLY this JSON (no prose, no markdown, no code block):
                 "Score 5 means neutral/unknown. When uncertain, score 5, not 7. "
                 "Return ONLY valid JSON with exactly the fields requested."
             ),
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": RUBRIC + "\n\n" + FOUNDER_WEDGES_CONTEXT,
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                    {
+                        "type": "text",
+                        "text": dynamic_prompt,
+                    },
+                ],
+            }],
         )
 
         raw = response.content[0].text.strip()
