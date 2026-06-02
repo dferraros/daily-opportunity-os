@@ -12,6 +12,39 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 
+def build_competitor_pricing_section(opp: dict) -> str:
+    """Build markdown competitor pricing snapshot for the validation report.
+
+    Uses competitor_pricing_data if pre-populated, else tries Firecrawl on known_competitors.
+    Returns empty string when no data is available.
+    """
+    pricing_data = list(opp.get("competitor_pricing_data") or [])
+    if not pricing_data:
+        competitors = opp.get("known_competitors") or []
+        if competitors:
+            try:
+                from opportunity_os.firecrawl_client import scrape_structured, COMPETITOR_PAGE_SCHEMA
+                for comp_url in competitors[:2]:
+                    result = scrape_structured(str(comp_url), COMPETITOR_PAGE_SCHEMA)
+                    if result:
+                        pricing_data.append(result)
+            except ImportError:
+                pass
+    if not pricing_data:
+        return ""
+    lines = ["## Competitor Pricing Snapshot\n"]
+    for item in pricing_data:
+        price = item.get("price_usd")
+        model = item.get("pricing_model", "unknown")
+        market = item.get("target_market", "unknown")
+        features = item.get("key_features") or []
+        price_str = f"${price}/mo" if price is not None else "unknown"
+        lines.append(f"- **Price:** {price_str} ({model}) | Target: {market}")
+        if features:
+            lines.append(f"  Features: {', '.join(str(f) for f in features[:4])}")
+    return "\n".join(lines)
+
+
 def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
     """
     Run full validation package for one opportunity.
@@ -37,6 +70,11 @@ def run_validation_pipeline(opp_id: str, dry_run: bool = False) -> dict:
 
     # Run validation (full mode = all 8 sections)
     package = run_validation(opp, mode="full")
+
+    # Append competitor pricing snapshot if data is available
+    competitor_section = build_competitor_pricing_section(opp)
+    if competitor_section:
+        package = {**package, "_validation_markdown": package["_validation_markdown"] + "\n\n" + competitor_section}
 
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     root = get_project_root()
