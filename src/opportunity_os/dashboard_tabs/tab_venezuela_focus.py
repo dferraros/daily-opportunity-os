@@ -68,7 +68,7 @@ def tab_venezuela_focus(opps):
         )
         fig.update_xaxes(gridcolor="#333")
         fig.update_yaxes(gridcolor="#333")
-        st.plotly_chart(fig, width="stretch", key="ve_wedge_bar")
+        st.plotly_chart(fig, use_container_width=True, key="ve_wedge_bar")
 
     # ── Lane breakdown ─────────────────────────────────────────────────────────
     with col2:
@@ -91,7 +91,7 @@ def tab_venezuela_focus(opps):
             height=280,
             showlegend=False,
         )
-        st.plotly_chart(fig2, width="stretch", key="ve_lane_pie")
+        st.plotly_chart(fig2, use_container_width=True, key="ve_lane_pie")
 
     st.divider()
 
@@ -110,7 +110,7 @@ def tab_venezuela_focus(opps):
     df = pd.DataFrame(rows)
     st.dataframe(
         df,
-        width="stretch",
+        use_container_width=True,
         hide_index=True,
         column_config={
             "Score": st.column_config.NumberColumn(format="%.2f"),

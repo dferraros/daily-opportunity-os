@@ -1,5 +1,6 @@
 """Sidebar renderer for Opportunity OS dashboard."""
 
+import os
 import subprocess
 
 import streamlit as st
@@ -37,15 +38,19 @@ def render_sidebar(runs) -> tuple:
         if st.button("▶  Run Daily Pipeline"):
             with st.spinner("Running pipeline…"):
                 try:
+                    env = {**os.environ, "UV_LINK_MODE": "copy"}
                     result = subprocess.run(
                         ["uv", "run", "--no-sync", "opp-os", "daily"],
                         cwd=str(PROJECT_ROOT),
                         capture_output=True,
                         text=True,
                         timeout=300,
+                        env=env,
                     )
                     if result.returncode == 0:
                         st.success("Pipeline complete.")
+                        if result.stdout:
+                            st.code(result.stdout[-1000:], language="text")
                         st.cache_data.clear()
                     else:
                         st.error(f"Pipeline failed (exit {result.returncode})")

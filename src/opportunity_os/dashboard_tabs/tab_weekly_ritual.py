@@ -9,8 +9,6 @@ from .data import load_machine_metrics
 
 
 def tab_weekly_ritual(opps, quotas):
-    import pandas as pd  # noqa: F401 — available for callers
-
     st.markdown(section_header("Weekly Ritual"), unsafe_allow_html=True)
 
     active = [o for o in opps if not o.get("kill_decision", False)]
@@ -161,15 +159,18 @@ def tab_weekly_ritual(opps, quotas):
         "Promoted to validation": weekly_q.get("validations_run", {}).get("target", 2),
     }
 
-    cols = st.columns(len(totals))
-    for col, (label, value) in zip(cols, totals.items()):
-        target = targets.get(label)
-        if target:
-            delta = value - target
-            col.metric(
-                label, value,
-                delta=f"{delta:+d} vs target",
-                delta_color="normal" if delta >= 0 else "inverse",
-            )
-        else:
-            col.metric(label, value)
+    total_items = list(totals.items())
+    row1, row2 = total_items[:3], total_items[3:]
+    for row in (row1, row2):
+        cols = st.columns(3)
+        for col, (label, value) in zip(cols, row):
+            target = targets.get(label)
+            if target:
+                delta = value - target
+                col.metric(
+                    label, value,
+                    delta=f"{delta:+d} vs target",
+                    delta_color="normal" if delta >= 0 else "inverse",
+                )
+            else:
+                col.metric(label, value)
