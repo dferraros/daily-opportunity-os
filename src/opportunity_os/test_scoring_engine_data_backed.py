@@ -1,0 +1,42 @@
+"""Tests for data-backed score normalization in scoring_engine."""
+from opportunity_os.engines.scoring_engine import _normalize_data_backed_scores
+
+
+def test_job_count_none_returns_empty():
+    result = _normalize_data_backed_scores({"job_posting_count": None})
+    assert "market_momentum_score" not in result
+
+
+def test_job_count_50_gives_10():
+    result = _normalize_data_backed_scores({"job_posting_count": 50})
+    assert result["market_momentum_score"] == 10.0
+
+
+def test_job_count_25_gives_5():
+    result = _normalize_data_backed_scores({"job_posting_count": 25})
+    assert result["market_momentum_score"] == 5.0
+
+
+def test_job_count_over_50_capped_at_10():
+    result = _normalize_data_backed_scores({"job_posting_count": 200})
+    assert result["market_momentum_score"] == 10.0
+
+
+def test_neg_rate_none_returns_empty():
+    result = _normalize_data_backed_scores({"competitor_negative_review_rate": None})
+    assert "competitor_weakness_score" not in result
+
+
+def test_neg_rate_zero_gives_5():
+    result = _normalize_data_backed_scores({"competitor_negative_review_rate": 0.0})
+    assert abs(result["competitor_weakness_score"] - 5.0) < 0.01
+
+
+def test_neg_rate_08_gives_10():
+    result = _normalize_data_backed_scores({"competitor_negative_review_rate": 0.8})
+    assert abs(result["competitor_weakness_score"] - 10.0) < 0.01
+
+
+def test_neg_rate_over_08_capped_at_10():
+    result = _normalize_data_backed_scores({"competitor_negative_review_rate": 1.0})
+    assert result["competitor_weakness_score"] == 10.0

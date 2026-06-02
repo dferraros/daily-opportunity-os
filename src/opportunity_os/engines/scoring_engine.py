@@ -65,9 +65,11 @@ STRATEGIC_VALUE_FIELDS = [
     "operational_simplicity",
     "regulatory_simplicity",
     "revenue_speed_score",
-    "gross_margin_potential",   # SaaS/software=9, services=4, hardware=3
-    "network_effect_strength",  # marketplace=9, single-player=2; strong moat signal
-    "switching_cost_score",     # data lock-in=9, commodity tools=2; retention predictor
+    "gross_margin_potential",       # SaaS/software=9, services=4, hardware=3
+    "network_effect_strength",      # marketplace=9, single-player=2; strong moat signal
+    "switching_cost_score",         # data lock-in=9, commodity tools=2; retention predictor
+    "market_momentum_score",        # derived: job_posting_count -> 0-10 (P3b)
+    "competitor_weakness_score",    # derived: competitor_negative_review_rate -> 0-10 (P3b)
 ]
 
 # ---------------------------------------------------------------------------
@@ -96,6 +98,13 @@ DEFAULT_WEIGHTS = {
         "gross_margin_potential": 0.06,    # SaaS/software=9, services=4, hardware=3
         "network_effect_strength": 0.05,   # marketplace=9, single-player=2
         "switching_cost_score": 0.05,      # data lock-in=9, commodity tools=2
+        # Data-backed signals (P3b). Weights are additive: current total is ~1.41 (not 1.0).
+        # The scoring layer normalises by sum-of-present-weights, so absolute sums > 1.0 are
+        # intentional -- do NOT force-normalise to 1.0.
+        # tam_confidence and venezuela_lens_applied are not scored by weight (they are modifiers
+        # or boolean flags), so no weight reduction is needed here.
+        "market_momentum_score": 0.06,     # derived from job_posting_count (0-10)
+        "competitor_weakness_score": 0.06, # derived from competitor_negative_review_rate (0-10)
     },
     "modifiers": {
         "venezuela_wedge_match": 1.5,
@@ -328,6 +337,31 @@ def _apply_pain_signal_fallback(opp: dict) -> dict:
     return {**opp, "pain_validation_score": round(fallback, 2)}
 
 
+def _normalize_data_backed_scores(opp: dict) -> dict:
+    """Derive data-backed sub-scores from raw signals; return partial dict of new fields.
+
+    Returns an empty dict if no recognised signals are present.
+    Only keys that can be computed are included -- callers must NOT assume all keys exist.
+    Pure function: no external calls, no mutation of input.
+    """
+    updates: dict = {}
+
+    # market_momentum_score: job_posting_count -> 0-10
+    # None = no data = don't set (leave as-is for neutral contribution)
+    job_count = opp.get("job_posting_count")
+    if job_count is not None:
+        updates["market_momentum_score"] = round(min(job_count / 50 * 10, 10.0), 2)
+
+    # competitor_weakness_score: neg_review_rate -> 0-10
+    # 0% neg = 5 (neutral); 80%+ neg = 10
+    neg_rate = opp.get("competitor_negative_review_rate")
+    if neg_rate is not None:
+        raw = 5.0 + (neg_rate / 0.8) * 5.0
+        updates["competitor_weakness_score"] = round(min(raw, 10.0), 2)
+
+    return updates
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
@@ -338,6 +372,11 @@ def score_opportunity(opp_dict: dict) -> dict:
     - final_score            (weighted composite + modifiers + caps applied)
     """
     opp = dict(opp_dict)  # shallow copy
+
+    # Populate data-backed sub-scores from raw signals before any layer scoring.
+    data_backed = _normalize_data_backed_scores(opp)
+    opp = {**opp, **data_backed}
+
     opp = _derive_distribution_quality(opp)
     opp = _apply_pain_signal_fallback(opp)
 
