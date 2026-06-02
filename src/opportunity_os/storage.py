@@ -187,6 +187,24 @@ def update_opportunity(opp_id: str, updates: dict, path: str = None) -> bool:
     return True
 
 
+def replace_all_opportunities(opps: list[dict], path: str = None) -> int:
+    """Atomically replace the entire opportunities store.
+
+    Writes all records to a .tmp file, then os.replace() for crash safety.
+    Returns number of records written.
+    Does NOT mutate the input list or any dicts inside it.
+    """
+    if path is None:
+        path = _default_opps_path()
+    _ensure_dir(path)
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        for opp in opps:
+            f.write(json.dumps(opp, default=str) + "\n")
+    os.replace(tmp_path, path)
+    return len(opps)
+
+
 # -- History / audit trail ----------------------------------------------------
 
 def append_score_history(

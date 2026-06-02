@@ -387,5 +387,93 @@ def restore(filename, dry_run):
         raise SystemExit(1)
 
 
+@cli.command("rescore-all")
+@click.option("--dry-run", is_flag=True, help="Show score deltas without writing.")
+@click.option(
+    "--top-n",
+    default=None,
+    type=int,
+    help="Only rescore the top N opportunities by current score.",
+)
+def rescore_all(dry_run, top_n):
+    """Rescore all opportunities with the current scoring formula.
+
+    Applies data-backed sub-scores (market_momentum, competitor_weakness),
+    pain signal fallback, and portfolio normalisation in a single batch pass.
+    Creates a backup before writing unless --dry-run.
+    """
+    from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
+    from opportunity_os.engines.scoring_engine import score_opportunity, normalize_portfolio_scores
+    from opportunity_os.geo_lens import apply_geo_adjustments
+    from opportunity_os.backup import create_backup
+
+    all_opps = read_all_opportunities()
+    if not all_opps:
+        click.echo("No opportunities found.")
+        return
+
+    if not dry_run:
+        bak = create_backup("pre-rescore")
+        if bak:
+            click.echo(f"Backup created: {bak['filename']}")
+
+    # Determine which opps to rescore
+    if top_n is not None:
+        sorted_opps = sorted(
+            all_opps,
+            key=lambda o: float(o.get("final_score") or 0),
+            reverse=True,
+        )
+        target_ids = {o.get("id") for o in sorted_opps[:top_n]}
+    else:
+        target_ids = {o.get("id") for o in all_opps}
+
+    # Pass 1: score each opp independently
+    rescored = []
+    for opp in all_opps:
+        if opp.get("id") in target_ids and not opp.get("kill_decision"):
+            rescored.append(score_opportunity(opp))
+        else:
+            rescored.append(opp)
+
+    # Pass 2: portfolio normalisation (requires all opps together)
+    rescored = normalize_portfolio_scores(rescored)
+
+    # Apply geo adjustments after normalisation
+    final = []
+    for opp in rescored:
+        if opp.get("id") in target_ids and not opp.get("kill_decision"):
+            final.append(apply_geo_adjustments(opp))
+        else:
+            final.append(opp)
+
+    # Report deltas
+    changed = 0
+    id_to_old = {o.get("id"): o for o in all_opps}
+    for new_opp in final:
+        old_opp = id_to_old.get(new_opp.get("id"), {})
+        old_s = old_opp.get("final_score")
+        new_s = new_opp.get("final_score")
+        if old_s != new_s:
+            if old_s is not None and new_s is not None:
+                delta = f"{float(new_s) - float(old_s):+.2f}"
+            else:
+                delta = "new"
+            name = (new_opp.get("name") or "?")[:50]
+            old_str = f"{float(old_s):.2f}" if old_s is not None else "—"
+            new_str = f"{float(new_s):.2f}" if new_s is not None else "—"
+            click.echo(f"  {name:<50}  {old_str:>5} -> {new_str:>5}  ({delta})")
+            changed += 1
+
+    click.echo(f"\n{changed}/{len(all_opps)} scores changed.")
+
+    if dry_run:
+        click.echo("[dry-run] No files written.")
+        return
+
+    n = replace_all_opportunities(final)
+    click.echo(f"Wrote {n} records.")
+
+
 if __name__ == "__main__":
     cli()
