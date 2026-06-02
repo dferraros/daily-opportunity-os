@@ -7,12 +7,80 @@ step 11.5 (research executor), step 11.6 (free research), step 11.8 (pain librar
 
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from opportunity_os.pipeline_monitor import log_failure
 
 logger = logging.getLogger(__name__)
 
 APIFY_SKIP_DAYS = 14  # skip Apify re-run if researched within this many days
+
+
+def _enrich_apify(opps: list[dict], dry_run: bool) -> list[dict]:
+    """Step 11.7: Apify enrichment — LinkedIn job postings + G2 reviews.
+
+    Accepts a list of opps (caller should pass top 10).
+    Returns a NEW list — never mutates the input.
+    """
+    result = list(opps)  # shallow copy; individual dicts replaced, never mutated in place
+
+    if dry_run:
+        logger.info("  [dry-run] Skipping Apify enrichment")
+        return result
+
+    try:
+        from opportunity_os import apify_client
+        from opportunity_os.engines.scoring_engine import score_opportunity
+        from opportunity_os.geo_lens import apply_geo_adjustments
+
+        if not apify_client.is_available():
+            logger.info("  Apify key not set -- skipping step 11.7")
+            return result
+
+        apify_enriched = 0
+        for i, opp in enumerate(result):
+            researched_at = opp.get("apify_researched_at")
+            if researched_at:
+                try:
+                    ts = datetime.fromisoformat(researched_at)
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    age_days = (datetime.now(timezone.utc) - ts).days
+                    if age_days < APIFY_SKIP_DAYS:
+                        continue  # researched recently -- skip
+                except (ValueError, TypeError):
+                    pass  # bad date format -- re-run
+
+            vertical = opp.get("vertical", "")
+            geography = opp.get("geography", "global")
+            updates: dict = {}
+
+            job_count = apify_client.fetch_linkedin_jobs(vertical, geography)
+            if job_count:
+                updates["job_posting_count"] = job_count
+
+            g2 = apify_client.fetch_g2_reviews(vertical) or {}
+            if g2.get("neg_rate") is not None:
+                updates["competitor_negative_review_rate"] = g2["neg_rate"]
+            if g2.get("top_complaints") and not opp.get("exact_customer_phrases"):
+                updates["exact_customer_phrases"] = g2["top_complaints"]
+
+            updates["apify_researched_at"] = datetime.now(timezone.utc).isoformat()
+            enriched = {**opp, **updates}
+
+            has_new_data = any(k != "apify_researched_at" for k in updates)
+            if has_new_data and not enriched.get("kill_decision"):
+                enriched = score_opportunity(enriched)
+                enriched = apply_geo_adjustments(enriched)
+                apify_enriched += 1
+
+            result[i] = enriched
+            time.sleep(1.0)
+
+        logger.info("  Apify enrichment complete: %d opps enriched", apify_enriched)
+    except Exception as e:
+        log_failure("apify_enrichment", e)
+
+    return result
 
 
 def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
@@ -135,48 +203,7 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
     # Populates: job_posting_count, competitor_negative_review_rate, exact_customer_phrases
     # Triggers rescore so data-backed sub-scores (market_momentum, competitor_weakness) take effect.
     logger.info("Step 11.7: Running Apify enrichment (LinkedIn + G2) on top 10 opportunities...")
-    if dry_run:
-        logger.info("  [dry-run] Skipping Apify enrichment")
-    else:
-        try:
-            from opportunity_os import apify_client
-            from opportunity_os.engines.scoring_engine import score_opportunity
-            from opportunity_os.geo_lens import apply_geo_adjustments
-            if not apify_client.is_available():
-                logger.info("  Apify key not set -- skipping step 11.7")
-            else:
-                apify_enriched = 0
-                for i, opp in enumerate(all_opps_sorted[:10]):
-                    researched_at = opp.get("apify_researched_at")
-                    if researched_at:
-                        try:
-                            age_days = (datetime.now() - datetime.fromisoformat(researched_at)).days
-                            if age_days < APIFY_SKIP_DAYS:
-                                continue  # researched recently -- skip
-                        except (ValueError, TypeError):
-                            pass  # bad date format -- re-run
-                    vertical = opp.get("vertical", "")
-                    geography = opp.get("geography", "global")
-                    updates: dict = {}
-                    job_count = apify_client.fetch_linkedin_jobs(vertical, geography)
-                    if job_count > 0:
-                        updates["job_posting_count"] = job_count
-                    g2 = apify_client.fetch_g2_reviews(vertical)
-                    if g2.get("neg_rate") is not None:
-                        updates["competitor_negative_review_rate"] = g2["neg_rate"]
-                    if g2.get("top_complaints") and not opp.get("exact_customer_phrases"):
-                        updates["exact_customer_phrases"] = g2["top_complaints"]
-                    updates["apify_researched_at"] = datetime.now().isoformat()
-                    enriched = {**opp, **updates}
-                    if len(updates) > 1 and not enriched.get("kill_decision"):
-                        enriched = score_opportunity(enriched)
-                        enriched = apply_geo_adjustments(enriched)
-                        apify_enriched += 1
-                    all_opps_sorted[i] = enriched
-                    time.sleep(1.0)
-                logger.info("  Apify enrichment complete: %d opps enriched", apify_enriched)
-        except Exception as e:
-            log_failure("apify_enrichment", e)
+    all_opps_sorted = _enrich_apify(all_opps_sorted, dry_run)
 
     # Step 11.8: Pain Library — persist pain clusters from researched opps
     logger.info("Step 11.8: Updating pain library with researched opportunities...")
