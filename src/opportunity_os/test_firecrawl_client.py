@@ -23,7 +23,7 @@ def test_scrape_structured_returns_none_on_error():
 
 def test_competitor_page_schema_has_required_keys():
     from opportunity_os.firecrawl_client import COMPETITOR_PAGE_SCHEMA
-    assert "price_usd" in COMPETITOR_PAGE_SCHEMA
-    assert "pricing_model" in COMPETITOR_PAGE_SCHEMA
-    assert "key_features" in COMPETITOR_PAGE_SCHEMA
-    assert "target_market" in COMPETITOR_PAGE_SCHEMA
+    assert COMPETITOR_PAGE_SCHEMA["type"] == "object"
+    props = COMPETITOR_PAGE_SCHEMA["properties"]
+    for key in ("price_usd", "pricing_model", "key_features", "target_market"):
+        assert key in props

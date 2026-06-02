@@ -28,10 +28,13 @@ MAX_PHRASES = 5
 RATE_LIMIT_SECONDS = 2.0
 
 COMPETITOR_PAGE_SCHEMA: dict = {
-    "price_usd": "float",
-    "pricing_model": "str",
-    "key_features": "list[str]",
-    "target_market": "str",
+    "type": "object",
+    "properties": {
+        "price_usd": {"type": "number"},
+        "pricing_model": {"type": "string"},
+        "key_features": {"type": "array", "items": {"type": "string"}},
+        "target_market": {"type": "string"},
+    },
 }
 
 
@@ -125,12 +128,13 @@ def scrape_structured(url: str, schema_dict: dict) -> Optional[dict]:
     Scrape a URL and extract structured data matching schema_dict.
     Uses Firecrawl extract format. Returns None on any failure.
     """
-    if not _api_key:
+    api_key = _get_api_key()
+    if not api_key:
         return None
     try:
         resp = httpx.post(
             f"{BASE_URL}/v1/scrape",
-            headers={"Authorization": f"Bearer {_api_key}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json={
                 "url": url,
                 "formats": ["extract"],
