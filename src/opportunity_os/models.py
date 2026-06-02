@@ -106,6 +106,8 @@ class Opportunity(BaseModel):
     - Venezuela (2): venezuela_wedge_category, venezuela_lens_applied
     - Action (2): recommendation, next_action
     - Score History (1): score_history
+    - Data-Backed Scoring Signals (4): job_posting_count, competitor_negative_review_rate,
+                                       news_signal_count, competitor_pricing_data
     """
 
     # ── Identity ─────────────────────────────────────────────────────────────
@@ -259,6 +261,12 @@ class Opportunity(BaseModel):
 
     # ── Score History ─────────────────────────────────────────────────────────
     score_history: Optional[List[Dict]] = None  # append-only: [{date, score, delta}]
+
+    # ── Data-Backed Scoring Signals (P3a) ────────────────────────────────────
+    job_posting_count: Optional[int] = None              # LinkedIn job postings for vertical+geo
+    competitor_negative_review_rate: Optional[float] = None  # G2 neg review rate (0.0–1.0)
+    news_signal_count: Optional[int] = None              # Tavily news hits last 30 days
+    competitor_pricing_data: Optional[List[Dict]] = None  # list[dict] from Firecrawl schema extraction
 
     # ── Research / Enrichment ─────────────────────────────────────────────────
     kill_reason: Optional[str] = None
