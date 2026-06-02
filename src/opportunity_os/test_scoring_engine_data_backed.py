@@ -40,3 +40,12 @@ def test_neg_rate_08_gives_10():
 def test_neg_rate_over_08_capped_at_10():
     result = _normalize_data_backed_scores({"competitor_negative_review_rate": 1.0})
     assert result["competitor_weakness_score"] == 10.0
+
+
+def test_neg_rate_negative_clamped_to_neutral():
+    """Negative neg_review_rate from bad API data should clamp to 5.0 (neutral), not below."""
+    opp = {"competitor_negative_review_rate": -0.5}
+    result = _normalize_data_backed_scores(opp)
+    assert result["competitor_weakness_score"] == 5.0, (
+        f"Expected 5.0 (neutral) for negative neg_rate, got {result['competitor_weakness_score']}"
+    )

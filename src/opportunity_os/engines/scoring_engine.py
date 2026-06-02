@@ -38,6 +38,13 @@ PROJECT_ROOT = os.path.dirname(
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "scoring_weights.yaml")
 
 # ---------------------------------------------------------------------------
+# Data-backed score normalisation constants
+# ---------------------------------------------------------------------------
+JOB_POSTING_COUNT_MAX: int = 50       # 50 job postings -> 10/10 market momentum
+NEG_REVIEW_RATE_MAX: float = 0.8      # 80% negative reviews -> 10/10 competitor weakness
+NEG_REVIEW_RATE_NEUTRAL_SCORE: float = 5.0  # 0% negative reviews -> 5/10 (neutral)
+
+# ---------------------------------------------------------------------------
 # Layer field definitions
 # ---------------------------------------------------------------------------
 ATTRACTIVENESS_FIELDS = [
@@ -350,13 +357,14 @@ def _normalize_data_backed_scores(opp: dict) -> dict:
     # None = no data = don't set (leave as-is for neutral contribution)
     job_count = opp.get("job_posting_count")
     if job_count is not None:
-        updates["market_momentum_score"] = round(min(job_count / 50 * 10, 10.0), 2)
+        updates["market_momentum_score"] = round(min(job_count / JOB_POSTING_COUNT_MAX * 10, 10.0), 2)
 
     # competitor_weakness_score: neg_review_rate -> 0-10
     # 0% neg = 5 (neutral); 80%+ neg = 10
     neg_rate = opp.get("competitor_negative_review_rate")
     if neg_rate is not None:
-        raw = 5.0 + (neg_rate / 0.8) * 5.0
+        neg_rate_clamped = max(0.0, float(neg_rate))
+        raw = NEG_REVIEW_RATE_NEUTRAL_SCORE + (neg_rate_clamped / NEG_REVIEW_RATE_MAX) * NEG_REVIEW_RATE_NEUTRAL_SCORE
         updates["competitor_weakness_score"] = round(min(raw, 10.0), 2)
 
     return updates
