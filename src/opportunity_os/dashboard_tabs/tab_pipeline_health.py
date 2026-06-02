@@ -57,7 +57,7 @@ def tab_pipeline_health():
                     "Exit": str(exit_code) if exit_code is not None else "—",
                     "Trigger": trigger,
                 })
-            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     # ── Pipeline failures by step ──────────────────────────────────────────────
     with col2:
@@ -69,7 +69,7 @@ def tab_pipeline_health():
             df_fail = pd.DataFrame(
                 [{"Step": k, "Count": v} for k, v in step_counts.most_common()],
             )
-            st.dataframe(df_fail, width="stretch", hide_index=True)
+            st.dataframe(df_fail, use_container_width=True, hide_index=True)
 
     st.divider()
 
@@ -92,7 +92,7 @@ def tab_pipeline_health():
                 "Top Category": m.get("top_category_this_run", "—"),
                 "Top Geo": m.get("top_geo_this_run", "—"),
             })
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     st.divider()
 
@@ -132,7 +132,7 @@ def tab_pipeline_health():
     )
     fig.update_xaxes(gridcolor="#333")
     fig.update_yaxes(gridcolor="#333")
-    st.plotly_chart(fig, width="stretch", key="pipeline_score_hist")
+    st.plotly_chart(fig, use_container_width=True, key="pipeline_score_hist")
 
     st.divider()
     st.markdown(subsection("Today's Signal Run"), unsafe_allow_html=True)
@@ -254,7 +254,6 @@ def tab_pipeline_health():
 def _render_backup_section():
     """Show available snapshots and allow one-click restore from the dashboard."""
     import pandas as pd
-    from .components import subsection
 
     st.markdown(subsection("Backup & Recovery"), unsafe_allow_html=True)
 
@@ -303,7 +302,7 @@ def _render_backup_section():
             "Filename": b["filename"],
         })
     df = pd.DataFrame(rows)
-    st.dataframe(df, width="stretch", hide_index=True)
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
     # Restore selector
     st.markdown("**Restore from snapshot:**")
