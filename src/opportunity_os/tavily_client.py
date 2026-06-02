@@ -82,7 +82,8 @@ def search(query: str, max_results: int = MAX_RESULTS, search_depth: str = "basi
             data = resp.json()
             return data.get("results", [])
         return None
-    except Exception:
+    except Exception as exc:
+        logger.warning("Tavily search failed for %r: %s", query, exc)
         return None
 
 
@@ -120,13 +121,14 @@ def is_available() -> bool:
 
 def search_news(query: str, time_range: str = "month") -> int:
     """Return count of news results for query in the given time window. Returns 0 on any failure."""
-    if not _api_key:
+    api_key = _get_api_key()
+    if not api_key:
         return 0
     try:
         resp = httpx.post(
             "https://api.tavily.com/search",
             json={
-                "api_key": _api_key,
+                "api_key": api_key,
                 "query": query,
                 "max_results": MAX_RESULTS,
                 "topic": "news",
@@ -145,13 +147,14 @@ def search_news(query: str, time_range: str = "month") -> int:
 
 def search_with_content(query: str, max_results: int = 5) -> Optional[list[dict]]:
     """Search with raw content included. Returns None on failure."""
-    if not _api_key:
+    api_key = _get_api_key()
+    if not api_key:
         return None
     try:
         resp = httpx.post(
             "https://api.tavily.com/search",
             json={
-                "api_key": _api_key,
+                "api_key": api_key,
                 "query": query,
                 "max_results": max_results,
                 "search_depth": "advanced",
