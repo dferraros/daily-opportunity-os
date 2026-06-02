@@ -24,16 +24,23 @@ def build_competitor_pricing_section(opp: dict) -> str:
         if competitors:
             try:
                 from opportunity_os.firecrawl_client import scrape_structured, COMPETITOR_PAGE_SCHEMA
-                for comp_url in competitors[:2]:
-                    result = scrape_structured(str(comp_url), COMPETITOR_PAGE_SCHEMA)
-                    if result:
-                        pricing_data.append(result)
             except ImportError:
-                pass
+                scrape_structured = None  # type: ignore[assignment]
+                COMPETITOR_PAGE_SCHEMA = {}
+            if scrape_structured is not None:
+                for comp_url in competitors[:2]:
+                    try:
+                        result = scrape_structured(str(comp_url), COMPETITOR_PAGE_SCHEMA)
+                        if result:
+                            pricing_data.append(result)
+                    except Exception as exc:
+                        logger.warning("scrape_structured failed for %s: %s", comp_url, exc)
     if not pricing_data:
         return ""
-    lines = ["## Competitor Pricing Snapshot\n"]
+    lines = ["## Competitor Pricing Snapshot"]
     for item in pricing_data:
+        if not isinstance(item, dict):
+            continue
         price = item.get("price_usd")
         model = item.get("pricing_model", "unknown")
         market = item.get("target_market", "unknown")
