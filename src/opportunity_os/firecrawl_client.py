@@ -116,8 +116,12 @@ def crawl_pain_evidence(query: str, geography: str = "global") -> Optional[list[
                                 return phrases
             time.sleep(RATE_LIMIT_SECONDS)
         except Exception as exc:
-            from opportunity_os.pipeline_monitor import log_failure
-            log_failure("firecrawl_url", exc)
+            logger.warning("Firecrawl crawl_pain_evidence failed for %r: %s", url, exc)
+            try:
+                from opportunity_os.pipeline_monitor import log_failure
+                log_failure("firecrawl_url", exc)
+            except ImportError:
+                pass
             continue
 
     return phrases if phrases else None
@@ -145,6 +149,14 @@ def scrape_structured(url: str, schema_dict: dict) -> Optional[dict]:
         resp.raise_for_status()
         data = resp.json()
         return data.get("extract") or (data.get("data") or {}).get("extract")
-    except Exception as exc:
-        logger.warning("Firecrawl scrape_structured failed for %r: %s", url, exc)
+    except httpx.HTTPStatusError as exc:
+        logger.warning(
+            "Firecrawl scrape_structured HTTP %s for %r: %s",
+            exc.response.status_code,
+            url,
+            exc.response.text[:200],
+        )
+        return None
+    except httpx.RequestError as exc:
+        logger.warning("Firecrawl scrape_structured request error for %r: %s", url, exc)
         return None
