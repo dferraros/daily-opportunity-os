@@ -475,5 +475,133 @@ def rescore_all(dry_run, top_n):
     click.echo(f"Wrote {n} records.")
 
 
+@cli.command("free-research")
+@click.option(
+    "--top-n",
+    default=20,
+    type=int,
+    show_default=True,
+    help="Run on the top N opportunities by current score.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Re-run even if free_research_at is already set.",
+)
+@click.option("--dry-run", is_flag=True, help="Show what would run without writing.")
+def free_research(top_n, force, dry_run):
+    """Run Tavily + free-source research on unresearched top opportunities.
+
+    Populates news_signal_count, pain_signal_count, and pain_evidence_sources
+    using Tavily news search, HN, Reddit, Serper, and Exa — then rescores
+    the portfolio so the new signals feed into final_score immediately.
+
+    Skip guard: opps that already have free_research_at set are skipped unless
+    --force is passed (prevents re-running the full stack every daily cycle).
+    """
+    from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
+    from opportunity_os.free_research import research_opportunity_free
+    from opportunity_os.engines.scoring_engine import score_opportunity, normalize_portfolio_scores
+    from opportunity_os.geo_lens import apply_geo_adjustments
+    from opportunity_os.backup import create_backup
+
+    all_opps = read_all_opportunities()
+    if not all_opps:
+        click.echo("No opportunities found.", err=True)
+        return
+
+    # Sort by score, take top-N alive opps as candidates
+    alive = [o for o in all_opps if not o.get("kill_decision")]
+    sorted_alive = sorted(alive, key=lambda o: float(o.get("final_score") or 0), reverse=True)
+    candidates = sorted_alive[:top_n]
+
+    # Apply skip guard unless --force
+    if not force:
+        candidates = [o for o in candidates if not o.get("free_research_at")]
+
+    if not candidates:
+        verb = "re-researched" if force else "researched"
+        click.echo(
+            f"All top-{top_n} opportunities already {verb}. "
+            "Pass --force to re-run, or --top-n N to expand the window."
+        )
+        return
+
+    click.echo(f"Running free research on {len(candidates)} opportunities...")
+    if dry_run:
+        for i, opp in enumerate(candidates, 1):
+            score_str = f"{float(opp.get('final_score') or 0):.2f}"
+            click.echo(f"  {i:2}. [{score_str}] {(opp.get('name') or '')[:60]}")
+        click.echo(f"\n[dry-run] Would research {len(candidates)} opps. No files written.")
+        return
+
+    # Backup before any writes
+    bak = create_backup("pre-free-research")
+    if bak:
+        click.echo(f"Backup: {bak['filename']}")
+
+    # Build a lookup: id -> enriched opp (start with all opps unchanged)
+    opp_by_id: dict = {o.get("id"): o for o in all_opps}
+
+    research_count = 0
+    for i, opp in enumerate(candidates, 1):
+        name = (opp.get("name") or "?")[:55]
+        click.echo(f"  [{i}/{len(candidates)}] {name}...", nl=False)
+        try:
+            delta = research_opportunity_free(opp)
+            enriched = {**opp, **delta}
+            # Rescore immediately so news_signal_count feeds into the score
+            rescored = score_opportunity(enriched)
+            opp_by_id[opp.get("id")] = rescored
+            news_n = delta.get("news_signal_count")
+            pain_n = delta.get("pain_signal_count", 0)
+            click.echo(f" news={news_n} pain={pain_n}")
+            research_count += 1
+        except Exception as exc:
+            click.echo(f" ERROR: {exc}", err=True)
+
+    # Rebuild full list preserving order of original file
+    rescored_all = [opp_by_id.get(o.get("id"), o) for o in all_opps]
+
+    # Portfolio normalisation (needs all opps together)
+    normalised = normalize_portfolio_scores(rescored_all)
+
+    # Apply geo adjustments only to opps we just touched
+    researched_ids = {o.get("id") for o in candidates}
+    final = []
+    for opp in normalised:
+        if opp.get("id") in researched_ids and not opp.get("kill_decision"):
+            final.append(apply_geo_adjustments(opp))
+        else:
+            final.append(opp)
+
+    # Report score deltas
+    changed = 0
+    id_to_old = {o.get("id"): o for o in all_opps}
+    for new_opp in final:
+        if new_opp.get("id") not in researched_ids:
+            continue
+        old_opp = id_to_old.get(new_opp.get("id"), {})
+        old_s = old_opp.get("final_score")
+        new_s = new_opp.get("final_score")
+        if old_s != new_s:
+            delta_str = (
+                f"{float(new_s) - float(old_s):+.2f}"
+                if old_s is not None and new_s is not None
+                else "new"
+            )
+            name = (new_opp.get("name") or "?")[:50]
+            old_str = f"{float(old_s):.2f}" if old_s is not None else "—"
+            new_str = f"{float(new_s):.2f}" if new_s is not None else "—"
+            click.echo(f"  {name:<50}  {old_str:>5} -> {new_str:>5}  ({delta_str})")
+            changed += 1
+
+    n = replace_all_opportunities(final)
+    click.echo(
+        f"\nResearched {research_count}/{len(candidates)} opps. "
+        f"{changed} scores changed. Wrote {n} records."
+    )
+
+
 if __name__ == "__main__":
     cli()
