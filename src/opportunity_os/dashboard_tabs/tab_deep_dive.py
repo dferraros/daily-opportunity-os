@@ -1,6 +1,7 @@
 """Tab 6: Super Deep Dive — full intelligence brief, kill gate, decision memo."""
 
 import logging
+import os
 import subprocess
 
 import streamlit as st
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 def _run_subprocess(cmd: list, label: str) -> tuple[bool, str]:
     """Run a subprocess command, return (success, output_text)."""
     try:
+        env = {**os.environ, "UV_LINK_MODE": "copy"}
         result = subprocess.run(
             cmd,
             cwd=str(PROJECT_ROOT),
@@ -33,6 +35,7 @@ def _run_subprocess(cmd: list, label: str) -> tuple[bool, str]:
             timeout=300,
             encoding="utf-8",
             errors="replace",
+            env=env,
         )
         stderr_block = "\n--- STDERR ---\n" + result.stderr if result.stderr else ""
         output = (result.stdout or "") + stderr_block

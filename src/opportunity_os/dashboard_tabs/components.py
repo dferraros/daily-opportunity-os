@@ -34,6 +34,8 @@ DIMENSION_FIELDS = [
     "distribution_accessibility", "competition_intensity", "defensibility",
     "regional_fit", "founder_fit", "ai_leverage",
     "operational_simplicity", "regulatory_simplicity",
+    # VC moat fields (Layer 3 strategic)
+    "gross_margin_potential", "network_effect_strength", "switching_cost_score",
 ]
 
 SCORE_FIELD = "final_score"
@@ -333,27 +335,38 @@ def tam_funnel_chart(tam: float, sam: float | None, som: float | None):
 
 
 def score_breakdown_chart(o: dict):
-    """Horizontal bars for each scored dimension."""
+    """Horizontal bars for each scored dimension.
+
+    Tuple format: (label, field_name, is_inverted)
+    Inverted fields: higher raw value = worse outcome (e.g. high competition = bad).
+    For inverted fields: display (10 - raw) so the bar length reflects positive contribution,
+    and append '↓' to the label to signal the inversion.
+    """
     dims = [
-        ("Pain", "pain_severity"),
-        ("Market Size", "market_size"),
-        ("Timing", "timing_tailwind"),
-        ("WTP", "willingness_to_pay"),
-        ("Monetization", "monetization_clarity"),
-        ("Speed to MVP", "speed_to_mvp"),
-        ("Capital Eff.", "capital_efficiency"),
-        ("Distribution", "distribution_accessibility"),
-        ("Competition", "competition_intensity"),
-        ("Defensibility", "defensibility"),
-        ("Regional Fit", "regional_fit"),
-        ("Founder Fit", "founder_fit"),
+        ("Pain", "pain_severity", False),
+        ("Market Size", "market_size", False),
+        ("Timing", "timing_tailwind", False),
+        ("WTP", "willingness_to_pay", False),
+        ("Monetization", "monetization_clarity", False),
+        ("Speed to MVP", "speed_to_mvp", False),
+        ("Capital Eff.", "capital_efficiency", False),
+        ("Distribution", "distribution_accessibility", False),
+        ("Competition ↓", "competition_intensity", True),
+        ("Defensibility", "defensibility", False),
+        ("Regional Fit", "regional_fit", False),
+        ("Founder Fit", "founder_fit", False),
+        # VC moat fields (Layer 3 strategic — populated after rescore_all)
+        ("Gross Margin", "gross_margin_potential", False),
+        ("Network Effect", "network_effect_strength", False),
+        ("Switching Cost", "switching_cost_score", False),
     ]
     labels, values = [], []
-    for label, field in dims:
+    for label, field, is_inverted in dims:
         v = o.get(field)
         if v is not None:
             labels.append(label)
-            values.append(float(v))
+            effective = 10.0 - float(v) if is_inverted else float(v)
+            values.append(effective)
     if not labels:
         return None
     colors = [
