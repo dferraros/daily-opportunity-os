@@ -37,7 +37,7 @@ def _enrich_apify(opps: list[dict], dry_run: bool) -> list[dict]:
             return result
 
         apify_enriched = 0
-        for i, opp in enumerate(result):
+        for i, opp in enumerate(result[:10]):
             researched_at = opp.get("apify_researched_at")
             if researched_at:
                 try:
