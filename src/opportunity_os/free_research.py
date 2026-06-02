@@ -25,6 +25,7 @@ import urllib.parse
 import urllib.request
 from typing import Optional
 
+from opportunity_os import tavily_client
 
 JINA_SEARCH_BASE = "https://s.jina.ai/"
 JINA_READER_BASE = "https://r.jina.ai/"
@@ -403,6 +404,11 @@ def research_opportunity_free(opp: dict) -> dict:
             pain_snippets.append(r["text"][:200])
             reddit_phrases.append(r["title"])
             evidence_sources.append(r["url"])
+
+    # 5. Tavily news signal -- count of news articles in last 30 days (zero cost, existing key)
+    news_query = f"{name} {vertical}".strip() or name
+    news_count = tavily_client.search_news(news_query)
+    result["news_signal_count"] = news_count
 
     # Count meaningful evidence pieces (>50 chars) — the only real-data signal
     # this function produces. Always stored regardless of existing pain scores.
