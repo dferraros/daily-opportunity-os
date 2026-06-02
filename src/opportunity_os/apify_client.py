@@ -7,12 +7,11 @@ Supports LinkedIn job-count scraping and G2 review sentiment extraction.
 
 import logging
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
-
-_api_key: Optional[str] = None  # populated lazily via _get_api_key()
 
 try:
     from apify_client import ApifyClient
@@ -40,13 +39,10 @@ def _load_apify_key() -> Optional[str]:
     return None
 
 
+@lru_cache(maxsize=1)
 def _get_api_key() -> Optional[str]:
-    """Return module-level _api_key if set, otherwise load from env."""
-    global _api_key
-    if _api_key:
-        return _api_key
-    _api_key = _load_apify_key()
-    return _api_key
+    """Return the Apify API key, caching the result for the process lifetime."""
+    return _load_apify_key()
 
 
 def run_actor(actor_id: str, run_input: dict, timeout_secs: int = 120) -> list[dict]:
@@ -67,7 +63,7 @@ def run_actor(actor_id: str, run_input: dict, timeout_secs: int = 120) -> list[d
         items = client.dataset(dataset_id).list_items().items
         return list(items)
     except Exception as exc:
-        logger.warning("Apify run_actor failed for %r: %s", actor_id, exc)
+        logger.warning("Apify run_actor failed for %r: %s", actor_id, exc, exc_info=True)
         return []
 
 

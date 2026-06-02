@@ -1,7 +1,15 @@
 """Tests for apify_client.py — uses unittest.mock, no real API calls."""
+import pytest
 from unittest.mock import patch, MagicMock
 
 import opportunity_os.apify_client as ac
+
+
+@pytest.fixture(autouse=True)
+def reset_api_key_cache():
+    ac._get_api_key.cache_clear()
+    yield
+    ac._get_api_key.cache_clear()
 
 
 def test_run_actor_returns_items_on_success():
@@ -15,14 +23,14 @@ def test_run_actor_returns_items_on_success():
     mock_client.actor.return_value = mock_actor_instance
     mock_client.dataset.return_value = mock_dataset_instance
 
-    with patch.object(ac, "_api_key", "test-key"), \
+    with patch.object(ac, "_load_apify_key", return_value="test-key"), \
          patch("opportunity_os.apify_client.ApifyClient", return_value=mock_client):
         result = ac.run_actor("some/actor", {"key": "val"})
     assert result == mock_items
 
 
 def test_run_actor_returns_empty_on_error():
-    with patch.object(ac, "_api_key", "test-key"), \
+    with patch.object(ac, "_load_apify_key", return_value="test-key"), \
          patch("opportunity_os.apify_client.ApifyClient", side_effect=Exception("boom")):
         result = ac.run_actor("some/actor", {})
     assert result == []
@@ -57,13 +65,12 @@ def test_fetch_g2_reviews_returns_empty_dict_on_no_items():
 
 def test_run_actor_returns_empty_when_apify_client_none():
     with patch.object(ac, "ApifyClient", None), \
-         patch.object(ac, "_api_key", "test-key"):
+         patch.object(ac, "_load_apify_key", return_value="test-key"):
         result = ac.run_actor("some/actor", {})
     assert result == []
 
 
 def test_run_actor_returns_empty_when_no_api_key():
-    with patch.object(ac, "_api_key", None), \
-         patch("opportunity_os.apify_client._load_apify_key", return_value=None):
+    with patch.object(ac, "_load_apify_key", return_value=None):
         result = ac.run_actor("some/actor", {})
     assert result == []
