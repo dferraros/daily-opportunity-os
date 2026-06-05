@@ -490,7 +490,9 @@ def _step_validate_and_sync(
         try:
             from opportunity_os.storage import read_all_opportunities
             all_stored_opps = read_all_opportunities()
-            enriched_ids = {o["id"]: o for o in top_20 if o.get("id")}
+            # BUG FIX: was {o["id"]: o for o in top_20} — only saved 20 records.
+            # Must cover ALL of all_opps_sorted so opps 21-N keep their enrichment.
+            enriched_ids = {o["id"]: o for o in all_opps_sorted if o.get("id")}
             updated_opps = [enriched_ids.get(o.get("id"), o) for o in all_stored_opps]
             opps_path = os.path.join(_get_project_root(), "data", "opportunities", "opportunities.jsonl")
             tmp_path = opps_path + ".tmp"
@@ -498,7 +500,7 @@ def _step_validate_and_sync(
                 for o in updated_opps:
                     f.write(json.dumps(o, default=str) + "\n")
             os.replace(tmp_path, opps_path)
-            logger.info("  Saved %d enriched records", len(top_20))
+            logger.info("  Saved %d enriched records", len(all_opps_sorted))
         except Exception as e:
             log_failure("save_enriched", e)
 

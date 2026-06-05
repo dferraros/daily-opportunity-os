@@ -96,8 +96,9 @@ def research(opp_id):
         click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
         sys.exit(1)
 
-    # Force re-run by clearing the research timestamp
-    opp.pop("research_executed_at", None)
+    # Force re-run: create a clean copy without the research timestamp
+    # Never mutate the dict returned from storage
+    opp = {k: v for k, v in opp.items() if k != "research_executed_at"}
     click.echo(f"Running research for: {opp.get('name', opp_id)[:60]}")
     enriched = run_research_executor(opp)
     # Extract only the research fields to update (don't overwrite id/name/etc.)
