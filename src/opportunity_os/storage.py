@@ -15,6 +15,7 @@ File paths (relative to project root):
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -56,10 +57,17 @@ def _ensure_dir(file_path: str) -> None:
 # -- ID generation ------------------------------------------------------------
 
 def _make_id(opp: dict) -> str:
-    """Generate opp_{date}_{geo}_{hash4} id from opportunity dict."""
+    """Generate opp_{date}_{geo}_{hash4} id from opportunity dict.
+
+    Uses hashlib.md5 instead of hash() for deterministic output regardless
+    of PYTHONHASHSEED (Python randomizes hash() per process since 3.3).
+    """
     date_str = datetime.now().strftime("%Y%m%d")
     geo = (opp.get("geography") or "xx")[:3].lower().replace(" ", "")
-    name_hash = abs(hash(opp.get("name", ""))) % 10000
+    name = opp.get("name", "")
+    name_hash = int(
+        hashlib.md5(name.encode("utf-8"), usedforsecurity=False).hexdigest(), 16
+    ) % 10000
     return f"opp_{date_str}_{geo}_{name_hash:04d}"
 
 
