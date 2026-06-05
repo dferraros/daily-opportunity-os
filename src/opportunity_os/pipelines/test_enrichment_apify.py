@@ -74,3 +74,32 @@ def test_skip_guard_14_days():
         _enrich_apify(opps, dry_run=False)
     mock_li.assert_not_called()
     mock_g2.assert_not_called()
+
+
+def test_research_executor_results_merged_back():
+    """Step 11.5 must merge enriched results back into all_opps_sorted."""
+    from opportunity_os.pipelines.enrichment import run_enrichment_steps
+
+    opp = {
+        "id": "opp_test_merge_001",
+        "name": "Test Merge Opp",
+        "geography": "global",
+        "vertical": "saas",
+        "final_score": 8.5,
+        "kill_decision": False,
+    }
+    fake_enriched = {**opp, "pain_validation_score": 7.5, "research_executed_at": "2026-06-01"}
+
+    with patch("opportunity_os.research_executor.run_research_executor", return_value=fake_enriched), \
+         patch("opportunity_os.engines.benchmark_engine.run_benchmark", return_value={}), \
+         patch("opportunity_os.pain_intelligence.run_pain_intelligence", return_value={}), \
+         patch("opportunity_os.pain_intelligence.execute_pain_research", return_value={}), \
+         patch("opportunity_os.distribution_intelligence.run_distribution_intelligence", return_value={}), \
+         patch("opportunity_os.distribution_intelligence.execute_distribution_research", return_value={}), \
+         patch("opportunity_os.free_research.research_opportunity_free", return_value={"free_research_at": "2026-06-01"}), \
+         patch("opportunity_os.apify_client.is_available", return_value=False):
+        result_opps, _ = run_enrichment_steps([opp], dry_run=False)
+
+    found = next((o for o in result_opps if o.get("id") == "opp_test_merge_001"), None)
+    assert found is not None, "opp_test_merge_001 should be in result_opps"
+    assert found.get("pain_validation_score") == 7.5, "research_executor results must be merged"

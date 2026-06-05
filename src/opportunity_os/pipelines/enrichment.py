@@ -169,9 +169,18 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
     else:
         try:
             from opportunity_os.research_executor import run_research_executor
+            researched_map: dict = {}
             for i, opp in enumerate(top_3_research, 1):
                 logger.info("  Researching %d/%d: %s", i, len(top_3_research), opp.get("name", "unknown")[:50])
-                run_research_executor(opp)
+                enriched = run_research_executor(opp)
+                if enriched and enriched.get("id"):
+                    researched_map[enriched["id"]] = enriched
+            # Merge results back into all_opps_sorted (was: results silently discarded)
+            if researched_map:
+                all_opps_sorted = [
+                    researched_map.get(o.get("id"), o) for o in all_opps_sorted
+                ]
+                logger.info("  Research executor merged %d enriched records", len(researched_map))
         except ImportError as e:
             logger.warning("Research executor not available: %s", e)
         except Exception as e:
