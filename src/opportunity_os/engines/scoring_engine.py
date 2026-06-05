@@ -398,11 +398,9 @@ def score_opportunity(opp_dict: dict) -> dict:
 
     # --- Layer 1: Attractiveness ---
     attractiveness = score_layer(opp, ATTRACTIVENESS_FIELDS, weights)
-    opp["attractiveness_score"] = round(attractiveness, 4)
 
     # --- Layer 2: Executability ---
     executability = score_layer(opp, EXECUTABILITY_FIELDS, weights)
-    opp["executability_score"] = round(executability, 4)
 
     # --- Venezuela wedge bonus: applied to regional_fit before Layer 3 ---
     # Bonus must go through the 20% strategic weight, not added to composite.
@@ -410,7 +408,6 @@ def score_opportunity(opp_dict: dict) -> dict:
 
     # --- Layer 3: Strategic Value ---
     strategic = score_layer(opp, STRATEGIC_VALUE_FIELDS, weights)
-    opp["strategic_value_score"] = round(strategic, 4)
 
     # --- Composite: 50% attractiveness + 30% executability + 20% strategic ---
     composite = (
@@ -425,6 +422,11 @@ def score_opportunity(opp_dict: dict) -> dict:
     # --- Caps ---
     composite = apply_caps(composite, opp, weights)
 
-    opp["final_score"] = round(max(0.0, min(10.0, composite)), 4)
-
-    return opp
+    # Return a new dict — never mutate via direct key assignment
+    return {
+        **opp,
+        "attractiveness_score": round(attractiveness, 4),
+        "executability_score": round(executability, 4),
+        "strategic_value_score": round(strategic, 4),
+        "final_score": round(max(0.0, min(10.0, composite)), 4),
+    }

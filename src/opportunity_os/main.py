@@ -162,7 +162,7 @@ def stats():
     all_opps = read_all_opportunities()
     today = datetime.now().strftime("%Y-%m-%d")
 
-    today_opps = [o for o in all_opps if o.get("first_seen", "").startswith(today)]
+    today_opps = [o for o in all_opps if str(o.get("first_seen") or "").startswith(today)]
     scored = [o for o in all_opps if o.get("final_score") is not None]
     killed = [o for o in all_opps if o.get("kill_decision")]
 

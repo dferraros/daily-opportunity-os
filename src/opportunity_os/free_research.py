@@ -23,6 +23,7 @@ import os
 import time
 import urllib.parse
 import urllib.request
+from datetime import datetime
 from typing import Optional
 
 from opportunity_os import tavily_client
@@ -444,7 +445,7 @@ def research_opportunity_free(opp: dict) -> dict:
     # Always stamp free_research_at — this is an idempotency marker, not a "something changed"
     # marker. Without it, the enrichment pipeline re-runs expensively on every daily cycle for
     # fully-enriched opps that correctly produce no new fields.
-    result["free_research_at"] = __import__("datetime").datetime.now().isoformat()
+    result["free_research_at"] = datetime.now().isoformat()
 
     return result
 
