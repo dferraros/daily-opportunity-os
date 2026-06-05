@@ -29,7 +29,7 @@ class PortfolioLaneAssigner:
         Rules (priority order):
         1. "no"         — kill_decision is True
         2. "now"        — bucket is fast_cash AND path_to_first_revenue is non-empty
-                          AND time_to_mvp is non-empty
+                          AND (time_to_mvp is set OR speed_to_mvp >= 7)
         3. "strategic"  — bucket is venture_scale AND tam >= STRATEGIC_TAM_THRESHOLD
         4. "soon"       — all surviving opportunities not matched above
         """
@@ -38,16 +38,23 @@ class PortfolioLaneAssigner:
 
         bucket = opp_dict.get("bucket", "")
         path_to_rev = opp_dict.get("path_to_first_revenue")
-        time_to_mvp = opp_dict.get("time_to_mvp")
 
-        if (
-            bucket == "fast_cash"
-            and path_to_rev is not None
+        has_revenue_path = (
+            path_to_rev is not None
             and str(path_to_rev).strip()
             and str(path_to_rev).strip().upper() != "TBD"
-            and time_to_mvp is not None
-            and str(time_to_mvp).strip()
-        ):
+        )
+
+        # time_to_mvp explicit takes priority; fall back to speed_to_mvp >= 7.
+        # time_to_mvp is a free-text field that is never auto-populated by the pipeline,
+        # so without this fallback the "now" lane would always be empty.
+        time_to_mvp = opp_dict.get("time_to_mvp")
+        has_mvp_signal = (
+            (time_to_mvp is not None and str(time_to_mvp).strip())
+            or int(opp_dict.get("speed_to_mvp") or 0) >= 7
+        )
+
+        if bucket == "fast_cash" and has_revenue_path and has_mvp_signal:
             return "now"
 
         tam = opp_dict.get("tam") or opp_dict.get("tam_usd_estimate")
