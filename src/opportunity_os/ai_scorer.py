@@ -14,7 +14,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5")
 AI_SCORER_VERSION = "haiku-4-5-v1"
 
 DIMENSIONS = [
@@ -268,8 +268,19 @@ def score_batch_with_ai(opps: list[dict]) -> list[dict]:
             raw = json_match.group(0)
 
         scores_list = json.loads(raw)
-        if not isinstance(scores_list, list) or len(scores_list) != len(to_score):
-            raise ValueError(f"Expected {len(to_score)} items, got {len(scores_list) if isinstance(scores_list, list) else type(scores_list)}")
+        if not isinstance(scores_list, list):
+            raise ValueError(f"Expected JSON array, got {type(scores_list)}")
+
+        if len(scores_list) != len(to_score):
+            # Partial results: use what we have, fall back to heuristic for the rest.
+            # Do NOT discard partial results — raise forces ALL opps to heuristic,
+            # wasting the partial API output.
+            logger.warning(
+                "[ai_scorer] Count mismatch: expected %d, got %d — using partial results",
+                len(to_score), len(scores_list),
+            )
+            # Pad with empty dicts so the zip below produces heuristic fallbacks for missing items
+            scores_list = scores_list + [{}] * (len(to_score) - len(scores_list))
 
         now = datetime.now().strftime("%Y-%m-%d")
         scored_to_score = []

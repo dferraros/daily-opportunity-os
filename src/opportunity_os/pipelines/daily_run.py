@@ -146,8 +146,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         logger.info("Step 2.5: Batch AI scoring %d/%d kill-gate survivors (1 API call)...", len(ai_candidates), len(survivors))
         try:
             ai_scored = score_batch_with_ai(ai_candidates)
-            scored_ids = {o["id"] for o in ai_candidates if o.get("id")}
-            survivors = [o for o in survivors if o.get("id") not in scored_ids] + ai_scored
+            # Use dict merge so we preserve all survivors in their original order.
+            # The old set-subtraction pattern dropped survivors if IDs drifted between
+            # ai_candidates and ai_scored (e.g. on partial fallback).
+            scored_map = {o["id"]: o for o in ai_scored if o.get("id")}
+            survivors = [scored_map.get(o.get("id"), o) for o in survivors]
             ai_count = sum(1 for o in survivors if o.get("ai_scored_at"))
             logger.info("  AI scoring complete: %d scored by AI, %d used heuristic fallback",
                         ai_count, len(survivors) - ai_count)
@@ -500,7 +503,7 @@ def _step_validate_and_sync(
                 for o in updated_opps:
                     f.write(json.dumps(o, default=str) + "\n")
             os.replace(tmp_path, opps_path)
-            logger.info("  Saved %d enriched records", len(all_opps_sorted))
+            logger.info("  Saved %d total records (%d enriched in this run)", len(updated_opps), len(all_opps_sorted))
         except Exception as e:
             log_failure("save_enriched", e)
 
@@ -690,7 +693,7 @@ def _step_reports_deep_dive_metrics(
         [
             o for o in all_stored
             if o.get("geography") == "venezuela"
-            and o.get("first_seen", "") < date
+            and str(o.get("first_seen") or "") < date
         ],
         key=lambda x: x.get("final_score", 0),
         reverse=True,
