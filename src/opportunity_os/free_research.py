@@ -391,9 +391,11 @@ def research_opportunity_free(opp: dict) -> dict:
     time.sleep(0.2)
 
     # 3. HN Algolia -- startup/tech signals (always free)
-    hn_results = search_hn(f"{name} OR {vertical}", hits=5)
+    # Use a shorter, more searchable query — long opp names get zero HN hits
+    hn_query = f"{vertical} {geography}" if vertical else name[:40]
+    hn_results = search_hn(hn_query, hits=8)
     for r in hn_results:
-        if r["points"] > 10:
+        if r["points"] > 3:  # lowered from 10 — niche topics score lower but are still signal
             pain_snippets.append(f"[HN {r['points']}pts] {r['title']}")
             evidence_sources.append(r["url"])
 

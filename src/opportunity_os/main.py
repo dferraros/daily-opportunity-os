@@ -406,6 +406,7 @@ def rescore_all(dry_run, top_n):
     from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
     from opportunity_os.engines.scoring_engine import score_opportunity, normalize_portfolio_scores
     from opportunity_os.geo_lens import apply_geo_adjustments
+    from opportunity_os.filters import PortfolioLaneAssigner
     from opportunity_os.backup import create_backup
 
     all_opps = read_all_opportunities()
@@ -440,33 +441,43 @@ def rescore_all(dry_run, top_n):
     # Pass 2: portfolio normalisation (requires all opps together)
     rescored = normalize_portfolio_scores(rescored)
 
-    # Apply geo adjustments after normalisation
+    # Pass 3: geo adjustments + lane reassignment
+    lane_assigner = PortfolioLaneAssigner()
     final = []
     for opp in rescored:
         if opp.get("id") in target_ids and not opp.get("kill_decision"):
-            final.append(apply_geo_adjustments(opp))
-        else:
-            final.append(opp)
+            opp = apply_geo_adjustments(opp)
+            new_lane = lane_assigner.assign_from_dict(opp)
+            opp = {**opp, "portfolio_lane": new_lane}
+        elif opp.get("kill_decision") and opp.get("portfolio_lane") != "no":
+            opp = {**opp, "portfolio_lane": "no"}
+        final.append(opp)
 
-    # Report deltas
+    # Report deltas (scores + lane changes)
     changed = 0
+    lane_changed = 0
     id_to_old = {o.get("id"): o for o in all_opps}
     for new_opp in final:
         old_opp = id_to_old.get(new_opp.get("id"), {})
         old_s = old_opp.get("final_score")
         new_s = new_opp.get("final_score")
+        old_lane = old_opp.get("portfolio_lane", "?")
+        new_lane = new_opp.get("portfolio_lane", "?")
+        name = (new_opp.get("name") or "?")[:45]
         if old_s != new_s:
-            if old_s is not None and new_s is not None:
-                delta = f"{float(new_s) - float(old_s):+.2f}"
-            else:
-                delta = "new"
-            name = (new_opp.get("name") or "?")[:50]
+            delta = (
+                f"{float(new_s) - float(old_s):+.2f}"
+                if old_s is not None and new_s is not None else "new"
+            )
             old_str = f"{float(old_s):.2f}" if old_s is not None else "—"
             new_str = f"{float(new_s):.2f}" if new_s is not None else "—"
-            click.echo(f"  {name:<50}  {old_str:>5} -> {new_str:>5}  ({delta})")
+            click.echo(f"  {name:<45}  score {old_str} -> {new_str} ({delta})")
             changed += 1
+        if old_lane != new_lane:
+            click.echo(f"  {name:<45}  lane  {old_lane} -> {new_lane}")
+            lane_changed += 1
 
-    click.echo(f"\n{changed}/{len(all_opps)} scores changed.")
+    click.echo(f"\n{changed}/{len(all_opps)} scores changed, {lane_changed} lanes reassigned.")
 
     if dry_run:
         click.echo("[dry-run] No files written.")
