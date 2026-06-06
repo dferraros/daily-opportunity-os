@@ -14,22 +14,43 @@ Full context: read via obsidian MCP — note: "03-AREAS/Me & Context/Daniel Ferr
 If no project context found in Obsidian, run Discuss phase to initialize before planning.
 
 ## Skill Routing (invoke BEFORE doing the work, not after)
-- Product ideas, is this worth building, brainstorm → /office-hours
-- Bugs, errors, broken, 500 → /investigate
-- Ship, deploy, push, PR → /ship
-- QA, test the site, find bugs → /qa
-- Code review, check my diff → /review
-- Architecture review → /plan-eng-review
+- Define what to build → /spec
+- Break work into tasks → /plan
+- Implement a task → /build
+- Verify coverage → /test
+- Review code quality → /review
+- Reduce complexity → /code-simplify
+- Push to production → /ship
+- Bugs, errors, crashes → /investigate (or superpowers:systematic-debugging)
 - Data, SQL, BigQuery, analysis → [external]-data-analyst skill
 - Writing, copy, email, comms → copywriting skill
 - Strategy, decisions → strategy-advisor skill
 - Skills-first: ALWAYS invoke a skill before specialized work
 
-## GSD Workflow
-Phase 0: Discuss → Phase 1: Plan → Phase 2: Execute → Phase 3: Verify
-Quick mode for one-off tasks and bug fixes.
-Full phases for multi-week projects with dependencies.
-State goes to Obsidian project note — never leave it only in conversation.
+## Development Workflow (agent-skills)
+
+7 commands cover everything. Use them in order:
+
+| Command | When | Output |
+|---------|------|--------|
+| `/spec` | Starting something new | SPEC.md — objective, constraints, boundaries |
+| `/plan` | Before coding | tasks/plan.md + tasks/todo.md |
+| `/build` | Implementing each task | TDD: red → green → commit |
+| `/test` | After build | Test gaps identified + fixed |
+| `/review` | Before pushing | 5-axis: correctness, readability, architecture, security, performance |
+| `/code-simplify` | After review | Reduce complexity, no behavior change |
+| `/ship` | Before merge/push | Parallel: code-reviewer + security-auditor + test-engineer → GO/NO-GO |
+
+**Rules:**
+- Read SPEC.md before starting any task (boundaries and constraints)
+- Read tasks/todo.md to pick the next task
+- `uv run pytest -q` passes before every commit
+- `git push origin master` after each task (no worktrees, no branches, master only)
+- Update tasks/todo.md when a task completes
+
+**Kept from old workflow:**
+- `superpowers:finishing-a-development-branch` for git completion when needed
+- `superpowers:systematic-debugging` for deep bug investigations
 
 ## Rules
 Coding: C:/Users/ferra/.claude/rules/coding-style.md
