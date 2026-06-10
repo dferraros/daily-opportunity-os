@@ -80,42 +80,20 @@ STRATEGIC_VALUE_FIELDS = [
 ]
 
 # ---------------------------------------------------------------------------
-# Default weights (fallback if YAML not found)
+# Emergency fallback weights
 # ---------------------------------------------------------------------------
+# config/scoring_weights.yaml is the SINGLE source of truth for tuned weights.
+# This fallback is equal-weight on purpose: a stale tuned copy here drifted
+# from the YAML once already and silently scored differently. If the YAML
+# cannot be loaded we score with equal weights and log an error instead.
+_ALL_SCORED_FIELDS = ATTRACTIVENESS_FIELDS + EXECUTABILITY_FIELDS + STRATEGIC_VALUE_FIELDS
+
 DEFAULT_WEIGHTS = {
-    "weights": {
-        "market_size": 0.10,
-        "timing_tailwind": 0.08,
-        "pain_severity": 0.10,
-        "willingness_to_pay": 0.08,
-        "monetization_clarity": 0.08,
-        "pain_validation_score": 0.08,
-        "speed_to_mvp": 0.08,
-        "capital_efficiency": 0.07,
-        "distribution_accessibility": 0.08,
-        "distribution_quality": 0.07,
-        "competition_intensity": 0.07,
-        "defensibility": 0.07,
-        "regional_fit": 0.07,
-        "founder_fit": 0.05,
-        "ai_leverage": 0.04,
-        "operational_simplicity": 0.05,
-        "regulatory_simplicity": 0.04,
-        "revenue_speed_score": 0.04,
-        "gross_margin_potential": 0.06,    # SaaS/software=9, services=4, hardware=3
-        "network_effect_strength": 0.05,   # marketplace=9, single-player=2
-        "switching_cost_score": 0.05,      # data lock-in=9, commodity tools=2
-        # Data-backed signals (P3b). Weights are additive: current total is ~1.41 (not 1.0).
-        # The scoring layer normalises by sum-of-present-weights, so absolute sums > 1.0 are
-        # intentional -- do NOT force-normalise to 1.0.
-        # tam_confidence and venezuela_lens_applied are not scored by weight (they are modifiers
-        # or boolean flags), so no weight reduction is needed here.
-        "market_momentum_score": 0.06,     # derived from job_posting_count (0-10)
-        "competitor_weakness_score": 0.06, # derived from competitor_negative_review_rate (0-10)
-    },
+    "weights": {field: 1.0 for field in _ALL_SCORED_FIELDS},
     "modifiers": {
         "venezuela_wedge_match": 1.5,
         "daniels_wedge_low": -1.0,
+        "non_obviousness_high": 0.5,
     },
     "caps": {
         "kill_decision_true": 0.0,
@@ -129,29 +107,52 @@ DEFAULT_WEIGHTS = {
 # ---------------------------------------------------------------------------
 
 def load_weights(config_path: Optional[str] = None) -> dict:
-    """Load scoring weights from config/scoring_weights.yaml.
+    """Load scoring weights from config/scoring_weights.yaml (single source of truth).
 
-    Falls back to DEFAULT_WEIGHTS if the file is not found or PyYAML is not installed.
+    On any load failure, falls back to equal-weight DEFAULT_WEIGHTS and logs an
+    ERROR -- equal weights keep the pipeline alive but scores are NOT calibrated.
+    YAML weights are used as-is (no merge with defaults): a tuned 0.05-0.12 scale
+    must never be mixed with the 1.0-scale fallback. Missing fields are warned
+    about and simply do not contribute (score_layer skips weight 0).
     """
     path = config_path or CONFIG_PATH
 
     if not _YAML_AVAILABLE:
+        logger.error(
+            "PyYAML not installed -- using EQUAL-WEIGHT emergency fallback; scores are NOT calibrated"
+        )
         return DEFAULT_WEIGHTS
 
     try:
         with open(path, "r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
-        if not data or "weights" not in data:
-            return DEFAULT_WEIGHTS
-        # Merge with defaults to ensure all keys are present
-        merged = {
-            "weights": {**DEFAULT_WEIGHTS["weights"], **data.get("weights", {})},
-            "modifiers": {**DEFAULT_WEIGHTS["modifiers"], **data.get("modifiers", {})},
-            "caps": {**DEFAULT_WEIGHTS["caps"], **data.get("caps", {})},
-        }
-        return merged
     except FileNotFoundError:
+        logger.error(
+            "scoring_weights.yaml not found at %s -- using EQUAL-WEIGHT emergency fallback; "
+            "scores are NOT calibrated", path
+        )
         return DEFAULT_WEIGHTS
+
+    if not data or "weights" not in data:
+        logger.error(
+            "scoring_weights.yaml at %s is empty or has no 'weights' key -- "
+            "using EQUAL-WEIGHT emergency fallback; scores are NOT calibrated", path
+        )
+        return DEFAULT_WEIGHTS
+
+    yaml_weights = data.get("weights", {})
+    missing = [f for f in _ALL_SCORED_FIELDS if f not in yaml_weights]
+    if missing:
+        logger.warning(
+            "scoring_weights.yaml missing %d scored field(s) -- they will not contribute: %s",
+            len(missing), ", ".join(missing),
+        )
+
+    return {
+        "weights": yaml_weights,
+        "modifiers": {**DEFAULT_WEIGHTS["modifiers"], **data.get("modifiers", {})},
+        "caps": {**DEFAULT_WEIGHTS["caps"], **data.get("caps", {})},
+    }
 
 
 def score_layer(opp_fields: dict, field_list: list, weights: dict) -> float:
