@@ -402,16 +402,28 @@ def research_opportunity_free(opp: dict) -> dict:
         pain_snippets.extend(serper_snippets)
         evidence_sources.append(f"Serper: {name} problema clientes {geography}")
     else:
-        # Fallback: Jina search when Serper key not set
-        for query in [
-            f"{name} problema usuarios {geography}",
-            f"{vertical} pain frustration {geography} solution",
-        ]:
-            snippets = jina_search(query, api_key=jina_key)
+        # Fallback: Tavily pain search (1 credit). Jina keyless access ended
+        # (401 since mid-2026) -- only try it when a JINA_API_KEY is set.
+        query = f"{vertical} problems complaints {geography}".strip()
+        tavily_results = tavily_client.search(query, max_results=5) or []
+        snippets = [
+            (r.get("content") or "")[:300]
+            for r in tavily_results
+            if len(r.get("content") or "") > 60
+        ]
+        if snippets:
             pain_snippets.extend(snippets)
-            if snippets:
-                evidence_sources.append(f"Jina search: {query}")
-            time.sleep(0.3)
+            evidence_sources.append(f"Tavily: {query}")
+        elif jina_key:
+            for jq in [
+                f"{name} problema usuarios {geography}",
+                f"{vertical} pain frustration {geography} solution",
+            ]:
+                jsnips = jina_search(jq, api_key=jina_key)
+                pain_snippets.extend(jsnips)
+                if jsnips:
+                    evidence_sources.append(f"Jina search: {jq}")
+                time.sleep(0.3)
 
     # 2. Exa.ai -- semantic search for pain signals (finds conceptual matches, not just keywords)
     exa_pain_snippets = exa_search(
