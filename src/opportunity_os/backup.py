@@ -125,7 +125,11 @@ def restore_backup(filename: str, dry_run: bool = False) -> dict:
     Returns:
         Result dict: {success, records_restored, message}
     """
-    backup_path = _backups_dir() / filename
+    backups_dir = _backups_dir().resolve()
+    backup_path = (_backups_dir() / filename).resolve()
+    if not backup_path.is_relative_to(backups_dir):
+        return {"success": False, "records_restored": 0,
+                "message": f"Invalid backup filename (path traversal): {filename}"}
     if not backup_path.exists():
         return {"success": False, "records_restored": 0, "message": f"Backup not found: {filename}"}
 
