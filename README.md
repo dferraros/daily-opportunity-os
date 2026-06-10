@@ -41,6 +41,10 @@ uv run streamlit run src/opportunity_os/dashboard.py
 | `opp-os free-research` | Tavily + free-source enrichment, top-20 |
 | `opp-os rescore-all` | Rescore all opps with current formula |
 | `opp-os rescore-all --dry-run` | Preview score deltas |
+| `opp-os like <id>` | Mark as liked (conviction flag, sets recommendation=build) |
+| `opp-os liked` | List liked opportunities |
+| `opp-os export <id>` | Self-contained report bundle → `exports/<id>/report.md` |
+| `opp-os kickoff <id>` | Claude Code starter pack (PROJECT.md + kickoff prompt) |
 | `opp-os search <query>` | Keyword search |
 | `opp-os stats` | Portfolio summary + weekly quota |
 | `opp-os backup` | Snapshot opportunities.jsonl |

@@ -37,6 +37,22 @@ Active task list. Updated by /plan and /build commands.
 - [ ] QW6: Add TAVILY_API_KEY + APIFY_API_TOKEN to .env, run free-research --force + rescore-all
 - [x] T1.2: 14 silent excepts now log warnings; free-research CLI lists unconfigured sources upfront (c51bfb1)
 - [x] T1.3: scoring_weights.yaml is single source of truth (all 23 weights); DEFAULT_WEIGHTS now equal-weight loud fallback; zero score drift verified (cc0d2a3)
-- [ ] Known issue: rescore-all dry-run shows ~75/80 drift from re-normalizing normalized scores (pre-existing)
+## Upgrade plan (approved 2026-06-10 — docs/plans/2026-06-10-research-scoring-validation-upgrade.md)
+
+- [ ] Wave 1.1: opp-os like / liked / --undo + dashboard surface
+- [ ] Wave 1.2: opp-os export — self-contained report.md + dashboard download button
+- [ ] Wave 1.3: opp-os kickoff — PROJECT.md seed + Claude Code kickoff prompt
+- [ ] Wave 2.1: kill-thesis pass (needs .env keys)
+- [ ] Wave 2.2: Sonnet deep-dive synthesis on #1 opp (needs .env keys)
+- [ ] Wave 2.3: evidence provenance tags
+- [ ] Wave 3.1: confidence-weighted scoring (provenance multipliers)
+- [ ] Wave 3.2: idempotent normalization (fixes ~75/80 phantom drift)
+- [ ] Wave 3.3: calibration loop — outcomes recorded by like/kickoff/validate
+- [ ] Wave 4.1: evidence-gated validation sections (pass/unverified/fail)
+- [ ] Wave 4.2: validation experiment kit (outreach scripts, landing copy, 7-day checklist)
+
+## Backlog
+
+- [ ] Milestone 2 (audit): shared env loader, retry helper, CLI smoke tests
 - [ ] Add score_history chart to All Opportunities tab
 - [ ] Weekly run automation via scheduled task
