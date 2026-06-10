@@ -35,7 +35,7 @@ Active task list. Updated by /plan and /build commands.
 - [x] QW5: path traversal guard in backup restore (c6d2841)
 - [x] Test isolation: conftest redirects pipeline_failures.jsonl to tmp suite-wide (252d222)
 - [ ] QW6: Add TAVILY_API_KEY + APIFY_API_TOKEN to .env, run free-research --force + rescore-all
-- [ ] T1.2: Make research failures loud (13 silent excepts in free_research + intelligence modules)
+- [x] T1.2: 14 silent excepts now log warnings; free-research CLI lists unconfigured sources upfront (c51bfb1)
 - [ ] T1.3: Sync scoring_weights.yaml with DEFAULT_WEIGHTS (add 2 missing data-backed weights)
 - [ ] Known issue: rescore-all dry-run shows ~75/80 drift from re-normalizing normalized scores (pre-existing)
 - [ ] Add score_history chart to All Opportunities tab
