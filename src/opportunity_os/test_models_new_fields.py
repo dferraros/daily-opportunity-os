@@ -29,3 +29,32 @@ def test_new_fields_accept_values():
     assert abs(opp.competitor_negative_review_rate - 0.45) < 0.001
     assert opp.news_signal_count == 12
     assert isinstance(opp.competitor_pricing_data, list)
+
+
+# ─── Pipeline-written fields declared on the model (2026-06-10 audit) ─────────
+
+def test_pipeline_written_fields_are_declared():
+    """Pydantic's default extra='ignore' silently DROPS undeclared fields on any
+    dict -> Opportunity -> dict round-trip. Every field a pipeline step writes
+    must therefore be declared. These 19 were found in live data without a
+    model declaration during the 2026-06-10 audit."""
+    pipeline_fields = [
+        "market_momentum_score", "competitor_weakness_score", "pain_signal_count",
+        "distribution_quality", "thesis_fit_score", "willingness_to_pay_raw",
+        "benchmark_fit_score", "benchmark_archetype_description", "analog_benchmarks",
+        "sam_usd_estimate", "som_usd_estimate", "tam_rationale", "whitespace",
+        "deep_dive_status", "kill_date", "pain_validated_date",
+        "distribution_validated_date", "validation_start_date", "validation_deadline",
+        "scoring_incomplete",
+    ]
+    missing = [f for f in pipeline_fields if f not in Opportunity.model_fields]
+    assert not missing, f"Pipeline-written fields missing from model: {missing}"
+
+
+def test_round_trip_preserves_pipeline_fields():
+    """Round-tripping a dict through the model must not drop enrichment data."""
+    opp = Opportunity.empty(name="Round Trip")
+    record = {**opp.model_dump(), "market_momentum_score": 7.5, "pain_signal_count": 6}
+    restored = Opportunity.model_validate(record).model_dump()
+    assert restored["market_momentum_score"] == 7.5
+    assert restored["pain_signal_count"] == 6

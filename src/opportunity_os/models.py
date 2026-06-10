@@ -287,6 +287,32 @@ class Opportunity(BaseModel):
     first_10_customer_path: Optional[str] = None
     trust_mechanism_latam: Optional[str] = None
 
+    # ── Pipeline-written fields (declared retroactively, 2026-06-10 audit) ────
+    # These were being written to the JSONL by pipeline steps without a model
+    # declaration. Pydantic's default extra='ignore' silently DROPS undeclared
+    # fields on any dict -> Opportunity -> dict round-trip, so every field the
+    # pipeline writes must be declared here.
+    market_momentum_score: Optional[float] = None      # derived: job_posting_count -> 0-10 (scoring_engine)
+    competitor_weakness_score: Optional[float] = None  # derived: neg_review_rate -> 0-10 (scoring_engine)
+    pain_signal_count: Optional[int] = None            # free_research: forum/Reddit pain mentions
+    distribution_quality: Optional[float] = None       # derived from distribution_validated (scoring_engine)
+    thesis_fit_score: Optional[int] = None             # weekly review: fit vs investment thesis
+    willingness_to_pay_raw: Optional[float] = None     # pre-geo-lens WTP (geo_lens keeps original here)
+    benchmark_fit_score: Optional[float] = None        # benchmark_engine: archetype match strength
+    benchmark_archetype_description: Optional[str] = None  # benchmark_engine: archetype summary
+    analog_benchmarks: Optional[List] = None           # benchmark_engine: comparable companies
+    sam_usd_estimate: Optional[float] = None           # tam_engine: serviceable addressable market
+    som_usd_estimate: Optional[float] = None           # tam_engine: serviceable obtainable market
+    tam_rationale: Optional[str] = None                # tam_engine: estimation method note
+    whitespace: Optional[Dict] = None                  # deep_dive: competitor gap analysis
+    deep_dive_status: Optional[str] = None             # deep_dive pipeline marker
+    kill_date: Optional[str] = None                    # ISO date the kill gate fired
+    pain_validated_date: Optional[str] = None          # validation pipeline: pain confirmed
+    distribution_validated_date: Optional[str] = None  # validation pipeline: channel confirmed
+    validation_start_date: Optional[str] = None        # validation pipeline: window start
+    validation_deadline: Optional[str] = None          # validation pipeline: window end
+    scoring_incomplete: Optional[bool] = None          # True = 0.0 means UNSCORED, not killed
+
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""
         return self.model_dump_json()
