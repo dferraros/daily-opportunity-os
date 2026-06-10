@@ -47,9 +47,12 @@ class TestJobPostingNormalization:
         result = _normalize_data_backed_scores({"job_posting_count": JOB_POSTING_COUNT_MAX})
         assert result["market_momentum_score"] == 10.0
 
-    def test_zero_jobs_gives_zero(self):
+    def test_zero_jobs_treated_as_no_signal(self):
+        # Changed 2026-06-10: fetch_linkedin_jobs returns 0 on failure, so 0
+        # is indistinguishable from an Apify outage -- treated as no-signal,
+        # never scored as zero momentum.
         result = _normalize_data_backed_scores({"job_posting_count": 0})
-        assert result["market_momentum_score"] == 0.0
+        assert "market_momentum_score" not in result
 
     def test_half_max_jobs_gives_5(self):
         result = _normalize_data_backed_scores({"job_posting_count": JOB_POSTING_COUNT_MAX // 2})

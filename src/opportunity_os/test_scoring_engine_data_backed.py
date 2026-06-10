@@ -7,6 +7,13 @@ def test_job_count_none_returns_empty():
     assert "market_momentum_score" not in result
 
 
+def test_job_count_zero_treated_as_no_signal():
+    """apify_client.fetch_linkedin_jobs returns 0 on failure, so 0 must be
+    indistinguishable from 'no data' -- never scored as zero momentum."""
+    result = _normalize_data_backed_scores({"job_posting_count": 0})
+    assert "market_momentum_score" not in result
+
+
 def test_job_count_50_gives_10():
     result = _normalize_data_backed_scores({"job_posting_count": 50})
     assert result["market_momentum_score"] == 10.0

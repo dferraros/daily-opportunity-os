@@ -309,3 +309,35 @@ def test_vc_fields_absent_no_penalty(base_opp):
         "switching_cost_score": None,
     })
     assert baseline["final_score"] == pytest.approx(with_none["final_score"])
+
+
+# ─── scoring_incomplete flag (unscored vs killed disambiguation) ──────────────
+
+def test_no_scoreable_dimensions_sets_scoring_incomplete():
+    """A record with zero scored fields gets final_score 0.0 -- same as a killed
+    record. The scoring_incomplete flag is the only way downstream code can
+    tell 'never evaluated' apart from 'rejected'."""
+    bare = {"id": "bare_001", "name": "Bare Opp", "kill_decision": False}
+    result = score_opportunity(bare)
+    assert result["final_score"] == 0.0
+    assert result.get("scoring_incomplete") is True
+
+
+def test_scoreable_record_has_no_scoring_incomplete_flag(base_opp):
+    result = score_opportunity(base_opp)
+    assert "scoring_incomplete" not in result
+
+
+def test_scoring_incomplete_cleared_when_record_becomes_scoreable(base_opp):
+    """A stale True flag from a previous unscored pass must be cleared once
+    the record has dimensions -- otherwise rescoring is not idempotent."""
+    opp = {**base_opp, "scoring_incomplete": True}
+    result = score_opportunity(opp)
+    assert "scoring_incomplete" not in result
+
+
+def test_scoring_incomplete_does_not_mutate_input():
+    bare = {"id": "bare_002", "name": "Bare Opp", "kill_decision": False}
+    keys_before = set(bare.keys())
+    score_opportunity(bare)
+    assert set(bare.keys()) == keys_before

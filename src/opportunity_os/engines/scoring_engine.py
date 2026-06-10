@@ -209,6 +209,9 @@ def apply_venezuela_wedge_bonus(opp: dict, weights: dict) -> dict:
     mods = weights.get("modifiers", {})
     bonus = float(mods.get("venezuela_wedge_match", 1.5))
     current = float(opp.get("regional_fit") or 5.0)
+    # Shallow copy is safe here: regional_fit is a scalar. If this function
+    # ever needs to update a nested dict (e.g. payment_rail_context), copy
+    # that nested structure too -- {**opp} alone would alias it.
     return {**opp, "regional_fit": min(10.0, current + bonus)}
 
 
@@ -369,9 +372,13 @@ def _normalize_data_backed_scores(opp: dict) -> dict:
     updates: dict = {}
 
     # market_momentum_score: job_posting_count -> 0-10
-    # None = no data = don't set (leave as-is for neutral contribution)
+    # None = no data = don't set (leave as-is for neutral contribution).
+    # 0 is ALSO treated as no-signal: apify_client.fetch_linkedin_jobs returns 0
+    # on failure, so a 0 here cannot be distinguished from an Apify outage or a
+    # bad scrape query. Callers already guard with `if job_count:` before
+    # writing -- this mirrors that guard so a stray 0 can never zero the score.
     job_count = opp.get("job_posting_count")
-    if job_count is not None:
+    if job_count is not None and float(job_count) > 0:
         updates["market_momentum_score"] = round(min(job_count / JOB_POSTING_COUNT_MAX * 10, 10.0), 2)
 
     # competitor_weakness_score: neg_review_rate -> 0-10
@@ -442,7 +449,7 @@ def score_opportunity(opp_dict: dict) -> dict:
     # must always read THIS field, never a previously-normalized final_score —
     # mixing the two pools is what caused scores to drift on every rescore.
     final = round(max(0.0, min(10.0, composite)), 4)
-    return {
+    result = {
         **opp,
         "attractiveness_score": round(attractiveness, 4),
         "executability_score": round(executability, 4),
@@ -450,3 +457,21 @@ def score_opportunity(opp_dict: dict) -> dict:
         "final_score": final,
         "raw_final_score": final,
     }
+
+    # Disambiguate "no scoreable dimensions" from "killed": both produce
+    # final_score 0.0, but a record with zero scored fields was never
+    # evaluated -- downstream filters on final_score must not silently treat
+    # it as rejected. The flag is stamped only when true and cleared once the
+    # record becomes scoreable, so rescoring stays idempotent.
+    has_scoreable_field = any(opp.get(f) is not None for f in _ALL_SCORED_FIELDS)
+    if not has_scoreable_field:
+        logger.warning(
+            "Opportunity '%s' has no scoreable dimensions -- final_score 0.0 means "
+            "UNSCORED, not killed (scoring_incomplete=True)",
+            opp.get("name", "<unknown>"),
+        )
+        result["scoring_incomplete"] = True
+    else:
+        result.pop("scoring_incomplete", None)
+
+    return result
