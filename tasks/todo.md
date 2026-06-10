@@ -39,9 +39,9 @@ Active task list. Updated by /plan and /build commands.
 - [x] T1.3: scoring_weights.yaml is single source of truth (all 23 weights); DEFAULT_WEIGHTS now equal-weight loud fallback; zero score drift verified (cc0d2a3)
 ## Upgrade plan (approved 2026-06-10 — docs/plans/2026-06-10-research-scoring-validation-upgrade.md)
 
-- [ ] Wave 1.1: opp-os like / liked / --undo + dashboard surface
-- [ ] Wave 1.2: opp-os export — self-contained report.md + dashboard download button
-- [ ] Wave 1.3: opp-os kickoff — PROJECT.md seed + Claude Code kickoff prompt
+- [x] Wave 1.1: opp-os like / liked / --undo + dashboard Like button (3dfcf71)
+- [x] Wave 1.2: opp-os export — self-contained report.md + dashboard download button (3dfcf71)
+- [x] Wave 1.3: opp-os kickoff — PROJECT.md seed + Claude Code kickoff prompt (3dfcf71)
 - [ ] Wave 2.1: kill-thesis pass (needs .env keys)
 - [ ] Wave 2.2: Sonnet deep-dive synthesis on #1 opp (needs .env keys)
 - [ ] Wave 2.3: evidence provenance tags
