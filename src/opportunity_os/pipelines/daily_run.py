@@ -117,7 +117,14 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
     for opp_dict in valid_opps_dicts:
 
         # Step 3: Dedupe
-        dup_id = dedupe_check(opp_dict.get("name", ""), opp_dict.get("geography", ""))
+        # days=365 (not the 7-day default): _make_id includes the harvest date,
+        # so a signal re-surfacing outside the dedupe window would get a NEW id
+        # and a parallel record -- splitting its history and double-spending
+        # enrichment API calls. A year-wide window means a recurring signal
+        # updates nothing but never duplicates.
+        dup_id = dedupe_check(
+            opp_dict.get("name", ""), opp_dict.get("geography", ""), days=365
+        )
         if dup_id:
             continue
 
