@@ -9,18 +9,18 @@ Build and maintain a production-grade daily business intelligence system that sc
 **Success metrics:**
 - Daily pipeline runs without errors (zero crashes in Step 12)
 - AI scorer uses claude-haiku-4-5 and produces differentiated 1-10 scores (not clustered at 7-9)
-- 105+ tests passing on every commit
+- 379+ tests passing on every commit (colocated suite; CI enforces on push to main)
 - Dashboard loads in < 3s with 79+ opportunities
 - "now" lane populates with fast_cash opps that have speed_to_mvp >= 7
 
 ## Commands
 
 ```bash
-uv run pytest                          # test suite (105 tests)
+uv run pytest                          # test suite (379 tests)
 uv run opp-os daily --dry-run          # daily pipeline dry run
 uv run opp-os rescore-all --dry-run    # preview scoring changes
 uv run streamlit run src/opportunity_os/dashboard.py  # dashboard
-git push origin master                 # deploy (no CI, direct push)
+git push origin main                   # deploy (CI runs lint + tests on push)
 ```
 
 ## Project Structure
@@ -66,7 +66,7 @@ opp["final_score"] = 7.5               # NEVER
 - `git commit -m "type(scope): description"` — conventional commits
 - `uv run pytest -q` before every commit
 - `uv run opp-os rescore-all --dry-run` after any scoring formula change
-- `git push origin master` after each task to keep GitHub current
+- `git push origin main` after each task to keep GitHub current
 
 **Ask first:**
 - Changing scoring weights (affects all 79+ stored opportunities)
@@ -75,7 +75,7 @@ opp["final_score"] = 7.5               # NEVER
 
 **Never do:**
 - Commit to `data/opportunities/` (gitignored — runtime data)
-- Use worktrees for this project (too much confusion — one branch, master)
+- Use worktrees for this project (too much confusion — one branch, main)
 - Use `hash()` for IDs (not deterministic — use hashlib.md5)
 - Skip tests before committing
 - Use `opp.pop()` or direct dict assignment to mutate storage-returned dicts

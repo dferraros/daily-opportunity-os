@@ -28,7 +28,8 @@ Active task list. Updated by /plan and /build commands.
 
 ## Up next (from 2026-06-10 audit — see audit doc for full task plan)
 
-- [ ] QW1+QW2: Fix CI (triggers on master, unified test path) + merge tests/ into colocated suite
+- [x] QW1+QW2: CI fixed (triggers on main, unified suite + ruff syntax gate) + tests/ folded into colocated layout (379 tests)
+- [ ] GitHub: flip default branch to main in repo Settings, then delete origin/master
 - [ ] QW3: Fix mutation at research_executor.py:101
 - [ ] QW4: Remove expired INTERVIEW_DEADLINE quota check
 - [ ] QW5: Path traversal guard in backup.py restore

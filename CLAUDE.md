@@ -45,7 +45,7 @@ If no project context found in Obsidian, run Discuss phase to initialize before 
 - Read SPEC.md before starting any task (boundaries and constraints)
 - Read tasks/todo.md to pick the next task
 - `uv run pytest -q` passes before every commit
-- `git push origin master` after each task (no worktrees, no branches, master only)
+- `git push origin main` after each task (no worktrees, no branches, main only)
 - Update tasks/todo.md when a task completes
 
 **Kept from old workflow:**
