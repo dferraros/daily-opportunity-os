@@ -263,11 +263,20 @@ def apply_caps(score: float, opp: dict, weights: dict) -> float:
     return score
 
 
+def _true_raw_score(opp: dict, raw_field: str, output_field: str):
+    """The normalization input: the raw composite, never a normalized value.
+
+    Falls back to output_field only for legacy records that predate
+    raw_final_score being stamped at scoring time.
+    """
+    val = opp.get(raw_field)
+    return val if val is not None else opp.get(output_field)
+
+
 def normalize_portfolio_scores(
     opps: list,
-    raw_field: str = "final_score",
+    raw_field: str = "raw_final_score",
     output_field: str = "final_score",
-    raw_backup_field: str = "raw_final_score",
     output_min: float = 2.0,
     output_max: float = 9.5,
     max_inflation: float = 1.5,
@@ -277,24 +286,29 @@ def normalize_portfolio_scores(
     Problem: AI scorer clusters all post-kill-gate opps at 7-9 (they passed the gate).
     Solution: Spread scores for differentiation, but cap how much we inflate the top.
 
+    IDEMPOTENCY (2026-06-10): input is ALWAYS raw_final_score (the raw composite
+    stamped by score_opportunity), never the normalized final_score. Previously,
+    partial rescores (e.g. free-research touching 20 of 80 opps) normalized a pool
+    mixing fresh raw scores with stale normalized ones — every write shifted the
+    whole portfolio (~75/80 phantom deltas per rescore). Normalizing from raw is
+    a pure function of the data: same dimensions in, same scores out.
+
     max_inflation: maximum points added to the top scorer (default 1.5, was 2.5).
     Lowered 2026-05-20: max_inflation=2.5 allowed raw 6.9 → 8.0+, making 63% of opps
     look like top-tier. With 1.5 + output_max=9.5, a raw 7.2+ is needed to reach 8+.
-    A top raw score of 6.5 can rise to at most 8.0 — not always 9.5.
-    This prevents mediocre batches from looking excellent just because they won locally.
 
     Only operates on non-killed, scored opps.
-    Backs up original score to raw_backup_field before overwriting.
     Requires >= 3 opps with spread > 0.1 to activate; otherwise returns unchanged.
     """
     live = [
         o for o in opps
-        if o.get(raw_field) is not None and not o.get("kill_decision")
+        if _true_raw_score(o, raw_field, output_field) is not None
+        and not o.get("kill_decision")
     ]
     if len(live) < 3:
         return opps
 
-    scores = [float(o[raw_field]) for o in live]
+    scores = [float(_true_raw_score(o, raw_field, output_field)) for o in live]
     min_s, max_s = min(scores), max(scores)
     spread = max_s - min_s
 
@@ -307,14 +321,14 @@ def normalize_portfolio_scores(
 
     result = []
     for opp in opps:
-        raw_val = opp.get(raw_field)
+        raw_val = _true_raw_score(opp, raw_field, output_field)
         if raw_val is None or opp.get("kill_decision"):
             result.append(opp)
             continue
         normalized = ((float(raw_val) - min_s) / spread) * output_spread + output_min
         result.append({
             **opp,
-            raw_backup_field: round(float(raw_val), 4),
+            raw_field: round(float(raw_val), 4),
             output_field: round(max(output_min, min(output_max, normalized)), 4),
         })
 
@@ -423,11 +437,16 @@ def score_opportunity(opp_dict: dict) -> dict:
     # --- Caps ---
     composite = apply_caps(composite, opp, weights)
 
-    # Return a new dict — never mutate via direct key assignment
+    # Return a new dict — never mutate via direct key assignment.
+    # raw_final_score is the pre-normalization composite: portfolio normalization
+    # must always read THIS field, never a previously-normalized final_score —
+    # mixing the two pools is what caused scores to drift on every rescore.
+    final = round(max(0.0, min(10.0, composite)), 4)
     return {
         **opp,
         "attractiveness_score": round(attractiveness, 4),
         "executability_score": round(executability, 4),
         "strategic_value_score": round(strategic, 4),
-        "final_score": round(max(0.0, min(10.0, composite)), 4),
+        "final_score": final,
+        "raw_final_score": final,
     }
