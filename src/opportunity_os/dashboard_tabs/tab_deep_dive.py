@@ -491,9 +491,44 @@ def tab_deep_dive(opps: list):
                     st.session_state[f"super_res_{opp_id}"] = (ok, out)
                     st.cache_data.clear()
 
+        is_liked = bool(o.get("liked_at"))
+        like_btn = st.button(
+            "♥ Liked — marked for build" if is_liked else "♡ Like — mark for build",
+            key="btn_like_super",
+            use_container_width=True,
+            disabled=is_liked,
+            help="Sets the conviction flag (liked_at + recommendation=build). "
+                 "Then use Download Report below, or `opp-os kickoff` for a Claude Code starter pack.",
+        )
+        if like_btn:
+            if not opp_id:
+                st.error("No ID — cannot like.")
+            else:
+                ok, out = _run_subprocess(
+                    ["uv", "run", "--no-sync", "opp-os", "like", opp_id],
+                    "Like",
+                )
+                st.session_state[f"super_like_{opp_id}"] = (ok, out)
+                st.cache_data.clear()
+                st.rerun()
+
+        from opportunity_os.export_report import build_opportunity_report_md, find_attached_reports
+        report_md = build_opportunity_report_md(o, find_attached_reports(opp_id)) if opp_id else ""
+        st.download_button(
+            "⬇ Download Full Report (.md)",
+            data=report_md,
+            file_name=f"{(opp_id or 'opportunity')[:50]}-report.md",
+            mime="text/markdown",
+            key="btn_dl_report_super",
+            use_container_width=True,
+            help="Self-contained markdown: scoring breakdown, evidence, market data, "
+                 "risks, plus any validation/deep-dive reports on disk.",
+        )
+
         for sess_key, label in [
             (f"super_val_{opp_id}", "Validation"),
             (f"super_res_{opp_id}", "Research"),
+            (f"super_like_{opp_id}", "Like"),
         ]:
             if sess_key in st.session_state:
                 ok, out = st.session_state[sess_key]

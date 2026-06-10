@@ -118,6 +118,99 @@ def research(opp_id):
     click.echo("Research complete.")
 
 
+@cli.command("like")
+@click.argument("opp_id")
+@click.option("--undo", is_flag=True, help="Remove the liked mark.")
+def like(opp_id, undo):
+    """Mark an opportunity as liked -- the conviction flag.
+
+    Sets liked_at + recommendation=build. Follow with 'opp-os export' for the
+    full report bundle and 'opp-os kickoff' for a Claude Code starter pack.
+    """
+    from datetime import datetime
+    from opportunity_os.storage import get_opportunity_by_id, update_opportunity
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    name = (opp.get("name") or opp_id)[:60]
+    if undo:
+        update_opportunity(opp_id, {"liked_at": None})
+        click.echo(f"Unliked: {name}")
+        return
+
+    update_opportunity(
+        opp_id,
+        {"liked_at": datetime.now().isoformat(), "recommendation": "build"},
+    )
+    click.echo(f"Liked: {name}")
+    click.echo(f"Next steps:  opp-os export {opp_id}   |   opp-os kickoff {opp_id}")
+
+
+@cli.command("liked")
+def liked_list():
+    """List liked opportunities, newest first."""
+    from opportunity_os.storage import read_all_opportunities
+
+    opps = [o for o in read_all_opportunities() if o.get("liked_at")]
+    if not opps:
+        click.echo("No liked opportunities yet. Use 'opp-os like <opp_id>'.")
+        return
+    opps.sort(key=lambda o: str(o.get("liked_at")), reverse=True)
+    click.echo(f"\n{len(opps)} liked opportunit{'y' if len(opps) == 1 else 'ies'}:\n")
+    for i, o in enumerate(opps, 1):
+        score = o.get("final_score")
+        score_str = f"{float(score):.1f}" if score is not None else "--"
+        click.echo(
+            f"{i:2}. [{score_str}] {(o.get('name') or '?')[:55]:<55} "
+            f"liked {str(o.get('liked_at'))[:10]}  {o.get('id')}"
+        )
+
+
+@cli.command("export")
+@click.argument("opp_id")
+@click.option("--to", "out_dir", default=None, help="Output directory. Default: exports/<opp_id>/")
+def export(opp_id, out_dir):
+    """Write a self-contained report bundle for one opportunity.
+
+    Produces exports/<opp_id>/report.md with scoring breakdown, evidence,
+    market data, risks, and any existing validation/deep-dive reports attached.
+    """
+    from opportunity_os.export_report import write_report_bundle
+
+    result = write_report_bundle(opp_id, out_dir=out_dir)
+    if "error" in result:
+        click.echo(f"Error: {result['error']}", err=True)
+        sys.exit(1)
+    click.echo(f"Report written: {result['path']}")
+    for attached in result.get("attached", []):
+        click.echo(f"  attached: {attached}")
+
+
+@cli.command("kickoff")
+@click.argument("opp_id")
+@click.option("--to", "out_dir", default=None, help="Output directory. Default: exports/<opp_id>/")
+def kickoff(opp_id, out_dir):
+    """Generate a Claude Code starter pack for a liked opportunity.
+
+    Writes PROJECT.md (seed brief from everything the pipeline learned) and
+    kickoff-prompt.md (paste into a fresh Claude Code session: /spec -> /plan).
+    """
+    from opportunity_os.kickoff import write_kickoff_pack
+
+    result = write_kickoff_pack(opp_id, out_dir=out_dir)
+    if "error" in result:
+        click.echo(f"Error: {result['error']}", err=True)
+        sys.exit(1)
+    click.echo("Kickoff pack written:")
+    for f in result["files"]:
+        click.echo(f"  {f}")
+    click.echo("\nStart building: open a new Claude Code session in your project folder")
+    click.echo(f"and paste the contents of {result['files'][-1]}.")
+
+
 @cli.command()
 @click.argument("query")
 @click.option("--min-score", default=0.0, help="Minimum score filter.")

@@ -258,6 +258,7 @@ class Opportunity(BaseModel):
     # ── Action ───────────────────────────────────────────────────────────────
     recommendation: Optional[Literal["build", "test", "deep_dive", "watch", "ignore"]] = None
     next_action: Optional[str] = None
+    liked_at: Optional[str] = None  # ISO timestamp; set by `opp-os like` (conviction flag)
 
     # ── Score History ─────────────────────────────────────────────────────────
     score_history: Optional[List[Dict]] = None  # append-only: [{date, score, delta}]
