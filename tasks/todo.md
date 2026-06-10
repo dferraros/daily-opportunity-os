@@ -46,7 +46,7 @@ Active task list. Updated by /plan and /build commands.
 - [ ] Wave 2.2: Sonnet deep-dive synthesis on #1 opp (needs .env keys)
 - [ ] Wave 2.3: evidence provenance tags
 - [ ] Wave 3.1: confidence-weighted scoring (provenance multipliers)
-- [ ] Wave 3.2: idempotent normalization (fixes ~75/80 phantom drift)
+- [x] Wave 3.2: idempotent normalization — raw_final_score is the only input; live store migrated, second rescore = 0/80 changed (c5a4497)
 - [ ] Wave 3.3: calibration loop — outcomes recorded by like/kickoff/validate
 - [ ] Wave 4.1: evidence-gated validation sections (pass/unverified/fail)
 - [ ] Wave 4.2: validation experiment kit (outreach scripts, landing copy, 7-day checklist)
