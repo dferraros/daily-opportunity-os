@@ -30,9 +30,10 @@ Active task list. Updated by /plan and /build commands.
 
 - [x] QW1+QW2: CI fixed (triggers on main, unified suite + ruff syntax gate) + tests/ folded into colocated layout (379 tests)
 - [ ] GitHub: flip default branch to main in repo Settings, then delete origin/master
-- [ ] QW3: Fix mutation at research_executor.py:101
-- [ ] QW4: Remove expired INTERVIEW_DEADLINE quota check
-- [ ] QW5: Path traversal guard in backup.py restore
+- [x] QW3: research_executor mutation fixed + bonus: dated model IDs (claude-haiku-4-5-20251001) replaced in 3 modules — paid research extraction was silently failing (86a481e, 2e9928a)
+- [x] QW4: expired INTERVIEW_DEADLINE quota check removed from daily_run step 17 (6cfe547)
+- [x] QW5: path traversal guard in backup restore (c6d2841)
+- [x] Test isolation: conftest redirects pipeline_failures.jsonl to tmp suite-wide (252d222)
 - [ ] QW6: Add TAVILY_API_KEY + APIFY_API_TOKEN to .env, run free-research --force + rescore-all
 - [ ] T1.2: Make research failures loud (13 silent excepts in free_research + intelligence modules)
 - [ ] T1.3: Sync scoring_weights.yaml with DEFAULT_WEIGHTS (add 2 missing data-backed weights)
