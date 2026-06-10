@@ -97,7 +97,8 @@ def test_research_executor_results_merged_back():
          patch("opportunity_os.distribution_intelligence.run_distribution_intelligence", return_value={}), \
          patch("opportunity_os.distribution_intelligence.execute_distribution_research", return_value={}), \
          patch("opportunity_os.free_research.research_opportunity_free", return_value={"free_research_at": "2026-06-01"}), \
-         patch("opportunity_os.apify_client.is_available", return_value=False):
+         patch("opportunity_os.apify_client.is_available", return_value=False), \
+         patch("opportunity_os.pain_library.upsert_pain_cluster", return_value=False):
         result_opps, _ = run_enrichment_steps([opp], dry_run=False)
 
     found = next((o for o in result_opps if o.get("id") == "opp_test_merge_001"), None)
