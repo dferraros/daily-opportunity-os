@@ -4,7 +4,7 @@ Production-grade daily business intelligence system — scouts, scores, and rank
 
 Built for Claude Code. Runs daily. Produces Notion-ready outputs.
 
-**Version:** v2.0 | **Tests:** 105 passing
+**Version:** v2.1 | **Tests:** 419 passing
 
 ---
 
@@ -203,7 +203,7 @@ src/opportunity_os/
 ## Development
 
 ```bash
-uv run pytest                           # 105 tests
+uv run pytest                           # 419 tests
 uv run pytest -v -k "test_kill_gate"    # specific suite
 uv run opp-os rescore-all --dry-run     # preview score changes
 uv run opp-os free-research --top-n 20 # free enrichment pass
