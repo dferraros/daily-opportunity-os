@@ -23,9 +23,18 @@ Active task list. Updated by /plan and /build commands.
 - [x] Bug: survivors rebuild fragile after AI batch scoring
 - [x] Chore: Expand .gitignore, clean tracked files, write README + CHANGELOG
 - [x] Install agent-skills framework
+- [x] Audit C1: enrichment steps 9.7/10/11 results lost before persistence — merge-back + 30-day research TTL (b762650)
+- [x] Audit: test_enrichment_apify wrote to live pain_library.jsonl — patched (0fb764d)
 
-## Up next
+## Up next (from 2026-06-10 audit — see audit doc for full task plan)
 
-- [ ] Hook up Apify API token in .env and run first real LinkedIn/G2 pass
+- [ ] QW1+QW2: Fix CI (triggers on master, unified test path) + merge tests/ into colocated suite
+- [ ] QW3: Fix mutation at research_executor.py:101
+- [ ] QW4: Remove expired INTERVIEW_DEADLINE quota check
+- [ ] QW5: Path traversal guard in backup.py restore
+- [ ] QW6: Add TAVILY_API_KEY + APIFY_API_TOKEN to .env, run free-research --force + rescore-all
+- [ ] T1.2: Make research failures loud (13 silent excepts in free_research + intelligence modules)
+- [ ] T1.3: Sync scoring_weights.yaml with DEFAULT_WEIGHTS (add 2 missing data-backed weights)
+- [ ] Known issue: rescore-all dry-run shows ~75/80 drift from re-normalizing normalized scores (pre-existing)
 - [ ] Add score_history chart to All Opportunities tab
 - [ ] Weekly run automation via scheduled task
