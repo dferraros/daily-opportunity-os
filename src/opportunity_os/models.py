@@ -273,6 +273,9 @@ class Opportunity(BaseModel):
     benchmark_archetype: Optional[str] = None
     research_executed_at: Optional[str] = None
     free_research_at: Optional[str] = None
+    pain_researched_at: Optional[str] = None          # enrichment step 10 skip guard (30d TTL)
+    distribution_researched_at: Optional[str] = None  # enrichment step 11 skip guard (30d TTL)
+    apify_researched_at: Optional[str] = None         # enrichment step 11.7 skip guard (14d TTL)
     pain_validation_score: Optional[float] = Field(None, ge=0, le=10)
     exact_customer_phrases: List[str] = Field(default_factory=list)
     pain_evidence_sources: List[str] = Field(default_factory=list)

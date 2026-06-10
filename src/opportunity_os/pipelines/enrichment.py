@@ -12,7 +12,32 @@ from opportunity_os.pipeline_monitor import log_failure
 
 logger = logging.getLogger(__name__)
 
-APIFY_SKIP_DAYS = 14  # skip Apify re-run if researched within this many days
+APIFY_SKIP_DAYS = 14     # skip Apify re-run if researched within this many days
+RESEARCH_SKIP_DAYS = 30  # skip paid pain/distribution research within this many days
+
+
+def _merge_by_id(base: list, enriched: list) -> list:
+    """Return a NEW list where records from `enriched` replace same-id records in `base`.
+
+    Enrichment steps work on slice copies (top_30, top_20); without this merge the
+    enriched dicts never reach the list that daily_run step 12 persists.
+    """
+    emap = {o.get("id"): o for o in enriched if o.get("id")}
+    return [emap.get(o.get("id"), o) for o in base]
+
+
+def _researched_within(opp: dict, field: str, days: int) -> bool:
+    """True if opp[field] holds an ISO timestamp newer than `days` days."""
+    ts_raw = opp.get(field)
+    if not ts_raw:
+        return False
+    try:
+        ts = datetime.fromisoformat(str(ts_raw))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - ts).days < days
+    except (ValueError, TypeError):
+        return False  # bad date format -- treat as unresearched, re-run
 
 
 def _enrich_apify(opps: list[dict], dry_run: bool) -> list[dict]:
@@ -38,17 +63,8 @@ def _enrich_apify(opps: list[dict], dry_run: bool) -> list[dict]:
 
         apify_enriched = 0
         for i, opp in enumerate(result[:10]):
-            researched_at = opp.get("apify_researched_at")
-            if researched_at:
-                try:
-                    ts = datetime.fromisoformat(researched_at)
-                    if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
-                    age_days = (datetime.now(timezone.utc) - ts).days
-                    if age_days < APIFY_SKIP_DAYS:
-                        continue  # researched recently -- skip
-                except (ValueError, TypeError):
-                    pass  # bad date format -- re-run
+            if _researched_within(opp, "apify_researched_at", APIFY_SKIP_DAYS):
+                continue  # researched recently -- skip
 
             vertical = opp.get("vertical", "")
             geography = opp.get("geography", "global")
@@ -99,6 +115,8 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
                 top_30[i] = {**opp, **{k: v for k, v in result.items() if not k.startswith("_")}}
         bench_populated = sum(1 for o in top_30 if o.get("benchmark_archetype"))
         logger.info("  Benchmark archetypes populated for %d/%d opportunities", bench_populated, len(top_30))
+        # Merge back -- slice enrichment is lost otherwise (step 12 persists all_opps_sorted)
+        all_opps_sorted = _merge_by_id(all_opps_sorted, top_30)
     except ImportError as e:
         logger.warning("Benchmark engine not available: %s", e)
     except Exception as e:
@@ -114,19 +132,27 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
             top_20[i] = {**opp, **{k: v for k, v in pain_result.items() if not k.startswith("_")}}
         logger.info("  Pain templates built for %d opportunities", len(top_20))
 
-        # Execute real research on top 5 only (API cost ~$0.15/opp)
+        # Execute real research on top 5 only (API cost ~$0.15/opp), 30-day TTL
         if not dry_run:
-            top_5 = top_20[:5]
             researched_count = 0
-            for i, opp in enumerate(top_5):
+            for i in range(min(5, len(top_20))):
+                opp = top_20[i]
+                if _researched_within(opp, "pain_researched_at", RESEARCH_SKIP_DAYS):
+                    continue
                 research_result = execute_pain_research(opp)
                 if research_result:
-                    top_20[i] = {**top_20[i], **research_result}
+                    # Stamp only on success so failed calls retry next run
+                    top_20[i] = {
+                        **top_20[i],
+                        **research_result,
+                        "pain_researched_at": datetime.now(timezone.utc).isoformat(),
+                    }
                     researched_count += 1
                     logger.info("  Pain researched: %s (score: %s)",
                                 opp.get("name", "unknown")[:40],
                                 research_result.get("pain_validation_score"))
             logger.info("  Pain research executed for %d/5 opportunities", researched_count)
+        all_opps_sorted = _merge_by_id(all_opps_sorted, top_20)
     except ImportError as e:
         logger.warning("Pain intelligence module not available: %s", e)
     except Exception as e:
@@ -134,6 +160,7 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
 
     # Step 11: Distribution OS
     logger.info("Step 11: Running Distribution OS on top 20 opportunities...")
+    top_20 = all_opps_sorted[:20]
     try:
         from opportunity_os.distribution_intelligence import (
             run_distribution_intelligence,
@@ -146,15 +173,23 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
 
         if not dry_run:
             researched_count = 0
-            for i, opp in enumerate(top_20[:5]):
+            for i in range(min(5, len(top_20))):
+                opp = top_20[i]
+                if _researched_within(opp, "distribution_researched_at", RESEARCH_SKIP_DAYS):
+                    continue
                 research_result = execute_distribution_research(opp)
                 if research_result:
-                    top_20[i] = {**top_20[i], **research_result}
+                    top_20[i] = {
+                        **top_20[i],
+                        **research_result,
+                        "distribution_researched_at": datetime.now(timezone.utc).isoformat(),
+                    }
                     researched_count += 1
                     logger.info("  Distribution researched: %s (validated: %s)",
                                 opp.get("name", "unknown")[:40],
                                 research_result.get("distribution_validated"))
             logger.info("  Distribution research executed for %d/5 opportunities", researched_count)
+        all_opps_sorted = _merge_by_id(all_opps_sorted, top_20)
     except ImportError as e:
         logger.warning("Distribution intelligence module not available: %s", e)
     except Exception as e:
@@ -219,7 +254,7 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
     try:
         from opportunity_os.pain_library import upsert_pain_cluster
         written = 0
-        for opp in top_20:
+        for opp in all_opps_sorted[:20]:
             if opp.get("research_executed_at") and opp.get("pain_validation_score") is not None:
                 if upsert_pain_cluster(opp):
                     written += 1
@@ -229,4 +264,5 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
     except Exception as e:
         log_failure("pain_library", e)
 
-    return all_opps_sorted, top_20
+    # Re-slice so callers receive the fully enriched records, not stale pre-merge dicts
+    return all_opps_sorted, all_opps_sorted[:20]

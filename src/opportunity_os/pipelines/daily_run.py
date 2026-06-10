@@ -244,11 +244,11 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         all_opps_sorted = sorted(all_opps_sorted, key=lambda x: x.get("final_score", 0), reverse=True)
 
     # Steps 9.7–11.8: benchmark, pain/distribution OS, research, pain library
-    all_opps_sorted, top_20 = _step_enrich_and_rank(all_opps_sorted, dry_run)
+    all_opps_sorted, _top_20 = _step_enrich_and_rank(all_opps_sorted, dry_run)
 
     # Steps 12–14: save enriched, Notion sync, auto-validation
     validation_packages_for_sync = _step_validate_and_sync(
-        all_opps_sorted, top_20, raw_signals, valid_opps_dicts, date, dry_run, summary
+        all_opps_sorted, raw_signals, valid_opps_dicts, date, dry_run, summary
     )
 
     # Steps 14.5–18: deep dive, reports, CSVs, metrics
@@ -476,7 +476,6 @@ from opportunity_os.pipelines.enrichment import run_enrichment_steps as _step_en
 
 def _step_validate_and_sync(
     all_opps_sorted: list,
-    top_20: list,
     raw_signals: list,
     valid_opps_dicts: list,
     date: str,
