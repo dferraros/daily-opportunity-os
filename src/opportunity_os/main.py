@@ -119,6 +119,76 @@ def research(opp_id):
     click.echo("Research complete.")
 
 
+@cli.command("apify-research")
+@click.option("--top-n", default=10, show_default=True, type=int,
+              help="Enrich the top N standing opportunities (max 10 per pass).")
+@click.option("--force", is_flag=True, help="Ignore the 14-day apify_researched_at skip guard.")
+@click.option("--dry-run", is_flag=True, help="Show candidates without calling Apify.")
+def apify_research(top_n, force, dry_run):
+    """Run Apify enrichment (LinkedIn jobs + G2 reviews) on standing opportunities.
+
+    The daily pipeline only enriches each day's NEW batch -- this command applies
+    step 11.7 to the existing portfolio. Populates job_posting_count (market
+    momentum) and competitor data, then rescores and renormalizes.
+    Cost: ~\\$0.02-0.10 per opp, hard-capped at \\$0.25/actor-run.
+    """
+    from opportunity_os import apify_client
+    from opportunity_os.backup import create_backup
+    from opportunity_os.engines.scoring_engine import normalize_portfolio_scores
+    from opportunity_os.pipelines.enrichment import _enrich_apify
+    from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
+
+    if not apify_client.is_available():
+        click.echo("APIFY_API_TOKEN not set -- nothing to do.", err=True)
+        return
+
+    all_opps = read_all_opportunities()
+    if not all_opps:
+        click.echo("No opportunities found.", err=True)
+        return
+
+    alive = [o for o in all_opps if not o.get("kill_decision")]
+    sorted_alive = sorted(alive, key=lambda o: float(o.get("final_score") or 0), reverse=True)
+    candidates = sorted_alive[: min(top_n, 10)]
+
+    if force:
+        # Strip the skip-guard timestamp on copies -- never mutate storage dicts
+        candidates = [
+            {k: v for k, v in o.items() if k != "apify_researched_at"} for o in candidates
+        ]
+
+    if dry_run:
+        click.echo(f"Would run Apify enrichment on {len(candidates)} opportunities:")
+        for i, o in enumerate(candidates, 1):
+            guard = " (skip guard active)" if o.get("apify_researched_at") else ""
+            click.echo(f"  {i:2}. {(o.get('name') or '?')[:60]}{guard}")
+        click.echo("[dry-run] No API calls made.")
+        return
+
+    bak = create_backup("pre-apify-research")
+    if bak:
+        click.echo(f"Backup: {bak['filename']}")
+
+    click.echo(f"Running Apify enrichment on top {len(candidates)} opportunities...")
+    enriched = _enrich_apify(candidates, dry_run=False)
+
+    # Merge back, renormalize the whole portfolio, persist
+    enriched_map = {o.get("id"): o for o in enriched if o.get("id")}
+    merged = [enriched_map.get(o.get("id"), o) for o in all_opps]
+    final = normalize_portfolio_scores(merged)
+
+    jobs_populated = sum(1 for o in enriched if o.get("job_posting_count") is not None)
+    g2_populated = sum(1 for o in enriched if o.get("competitor_negative_review_rate") is not None)
+    n = replace_all_opportunities(final)
+    click.echo(
+        f"\nDone: job_posting_count on {jobs_populated}, competitor data on {g2_populated} "
+        f"of {len(candidates)} candidates. Wrote {n} records."
+    )
+    for o in enriched:
+        if o.get("job_posting_count") is not None:
+            click.echo(f"  {(o.get('name') or '?')[:55]:<55} jobs={o['job_posting_count']}")
+
+
 @cli.command("like")
 @click.argument("opp_id")
 @click.option("--undo", is_flag=True, help="Remove the liked mark.")
