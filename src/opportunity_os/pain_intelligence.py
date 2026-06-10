@@ -393,7 +393,8 @@ def execute_pain_research(opp: dict, client=None) -> dict:
         try:
             import anthropic
             client = anthropic.Anthropic(api_key=api_key)
-        except Exception:
+        except Exception as exc:
+            logger.warning("[pain] Anthropic client init failed: %s", exc)
             return {}
 
     queries = build_pain_queries(opp)

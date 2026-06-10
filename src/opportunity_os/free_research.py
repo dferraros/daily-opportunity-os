@@ -19,6 +19,7 @@ Usage:
 """
 
 import json
+import logging
 import os
 import time
 import urllib.parse
@@ -27,6 +28,8 @@ from datetime import datetime
 from typing import Optional
 
 from opportunity_os import tavily_client
+
+logger = logging.getLogger(__name__)
 
 JINA_SEARCH_BASE = "https://s.jina.ai/"
 JINA_READER_BASE = "https://r.jina.ai/"
@@ -52,7 +55,8 @@ def _fetch_url(url: str, timeout: int = 8) -> Optional[str]:
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", errors="replace")
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] fetch failed for %s: %s", url[:80], exc)
         return None
 
 
@@ -73,7 +77,8 @@ def jina_search(query: str, api_key: Optional[str] = None) -> list[str]:
         # Extract meaningful lines (skip headers/boilerplate)
         lines = [l.strip() for l in raw.split("\n") if len(l.strip()) > 60]
         return lines[:5]
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] Jina search failed for %r: %s", query[:60], exc)
         return []
 
 
@@ -89,7 +94,8 @@ def jina_fetch_url(url: str, api_key: Optional[str] = None) -> str:
         req = urllib.request.Request(reader_url, headers=headers)
         with urllib.request.urlopen(req, timeout=12) as resp:
             return resp.read().decode("utf-8", errors="replace")[:3000]
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] Jina reader failed for %s: %s", url[:80], exc)
         return ""
 
 
@@ -116,7 +122,8 @@ def search_hn(query: str, tags: str = "story", hits: int = 10) -> list[dict]:
                 "source": "hacker_news",
             })
         return results
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] HN search failed for %r: %s", query[:60], exc)
         return []
 
 
@@ -148,7 +155,8 @@ def search_reddit(query: str, geography: str = "global", limit: int = 10) -> lis
                         "source": "reddit",
                     })
             time.sleep(0.5)  # Be polite
-        except Exception:
+        except Exception as exc:
+            logger.warning("[free_research] Reddit .json search failed for r/%s: %s", sub, exc)
             continue
     return results
 
@@ -170,7 +178,8 @@ def get_google_trends(keywords: list[str], geo: str = "") -> dict:
         return {kw: round(float(interest[kw].mean()), 1) for kw in kw_list if kw in interest.columns}
     except ImportError:
         return {}  # pytrends not installed -- skip silently
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] Google Trends failed for %s: %s", keywords[:2], exc)
         return {}
 
 
@@ -211,7 +220,8 @@ def serper_search(query: str, api_key: Optional[str] = None) -> list[str]:
             if question and len(question) > 20:
                 snippets.append(f"[PAA] {question}")
         return snippets[:8]
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] Serper search failed for %r: %s", query[:60], exc)
         return []
 
 
@@ -257,7 +267,8 @@ def exa_search(query: str, api_key: Optional[str] = None, num_results: int = 5) 
             elif title and len(title) > 20:
                 snippets.append(title)
         return snippets[:5]
-    except Exception:
+    except Exception as exc:
+        logger.warning("[free_research] Exa search failed for %r: %s", query[:60], exc)
         return []
 
 
@@ -334,8 +345,30 @@ def search_reddit_official(
                     "source": "reddit_official",
                 })
         return results
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "[free_research] Reddit official API failed (%s) -- falling back to .json scraping", exc
+        )
         return search_reddit(query, geography=geography, limit=limit)
+
+
+def get_unavailable_sources() -> list[str]:
+    """Return names of optional research sources that are not configured.
+
+    Surfaced by the free-research CLI before running, so "news=0 pain=0"
+    reads as "sources not configured" instead of "no demand signal".
+    Jina and HN are keyless and always available, so they are not listed.
+    """
+    missing = []
+    if not tavily_client.is_available():
+        missing.append("tavily (TAVILY_API_KEY)")
+    if not os.environ.get("SERPER_API_KEY"):
+        missing.append("serper (SERPER_API_KEY)")
+    if not os.environ.get("EXA_API_KEY"):
+        missing.append("exa (EXA_API_KEY)")
+    if not (os.environ.get("REDDIT_CLIENT_ID") and os.environ.get("REDDIT_CLIENT_SECRET")):
+        missing.append("reddit-official (REDDIT_CLIENT_ID/SECRET)")
+    return missing
 
 
 def research_opportunity_free(opp: dict) -> dict:

@@ -444,8 +444,8 @@ def run_distribution_executor(opp: dict) -> dict:
         from opportunity_os import tavily_client
         if tavily_client.is_available():
             tavily_context = tavily_client.search_multi(queries[:3], max_results_per_query=2)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("[distribution] Tavily search failed for '%s': %s", opp.get("name", "?")[:40], exc)
 
     if not tavily_context:
         return {}
@@ -492,9 +492,11 @@ Extract and return ONLY this JSON (no prose, no code block):
         raw = re.sub(r"\s*```$", "", raw)
         match = re.search(r"\{.*\}", raw, re.DOTALL)
         if not match:
+            logger.warning("[distribution] No JSON in Claude response for '%s'", opp.get("name", "?")[:40])
             return {}
         data = json.loads(match.group())
-    except Exception:
+    except Exception as exc:
+        logger.warning("[distribution] Claude extraction failed for '%s': %s", opp.get("name", "?")[:40], exc)
         return {}
 
     result = {"distribution_validated_date": datetime.now().date().isoformat()}
@@ -558,7 +560,8 @@ def execute_distribution_research(opp: dict, client=None) -> dict:
         try:
             import anthropic as _anthropic
             client = _anthropic.Anthropic(api_key=api_key)
-        except Exception:
+        except Exception as exc:
+            logger.warning("[distribution] Anthropic client init failed: %s", exc)
             return {}
 
     template = run_distribution_intelligence(opp)

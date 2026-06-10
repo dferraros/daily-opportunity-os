@@ -512,7 +512,7 @@ def free_research(top_n, force, dry_run):
     --force is passed (prevents re-running the full stack every daily cycle).
     """
     from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
-    from opportunity_os.free_research import research_opportunity_free
+    from opportunity_os.free_research import research_opportunity_free, get_unavailable_sources
     from opportunity_os.engines.scoring_engine import score_opportunity, normalize_portfolio_scores
     from opportunity_os.geo_lens import apply_geo_adjustments
     from opportunity_os.backup import create_backup
@@ -521,6 +521,17 @@ def free_research(top_n, force, dry_run):
     if not all_opps:
         click.echo("No opportunities found.", err=True)
         return
+
+    # Surface missing keys upfront: "news=0 pain=0" must read as "source not
+    # configured", never be mistaken for "no demand signal".
+    missing_sources = get_unavailable_sources()
+    if missing_sources:
+        click.echo(
+            f"WARNING: {len(missing_sources)} research source(s) not configured: "
+            f"{', '.join(missing_sources)}",
+            err=True,
+        )
+        click.echo("  Zero news/pain counts may reflect missing keys, not absent demand.", err=True)
 
     # Sort by score, take top-N alive opps as candidates
     alive = [o for o in all_opps if not o.get("kill_decision")]
