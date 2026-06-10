@@ -750,12 +750,9 @@ def _step_reports_deep_dive_metrics(
     except Exception as e:
         log_failure("quota_tracking", e)
 
-    # Step 17: Track interview quota
-    from opportunity_os.interview_tracker import get_interview_quota_status
-    quota = get_interview_quota_status()
-    if not quota["on_track"]:
-        logger.warning("Interview quota behind: %d/%d done, %d days left",
-                       quota["completed"], quota["total_required"], quota["days_remaining"])
+    # Step 17 (removed 2026-06-10): interview quota check — deadline was hardcoded
+    # to 2026-04-08 and expired, warning "quota behind" on every run forever.
+    # interview_tracker.add_interview() still reports quota for manual sprints.
 
     # Step 18: Outcome calibration check (weekly)
     from opportunity_os.outcome_tracking import get_calibration_report
