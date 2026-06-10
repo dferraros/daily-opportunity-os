@@ -36,7 +36,7 @@ Active task list. Updated by /plan and /build commands.
 - [x] Test isolation: conftest redirects pipeline_failures.jsonl to tmp suite-wide (252d222)
 - [ ] QW6: Add TAVILY_API_KEY + APIFY_API_TOKEN to .env, run free-research --force + rescore-all
 - [x] T1.2: 14 silent excepts now log warnings; free-research CLI lists unconfigured sources upfront (c51bfb1)
-- [ ] T1.3: Sync scoring_weights.yaml with DEFAULT_WEIGHTS (add 2 missing data-backed weights)
+- [x] T1.3: scoring_weights.yaml is single source of truth (all 23 weights); DEFAULT_WEIGHTS now equal-weight loud fallback; zero score drift verified (cc0d2a3)
 - [ ] Known issue: rescore-all dry-run shows ~75/80 drift from re-normalizing normalized scores (pre-existing)
 - [ ] Add score_history chart to All Opportunities tab
 - [ ] Weekly run automation via scheduled task
