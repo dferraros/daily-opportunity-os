@@ -21,7 +21,8 @@ import click
 @click.group()
 def cli():
     """Daily Opportunity OS -- scout, score, rank business opportunities."""
-    pass
+    from opportunity_os.env import load_env_file
+    load_env_file()
 
 
 @cli.command()

@@ -14,3 +14,11 @@ def _isolate_pipeline_failures(tmp_path, monkeypatch):
         "opportunity_os.pipeline_monitor._failures_path",
         lambda: str(tmp_path / "pipeline_failures.jsonl"),
     )
+
+
+@pytest.fixture(autouse=True)
+def _skip_dotenv(monkeypatch):
+    """Never load real API keys from .env during tests — CLI tests invoke
+    cli(), which bootstraps the project .env; real keys leaking into
+    os.environ could turn mocked tests into live API calls."""
+    monkeypatch.setenv("OPP_OS_SKIP_DOTENV", "1")

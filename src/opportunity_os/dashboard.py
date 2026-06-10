@@ -11,6 +11,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from opportunity_os.env import load_env_file  # noqa: E402
+load_env_file()
+
 from opportunity_os.dashboard_tabs.styles import CUSTOM_CSS  # noqa: E402
 from opportunity_os.dashboard_tabs.data import (  # noqa: E402
     load_automation_runs,
