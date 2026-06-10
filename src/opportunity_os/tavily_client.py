@@ -117,8 +117,21 @@ def is_available() -> bool:
     return bool(_get_api_key())
 
 
+NEWS_MAX_RESULTS = 20      # headroom for the relevance filter below
+NEWS_RELEVANCE_MIN = 0.5   # only count results Tavily scores as genuinely relevant
+
+
 def search_news(query: str, time_range: str = "month") -> int:
-    """Return count of news results for query in the given time window. Returns 0 on any failure."""
+    """Return count of RELEVANT news results in the time window (0-20). Returns 0 on any failure.
+
+    Raw result counts cannot discriminate: Tavily is a relevance-ranked search
+    and fills max_results for any broad query (every opp read news=cap). Counting
+    only results with relevance score >= NEWS_RELEVANCE_MIN restores variance --
+    strong-momentum topics have many highly-relevant recent articles, weak ones
+    pad the list with low-relevance filler.
+
+    Cost: 1 credit per call regardless of max_results.
+    """
     api_key = _get_api_key()
     if not api_key:
         return 0
@@ -128,7 +141,7 @@ def search_news(query: str, time_range: str = "month") -> int:
             json={
                 "api_key": api_key,
                 "query": query,
-                "max_results": MAX_RESULTS,
+                "max_results": NEWS_MAX_RESULTS,
                 "topic": "news",
                 "time_range": time_range,
                 "include_answer": False,
@@ -137,7 +150,11 @@ def search_news(query: str, time_range: str = "month") -> int:
             timeout=20.0,
         )
         resp.raise_for_status()
-        return len(resp.json().get("results") or [])
+        results = resp.json().get("results") or []
+        return sum(
+            1 for r in results
+            if float(r.get("score") or 0) >= NEWS_RELEVANCE_MIN
+        )
     except Exception as exc:
         logger.warning("Tavily search_news failed for %r: %s", query, exc)
         return 0

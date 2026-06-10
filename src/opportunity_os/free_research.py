@@ -441,8 +441,10 @@ def research_opportunity_free(opp: dict) -> dict:
             reddit_phrases.append(r["title"])
             evidence_sources.append(r["url"])
 
-    # 5. Tavily news signal -- count of news articles in last 30 days (zero cost, existing key)
-    news_query = f"{name} {vertical}".strip() or name
+    # 5. Tavily news signal -- count of news articles in last 30 days (1 credit/opp)
+    # vertical+geo measures market momentum; full opp names are too long-tail and
+    # match generic coverage anyway (every opp read news=5 at the old cap).
+    news_query = f"{vertical} {geography}".strip() if vertical else name[:40]
     news_count = tavily_client.search_news(news_query)
     result["news_signal_count"] = news_count
 
