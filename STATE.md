@@ -1,5 +1,22 @@
 # STATE.md — Daily Opportunity OS
-Last updated: 2026-06-10 (full audit + Milestone 1 + Wave 1/3.2 + key activation session)
+Last updated: 2026-06-10 (second audit pass: multi-agent audit + 3 fix commits pushed)
+
+## Second audit pass (2026-06-10, evening) — verified-then-fixed
+6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
+against code AND live data killed 2 as false positives before any fix:
+- FALSE: "weights fallback inflates scores 2-3x" — score_layer divides by total_weight,
+  scale is irrelevant; equal-weight fallback is the documented design
+- FALSE: "duplicate records corrupting data" — 0 dup IDs / 0 dup name+geo in 80 records;
+  daily_run dedupes BEFORE append. Latent gap only: 7-day window
+Fixed and pushed (525bc70, 3bef517, 04b7d4c):
+- scoring: job_posting_count=0 now no-signal (fetch_linkedin_jobs returns 0 on failure)
+- scoring: scoring_incomplete flag disambiguates unscored (0.0) from killed (0.0)
+- models: 19 pipeline-written fields declared (extra='ignore' silently DROPS undeclared
+  fields on round-trip — latent data-loss trap, drift-guard test added)
+- pipeline: daily dedupe window 7 -> 365 days (dated IDs would split history on re-surface)
+Tests 419 -> 426, all green. rescore-all --dry-run: 0/80 changed (idempotency intact).
+Dashboard root cause found: STALE streamlit (PID from Projects/.worktrees copy) was
+squatting port 8501 — kill stray streamlit processes before relaunching.
 
 ## Current Position
 Repo: C:/Users/ferra/OneDrive/Desktop (root) — branch `main` only (master + feat deleted).
