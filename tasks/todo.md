@@ -42,7 +42,11 @@ Active task list. Updated by /plan and /build commands.
 - [x] Wave 1.1: opp-os like / liked / --undo + dashboard Like button (3dfcf71)
 - [x] Wave 1.2: opp-os export — self-contained report.md + dashboard download button (3dfcf71)
 - [x] Wave 1.3: opp-os kickoff — PROJECT.md seed + Claude Code kickoff prompt (3dfcf71)
-- [ ] Wave 2.1: kill-thesis pass (needs .env keys)
+- [x] Keys live (Jun 10): Anthropic + Tavily + Apify + Firecrawl verified; Serper key was from searchapi.io (wrong provider — get serper.dev); Reddit .json now 403-blocked + Jina keyless now 401 → Reddit OAuth and/or Serper worth adding
+- [x] Apify integration fixed live: v3 client API, real actor input schemas, $0.25/run cost caps, apify-research CLI for standing portfolio (2eb62a8, f903d81)
+- [x] news_signal_count: relevance-filtered (raw counts saturate); live distribution 16×0 / 4×2 (1e10e20)
+- [ ] Wave 2: retool G2 competitor weakness — category mode returns product summaries, not reviews (productUrls from direct_competitors, or Tavily site:g2.com + Haiku extraction)
+- [ ] Wave 2.1: kill-thesis pass (keys now live)
 - [ ] Wave 2.2: Sonnet deep-dive synthesis on #1 opp (needs .env keys)
 - [ ] Wave 2.3: evidence provenance tags
 - [ ] Wave 3.1: confidence-weighted scoring (provenance multipliers)

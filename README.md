@@ -39,6 +39,7 @@ uv run streamlit run src/opportunity_os/dashboard.py
 | `opp-os validate <id>` | 8-section validation package |
 | `opp-os research <id>` | Pain + distribution research (paid) |
 | `opp-os free-research` | Tavily + free-source enrichment, top-20 |
+| `opp-os apify-research` | LinkedIn jobs + G2 enrichment for standing top-10 |
 | `opp-os rescore-all` | Rescore all opps with current formula |
 | `opp-os rescore-all --dry-run` | Preview score deltas |
 | `opp-os like <id>` | Mark as liked (conviction flag, sets recommendation=build) |
