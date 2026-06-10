@@ -29,7 +29,7 @@ Active task list. Updated by /plan and /build commands.
 ## Up next (from 2026-06-10 audit — see audit doc for full task plan)
 
 - [x] QW1+QW2: CI fixed (triggers on main, unified suite + ruff syntax gate) + tests/ folded into colocated layout (379 tests)
-- [ ] GitHub: flip default branch to main in repo Settings, then delete origin/master
+- [x] GitHub: default branch flipped to main; deleted origin/master + origin/feat/daily-opportunity-os (both fully merged) + 12 stale local branches
 - [x] QW3: research_executor mutation fixed + bonus: dated model IDs (claude-haiku-4-5-20251001) replaced in 3 modules — paid research extraction was silently failing (86a481e, 2e9928a)
 - [x] QW4: expired INTERVIEW_DEADLINE quota check removed from daily_run step 17 (6cfe547)
 - [x] QW5: path traversal guard in backup restore (c6d2841)
