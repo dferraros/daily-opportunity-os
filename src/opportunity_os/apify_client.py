@@ -45,8 +45,21 @@ def _get_api_key() -> Optional[str]:
     return _load_apify_key()
 
 
-def run_actor(actor_id: str, run_input: dict, timeout_secs: int = 120) -> list[dict]:
-    """Run an Apify actor synchronously; return dataset items or [] on failure."""
+MAX_CHARGE_PER_RUN_USD = "0.25"  # hard cost cap per actor run (pay-per-result safety net)
+
+
+def run_actor(
+    actor_id: str,
+    run_input: dict,
+    timeout_secs: int = 120,
+    max_items: Optional[int] = None,
+) -> list[dict]:
+    """Run an Apify actor synchronously; return dataset items or [] on failure.
+
+    Cost guards: max_items caps billable results at the platform level for
+    pay-per-result actors; max_total_charge_usd hard-stops any single run at
+    MAX_CHARGE_PER_RUN_USD regardless of actor pricing model.
+    """
     if ApifyClient is None:
         logger.warning("apify-client not installed; cannot run actor %r", actor_id)
         return []
@@ -57,9 +70,26 @@ def run_actor(actor_id: str, run_input: dict, timeout_secs: int = 120) -> list[d
         return []
 
     try:
+        from datetime import timedelta
+        from decimal import Decimal
+
         client = ApifyClient(api_key)
-        run = client.actor(actor_id).call(run_input=run_input, timeout_secs=timeout_secs)
-        dataset_id = run["defaultDatasetId"]
+        run = client.actor(actor_id).call(
+            run_input=run_input,
+            run_timeout=timedelta(seconds=timeout_secs),
+            max_items=max_items,
+            max_total_charge_usd=Decimal(MAX_CHARGE_PER_RUN_USD),
+        )
+        if run is None:
+            logger.warning("Apify actor %r returned no run (timeout or abort)", actor_id)
+            return []
+        try:
+            dataset_id = run["defaultDatasetId"]
+        except (TypeError, KeyError):
+            dataset_id = getattr(run, "default_dataset_id", None)
+        if not dataset_id:
+            logger.warning("Apify actor %r run has no dataset id", actor_id)
+            return []
         items = client.dataset(dataset_id).list_items().items
         return list(items)
     except Exception as exc:
@@ -67,36 +97,75 @@ def run_actor(actor_id: str, run_input: dict, timeout_secs: int = 120) -> list[d
         return []
 
 
+_LINKEDIN_GEO = {
+    "venezuela": "Venezuela",
+    "spain": "Spain",
+    "us": "United States",
+    "latam": "Latin America",
+    "colombia": "Colombia",
+    "mexico": "Mexico",
+    "argentina": "Argentina",
+}
+
+
 def fetch_linkedin_jobs(vertical: str, geography: str, max_results: int = 50) -> int:
-    """Return count of LinkedIn job postings for a vertical+geo combo, or 0 on failure."""
+    """Return count of LinkedIn job postings for a vertical+geo combo, or 0 on failure.
+
+    The actor requires LinkedIn jobs-search URLs (input schema: urls + count),
+    so we build one from keywords + mapped location.
+    """
+    import urllib.parse
+
+    location = _LINKEDIN_GEO.get((geography or "").lower())
+    if location:
+        params = {"keywords": vertical, "location": location}
+    else:
+        params = {"keywords": f"{vertical} {geography}".strip()}
+    search_url = "https://www.linkedin.com/jobs/search/?" + urllib.parse.urlencode(params)
+
     run_input = {
-        "queries": [f"{vertical} {geography}"],
-        "maxItems": max_results,
+        "urls": [search_url],
+        "count": max(10, max_results),  # actor validation: count must be >= 10
+        "scrapeCompany": False,
     }
-    items = run_actor("curious_coder/linkedin-jobs-scraper", run_input)
+    items = run_actor("curious_coder/linkedin-jobs-scraper", run_input, max_items=max_results)
     return len(items)
 
 
 def fetch_g2_reviews(category: str, max_results: int = 100) -> dict:
     """Return {neg_rate: float, top_complaints: list[str]} for a G2 category, or {} on failure."""
+    # Input schema: categories (array) + maxResults + scrapeReviews
     run_input = {
-        "category": category,
-        "maxItems": max_results,
+        "categories": [category],
+        "maxResults": max_results,
+        "scrapeReviews": True,
     }
-    items = run_actor("thirdwatch/g2-software-reviews-scraper", run_input)
+    items = run_actor("thirdwatch/g2-software-reviews-scraper", run_input, max_items=max_results)
     if not items:
         return {}
 
-    neg_count = sum(1 for item in items if item.get("rating", 5) <= 2)
-    neg_rate = neg_count / len(items)
+    # Category mode can return product summaries (rating: null, 404 pages) instead
+    # of individual reviews. Only items with a numeric rating carry usable
+    # negative-rate semantics; anything else is skipped, never crashed on.
+    rated = [i for i in items if isinstance(i.get("rating"), (int, float))]
+    if not rated:
+        logger.info(
+            "[apify] G2 returned %d item(s) but none with usable ratings for %r -- skipping",
+            len(items), category,
+        )
+        return {}
+
+    neg_count = sum(1 for item in rated if item["rating"] <= 2)
+    neg_rate = neg_count / len(rated)
 
     complaints: list[str] = []
     seen: set[str] = set()
-    for item in items:
+    for item in rated:
         if len(complaints) >= 3:
             break
         text = (
             item.get("cons")
+            or item.get("cons_summary")
             or item.get("negativeReview")
             or ""
         ).strip()
