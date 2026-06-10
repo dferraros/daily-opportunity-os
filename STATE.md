@@ -1,48 +1,59 @@
-# STATE.md � Daily Opportunity OS
-Last updated: 2026-05-20
+# STATE.md — Daily Opportunity OS
+Last updated: 2026-06-10 (full audit + Milestone 1 + Wave 1/3.2 + key activation session)
 
 ## Current Position
-Production readiness complete (Phases 1-3 merged to master at 03e7b0a).
-First production test run: 15 scored, 0 killed, 3 reports � exit 0.
-Pain/distribution research execution IS wired up and firing. Blocked by Anthropic Tier 1 rate limit.
+Repo: C:/Users/ferra/OneDrive/Desktop (root) — branch `main` only (master + feat deleted).
+CI live on every push to main (lint + 419 tests). All API keys configured and verified live.
+Data-backed scoring IS live: job_posting_count (9 opps), news_signal_count (relevance-filtered),
+pain_signal_count 5-7 across top-20, pain_validation_score 76/76.
 
-## What Was Completed (Sessions 2026-05-18 to 2026-05-20)
-- Phase 1 (research execution): execute_pain_research + execute_distribution_research implemented
-- Phase 2 (scoring integration): pain_validation_score wired into scoring_engine.py
-- Phase 3 (dashboard panel, tests, CI, daily_run.py split into enrichment.py)
-- feat/daily-opportunity-os merged to master (03e7b0a)
-- Worktree cleaned up (feat branch deleted)
-- 219 tests pass on merged master
-- First live run: API calls fired, graceful degradation confirmed working
+## Source stack (FINAL — decided 2026-06-10, do not re-litigate)
+- Tavily (news + pain search + SERP fallback) — free 1k/mo, ~12% used
+- Apify (LinkedIn jobs live; G2 retool pending) — $5 console cap, ~$1-3/mo actual
+- Firecrawl (Reddit scraping + competitor pricing) — free 1k pages/mo
+- HN (keyless), Anthropic ($10 console cap)
+- REJECTED: Serper (not needed), SearchAPI ($40/mo min breaks $20 ceiling),
+  Reddit OAuth (marginal), Jina (keyless access dead — 401)
+- Budget ceiling: $20/mo hard; expected $5-11; caps make worst case $15
 
-## Active Blocker
-Anthropic Tier 1 rate limit: 50,000 input tokens/minute (org: 852af55f)
-- Pain research 429: Zero-Commission Venezuelan Diaspora Remittance App
-- Distribution research 429: same opp
-Fix: Purchase credits at console.anthropic.com/settings/billing to reach Tier 2
-Cost to unlock:  minimum purchase
+## Done this session (2026-06-10) — see git log for detail
+- Full principal-level audit; Milestone 1 complete (all Critical/High fixed)
+- C1: enrichment merge-back + 30d research TTLs (was discarding paid research daily)
+- Model IDs fixed in 4 modules (claude-haiku-4-5 — dated IDs don't exist, calls failed silently)
+- 14 silent excepts now log; free-research CLI lists unconfigured sources
+- Test suites unified: 419 colocated tests, `uv run pytest` runs everything; 3 live-data
+  leaks fixed (pain_library, pipeline_failures, .env via OPP_OS_SKIP_DOTENV in conftest)
+- scoring_weights.yaml = single source of truth; DEFAULT_WEIGHTS = loud equal-weight fallback
+- Wave 1 bridge: opp-os like / liked / export / kickoff + dashboard Like/Download buttons
+- Wave 3.2: idempotent normalization (raw_final_score only input; 0/80 drift verified)
+- env.py: unified .env bootstrap at CLI/dashboard startup
+- Apify fixed live: v3 client API, real actor input schemas, $0.25/run caps,
+  apify-research CLI for the standing portfolio
+- news_signal_count: relevance-filtered (raw counts saturate at max_results)
+- Tavily replaced dead Jina as pain-search fallback
 
-## Build Candidates (from Phase 7B, 2026-04-04)
-| Rank | Opportunity | Pain | Dist | CAC | Lane |
-|------|-------------|------|------|-----|------|
-| 1 | E-Commerce Trust and Escrow Layer (VE) | 8.5 | YES | -5 organic | now |
-| 2 | Diaspora-to-VE Payroll + Freelancer Payments | 8.2 | YES | 0-150 organic | now |
-| 3 | VE Remittance Corridor Digitization | 8.5 | YES | -15 organic | soon |
+## Next Actions (plan: docs/plans/2026-06-10-research-scoring-validation-upgrade.md)
+1. Wave 2.1: kill-thesis pass — inverted searches top-5, strength>=7 caps score.
+   SEMANTICS-HEAVY: review cap interaction with apply_caps() carefully.
+2. Wave 2.2: Sonnet deep-dive synthesis on #1 opp (~$0.10/dive, budget approved)
+3. Wave 2: G2 retool — productUrls from direct_competitors (category mode returns
+   product summaries, not reviews) or Tavily site:g2.com + Haiku extraction
+4. Wave 3.3: calibration loop (like/kickoff/validate record outcomes; opp-os calibration)
+5. Wave 4.1/4.2: evidence-gated validation sections + experiment kit
+6. Milestone 2 backlog: shared retry helper, CLI smoke tests, consolidate 6 .env
+   parsers onto env.py
 
-## Data Coverage (79 total opps � as of 2026-04-04)
-- distribution_validated = True: 61/79 (77%)
-- first_10_customer_path: 79/79 (100%)
-- pain_validation_score: 79/79 (100%)
-- Notion sync: 79/79 (100%)
-
-## Next Actions
-1. [BLOCKER] Purchase Anthropic credits (+) at console.anthropic.com/settings/billing
-2. [ ] After credits: run uv run opp-os daily from Projects/.worktrees/daily-opportunity-os/
-3. [ ] Validate that pain_researched_at and distribution_researched_at populate in opportunities.jsonl
-4. [ ] Reddit test r/vzla for Escrow (was due 2026-04-09 � unknown if completed)
-5. [ ] Reddit test r/dev_venezuela for Payroll (same)
+## Hard-won context (do not rediscover)
+- NEVER read Projects/.worktrees/daily-opportunity-os/ — stale copy, reports phantom bugs
+- rescore-all --dry-run on unchanged data MUST report 0 changed (idempotency invariant)
+- Tests must never write live data files — conftest fixtures guard this; extend them
+  for any new file-writing module
+- Apify G2 category mode returns garbage (404 products, rating: null) — parser skips
+  rating-less items; competitor_weakness_score stays null until retool
+- Tavily basic search = 1 credit regardless of max_results
 
 ## Pipeline Commands
-- Daily run: cd Projects/.worktrees/daily-opportunity-os && uv run opp-os daily
+- Daily: uv run opp-os daily | Standing enrichment: opp-os free-research / apify-research
+- Bridge: opp-os like <id> -> export <id> -> kickoff <id>
 - Dashboard: uv run streamlit run src/opportunity_os/dashboard.py
-- Tests: uv run pytest tests/ -q
+- Tests: uv run pytest -q (419) | Rescore: opp-os rescore-all --dry-run
