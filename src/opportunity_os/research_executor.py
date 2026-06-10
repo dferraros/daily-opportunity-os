@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 from opportunity_os.pipeline_monitor import log_failure
 
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5")
 MAX_SEARCH_USES = 1  # fallback: 1 search per call — web_search is $10/1000 searches
 
 
@@ -94,13 +94,14 @@ def run_research_executor(opp: dict) -> dict:
     except Exception as exc:
         log_failure("research_executor.combined", exc, opp_id=opp.get("id", "unknown"))
 
-    # Merge Firecrawl phrases into exact_customer_phrases
+    # Merge Firecrawl phrases into exact_customer_phrases.
+    # Spread, never assign: if step 3 raised, opp is still the caller's dict.
     if firecrawl_phrases:
         existing = opp.get("exact_customer_phrases") or []
         merged = list(dict.fromkeys(existing + firecrawl_phrases))[:5]
-        opp["exact_customer_phrases"] = merged
+        opp = {**opp, "exact_customer_phrases": merged}
 
-    opp["research_executed_at"] = datetime.now().isoformat()
+    opp = {**opp, "research_executed_at": datetime.now().isoformat()}
     logger.info("[research_executor] Research complete: %s", name[:50])
     return opp
 
