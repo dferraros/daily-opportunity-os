@@ -29,7 +29,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5")
 
 
 # ─── Channel Map by Geography ─────────────────────────────────────────────────
