@@ -14,6 +14,20 @@
 - Runtime: Haiku everywhere; ONE Sonnet call for deep-dive synthesis on the #1 opp only (Wave 2.2).
 - Implementation: Waves 1, 2.3, 3.2, 4.2 = any model (mechanical). Waves 2.1, 3.1, 3.3, 4.1 = strong model or careful review (rank-order semantics).
 
+## Budget (Daniel, 2026-06-10): hard ceiling $20/mo total
+
+- Anthropic: $10 cap (console limit) -- expected $4-8
+- Apify: $5 cap beyond free credit (console usage limit) -- expected $0-3.
+  DECISION: Apify stays (curious_coder actor is pay-per-result $0.40/1k, NOT rental;
+  earlier $30/mo figure was a different rental actor). Serper site: proxy demoted to
+  fallback-only -- LinkedIn blocks Google indexing, proxy counts would be noise
+  laundered as "data-backed". Watch first-run cost in Apify console; if the G2 actor
+  is rental-priced, swap to a pay-per-result alternative.
+- Tavily/Serper/Firecrawl/Exa/Reddit/Jina: free tiers ($0; Serper one-time top-up when
+  signup credits exhaust, ~$1-2/mo amortized)
+- Headroom funds: Wave 2.2 Sonnet synthesis (~$3/mo) first, then widen paid research
+  top-5 -> top-8 (~$2-3/mo) after deep-dive quality is proven.
+
 ## Wave 1 — Conviction-to-action bridge (key-independent, zero API cost)
 
 - **1.1 `opp-os like <opp_id>`** (S): stamps `liked_at` + `recommendation="build"`; `opp-os liked` lists; dashboard surfaces liked opps. `--undo` clears.
