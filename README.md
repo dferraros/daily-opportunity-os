@@ -4,7 +4,7 @@ Production-grade daily business intelligence system — scouts, scores, and rank
 
 Built for Claude Code. Runs daily. Produces Notion-ready outputs.
 
-**Version:** v2.1 | **Tests:** 419 passing
+**Version:** v2.1 | **Tests:** 449 passing
 
 ---
 
@@ -44,7 +44,9 @@ uv run streamlit run src/opportunity_os/dashboard.py
 | `opp-os rescore-all --dry-run` | Preview score deltas |
 | `opp-os like <id>` | Mark as liked (conviction flag, sets recommendation=build) |
 | `opp-os liked` | List liked opportunities |
-| `opp-os export <id>` | Self-contained report bundle → `exports/<id>/report.md` |
+| `opp-os build <id>` | Build conviction bridge: validation kit or full business plan (validate mode or build mode) |
+| `opp-os outcome <id> <status>` | Record outcome (validated / killed / shipped / revenue) |
+| `opp-os export <id>` | Self-contained report bundle -> `exports/<id>/report.md` |
 | `opp-os kickoff <id>` | Claude Code starter pack (PROJECT.md + kickoff prompt) |
 | `opp-os search <query>` | Keyword search |
 | `opp-os stats` | Portfolio summary + weekly quota |
@@ -52,6 +54,27 @@ uv run streamlit run src/opportunity_os/dashboard.py
 | `opp-os backups` | List snapshots |
 | `opp-os restore <file>` | Restore from snapshot |
 | `opp-os audit` | Pipeline failure audit by step |
+
+### Conviction Bridge
+
+The conviction bridge moves an opportunity from "liked" through validation to a shipped product:
+
+1. **like** — Mark conviction (sets `liked_at`, `recommendation=build`)
+2. **build validate** — 2-week customer validation kit (interview script, decision rules, requirements seed)
+3. **outcome validated** — Record pain confirmation (sets `pain_validated_date`)
+4. **build build** — Full business plan + MVP spec + Claude Code launch (earned by validation)
+5. **outcome shipped** / **outcome revenue** — Mark product milestones
+
+```bash
+opp-os like <id>
+opp-os build <id>                    # validate mode by default
+# -> Do the interviews, then:
+opp-os outcome <id> validated
+opp-os build <id>                    # auto-switches to build mode
+# -> Build MVP, then:
+opp-os outcome <id> shipped
+opp-os outcome <id> revenue
+```
 
 ---
 
@@ -203,7 +226,7 @@ src/opportunity_os/
 ## Development
 
 ```bash
-uv run pytest                           # 419 tests
+uv run pytest                           # 449 tests
 uv run pytest -v -k "test_kill_gate"    # specific suite
 uv run opp-os rescore-all --dry-run     # preview score changes
 uv run opp-os free-research --top-n 20 # free enrichment pass
