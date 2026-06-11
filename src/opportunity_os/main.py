@@ -12,6 +12,7 @@ Commands:
 import logging
 import sys
 import os
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -788,6 +789,253 @@ def free_research(top_n, force, dry_run):
         f"\nResearched {research_count}/{len(candidates)} opps. "
         f"{changed} scores changed. Wrote {n} records."
     )
+
+
+@cli.command()
+@click.argument("opp_id")
+@click.option("--dir", "out_dir", default=None, help="Output directory. Default: Projects/<slug>/")
+@click.option(
+    "--mode",
+    type=click.Choice(["validate", "build", "auto"]),
+    default="auto",
+    help="Mode: validate (2-week kit only) or build (full pack). Default: auto (detect via pain_validated_date).",
+)
+@click.option("--launch/--no-launch", default=False, help="Launch claude in target dir (requires --mode build).")
+@click.option("--force", is_flag=True, help="Skip conviction gate (like required); overwrite non-empty dir.")
+@click.option("--dry-run", is_flag=True, help="Show what would be created without writing.")
+def build(opp_id, out_dir, mode, launch, force, dry_run):
+    """Build a conviction bridge: validation kit or full business plan + MVP spec.
+
+    Writes PROJECT.md, kickoff-prompt.md, report.md, validation-kit.md, REQUIREMENTS.md,
+    and optionally business-plan.md. Stamps the opportunity record with build metadata.
+
+    Flow: like -> build validate -> outcome validated -> build build -> outcome shipped.
+    """
+    from datetime import datetime
+    from pathlib import Path
+    import subprocess
+    import re
+
+    from opportunity_os.kickoff import build_project_md, build_kickoff_prompt, _slugify
+    from opportunity_os.export_report import build_opportunity_report_md
+    from opportunity_os.storage import get_opportunity_by_id, update_opportunity, get_project_root
+    from opportunity_os.venture_pack import write_venture_pack
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    name = (opp.get("name") or opp_id)[:60]
+
+    # CONVICTION GATE
+    if not opp.get("liked_at") and not force:
+        click.echo(
+            f"Not liked yet: {name}\n"
+            f"  Run:  opp-os like {opp_id}\n"
+            f"  Or:   opp-os build {opp_id} --force",
+            err=True,
+        )
+        sys.exit(1)
+
+    # MODE RESOLUTION
+    if mode == "auto":
+        if opp.get("pain_validated_date"):
+            resolved_mode = "build"
+        else:
+            resolved_mode = "validate"
+    else:
+        resolved_mode = mode
+
+    # TARGET DIR
+    if out_dir:
+        target = Path(out_dir)
+    else:
+        slug = _slugify(name)
+        target = Path(get_project_root()) / "Projects" / slug
+
+    # CHECK FOR EXISTING DIR
+    if target.exists() and any(target.iterdir()):
+        if not force:
+            click.echo(
+                f"Directory exists and is not empty: {target}\n"
+                f"  Run with --force to proceed (will not delete, only add/overwrite our files)",
+                err=True,
+            )
+            sys.exit(1)
+        click.echo(f"[force] Will add/overwrite files in: {target}")
+    else:
+        target.mkdir(parents=True, exist_ok=True)
+
+    # DRY-RUN PREVIEW
+    if dry_run:
+        click.echo(f"[dry-run] Would build in {resolved_mode} mode:")
+        click.echo(f"  Directory: {target}")
+        click.echo(f"  Files:")
+        click.echo(f"    - PROJECT.md")
+        click.echo(f"    - kickoff-prompt.md")
+        click.echo(f"    - report.md")
+        click.echo(f"    - validation-kit.md")
+        click.echo(f"    - REQUIREMENTS.md")
+        if resolved_mode == "build":
+            click.echo(f"    - business-plan.md (if API available)")
+        click.echo(f"  Record stamps:")
+        click.echo(f"    - kickoff_at={datetime.now().isoformat()}")
+        click.echo(f"    - build_mode={resolved_mode}")
+        if resolved_mode == "validate" and not opp.get("validation_start_date"):
+            click.echo(f"    - validation_start_date=today")
+            click.echo(f"    - validation_deadline=today+14d")
+        click.echo("[dry-run] No files written, no records stamped.")
+        return
+
+    # WRITE FILES
+    target.mkdir(parents=True, exist_ok=True)
+
+    files_written = []
+
+    # PROJECT.md + kickoff-prompt.md
+    for filename, content in [
+        ("PROJECT.md", build_project_md(opp)),
+        ("kickoff-prompt.md", build_kickoff_prompt(opp)),
+        ("report.md", build_opportunity_report_md(opp)),
+    ]:
+        path = target / filename
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(content, encoding="utf-8")
+        os.replace(tmp, path)
+        files_written.append(filename)
+
+    # venture pack
+    result = write_venture_pack(opp, target, include_business_plan=(resolved_mode == "build"))
+    files_written.extend([Path(f).name for f in result["files"]])
+    if result["skipped"]:
+        click.echo(f"  Skipped: {', '.join(result['skipped'])}")
+
+    # GIT INIT (non-fatal)
+    try:
+        git_dir = target / ".git"
+        if not git_dir.exists():
+            subprocess.run(
+                ["git", "init"],
+                cwd=str(target),
+                capture_output=True,
+                check=False,
+                timeout=5,
+            )
+            # Create .gitignore if absent
+            gitignore = target / ".gitignore"
+            if not gitignore.exists():
+                gitignore.write_text(".env\n", encoding="utf-8")
+    except Exception as exc:
+        logger.warning("build: git init failed: %s", exc)
+
+    # STAMP OPPORTUNITY RECORD
+    stamps = {
+        "kickoff_at": datetime.now().isoformat(),
+        "build_mode": resolved_mode,
+    }
+
+    if resolved_mode == "validate":
+        if not opp.get("validation_start_date"):
+            stamps["validation_start_date"] = datetime.now().strftime("%Y-%m-%d")
+            stamps["validation_deadline"] = (
+                datetime.now() + timedelta(days=14)
+            ).strftime("%Y-%m-%d")
+
+    update_opportunity(opp_id, stamps)
+
+    # ECHO SUMMARY
+    click.echo(f"\nBuild complete: {name}")
+    click.echo(f"  Mode: {resolved_mode}")
+    click.echo(f"  Directory: {target}")
+    click.echo(f"  Files: {', '.join(files_written)}")
+
+    if resolved_mode == "validate":
+        click.echo(f"\nNext: Run the validation-kit.md interviews (deadline {stamps.get('validation_deadline', 'TBD')})")
+        click.echo(f"  Then: opp-os outcome {opp_id} validated")
+    else:
+        click.echo(f"\nNext: Review PROJECT.md and kickoff-prompt.md, then:")
+        if launch:
+            click.echo(f"  Claude is launching in the directory...")
+        else:
+            click.echo(
+                f"  Run: claude 'Read PROJECT.md and kickoff-prompt.md, then follow the kickoff instructions.'"
+            )
+
+    # LAUNCH (optional, Windows-safe)
+    if launch:
+        try:
+            # Windows: start cmd in target dir with claude bootstrap prompt
+            subprocess.Popen(
+                [
+                    "cmd",
+                    "/c",
+                    f"cd /d {target} && claude 'Read PROJECT.md and kickoff-prompt.md, then follow the kickoff instructions.'",
+                ],
+                shell=False,
+            )
+            click.echo(f"  Claude launching in: {target}")
+        except OSError as exc:
+            logger.warning("build: could not launch claude: %s", exc)
+            click.echo(f"  Manual: cd {target} && claude ...", err=True)
+
+
+@cli.command()
+@click.argument("opp_id")
+@click.argument("status", type=click.Choice(["validated", "killed", "shipped", "revenue"]))
+@click.option("--note", default=None, help="Outcome note/reason (optional).")
+def outcome(opp_id, status, note):
+    """Record the outcome of a conviction bridge phase.
+
+    Stamps opportunity with outcome metadata. Used to close validation window or
+    record product outcomes (shipped, generating revenue).
+
+    Statuses:
+      validated  -- pain confirmed, ready for build mode
+      killed     -- validation failed or founder decided to stop
+      shipped    -- MVP launched, seeking first customers
+      revenue    -- first paying customer live
+    """
+    from datetime import datetime
+
+    from opportunity_os.storage import get_opportunity_by_id, update_opportunity
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    name = (opp.get("name") or opp_id)[:60]
+
+    stamps = {
+        "outcome": status,
+        "outcome_note": note or f"outcome: {status}",
+        "outcome_at": datetime.now().isoformat(),
+    }
+
+    # Status-specific stamps
+    if status == "killed":
+        stamps["kill_decision"] = True
+        stamps["kill_reason"] = f"manual outcome: {note or 'killed after validation'}"
+        stamps["kill_date"] = datetime.now().strftime("%Y-%m-%d")
+        stamps["stage"] = "killed"
+        stamps["portfolio_lane"] = "no"
+    elif status == "validated":
+        if not opp.get("pain_validated_date"):
+            stamps["pain_validated_date"] = datetime.now().strftime("%Y-%m-%d")
+        stamps["recommendation"] = "build"
+
+    update_opportunity(opp_id, stamps)
+
+    click.echo(f"Outcome recorded: {name}")
+    click.echo(f"  Status: {status}")
+    if note:
+        click.echo(f"  Note: {note}")
+
+    if status == "validated":
+        click.echo(f"\nNext: opp-os build {opp_id} --mode build")
+    elif status == "killed":
+        click.echo(f"\nMarked for kill-list review.")
 
 
 if __name__ == "__main__":

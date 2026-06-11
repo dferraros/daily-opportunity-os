@@ -313,6 +313,13 @@ class Opportunity(BaseModel):
     validation_deadline: Optional[str] = None          # validation pipeline: window end
     scoring_incomplete: Optional[bool] = None          # True = 0.0 means UNSCORED, not killed
 
+    # ── Conviction Bridge (build command) ───────────────────────────────────
+    kickoff_at: Optional[str] = None                   # ISO timestamp: build command invoked
+    build_mode: Optional[str] = None                   # "validate" | "build" — determines what files written
+    outcome: Optional[str] = None                      # "validated" | "killed" | "shipped" | "revenue"
+    outcome_note: Optional[str] = None                 # outcome reason/context
+    outcome_at: Optional[str] = None                   # ISO timestamp: outcome recorded
+
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""
         return self.model_dump_json()

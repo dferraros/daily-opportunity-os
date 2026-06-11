@@ -37,7 +37,7 @@ def test_pipeline_written_fields_are_declared():
     """Pydantic's default extra='ignore' silently DROPS undeclared fields on any
     dict -> Opportunity -> dict round-trip. Every field a pipeline step writes
     must therefore be declared. These 19 were found in live data without a
-    model declaration during the 2026-06-10 audit."""
+    model declaration during the 2026-06-10 audit, plus 5 conviction bridge fields."""
     pipeline_fields = [
         "market_momentum_score", "competitor_weakness_score", "pain_signal_count",
         "distribution_quality", "thesis_fit_score", "willingness_to_pay_raw",
@@ -46,6 +46,7 @@ def test_pipeline_written_fields_are_declared():
         "deep_dive_status", "kill_date", "pain_validated_date",
         "distribution_validated_date", "validation_start_date", "validation_deadline",
         "scoring_incomplete",
+        "kickoff_at", "build_mode", "outcome", "outcome_note", "outcome_at",
     ]
     missing = [f for f in pipeline_fields if f not in Opportunity.model_fields]
     assert not missing, f"Pipeline-written fields missing from model: {missing}"
