@@ -45,6 +45,18 @@ NEG_REVIEW_RATE_MAX: float = 0.8      # 80% negative reviews -> 10/10 competitor
 NEG_REVIEW_RATE_NEUTRAL_SCORE: float = 5.0  # 0% negative reviews -> 5/10 (neutral)
 
 # ---------------------------------------------------------------------------
+# Evidence coverage -- how much of a score rests on data vs AI guesses
+# ---------------------------------------------------------------------------
+DATA_BACKED_FIELDS = frozenset([
+    "pain_validation_score",      # pain research / pain_signal_count fallback
+    "market_momentum_score",      # Apify LinkedIn job postings
+    "competitor_weakness_score",  # Apify G2 negative review rate
+    "distribution_quality",       # derived from distribution_validated test
+])
+HIGH_SCORE_EVIDENCE_BAR: float = 7.5  # final_score at/above this demands evidence
+MIN_EVIDENCE_COVERAGE: float = 0.50   # less than half the collectable evidence = guesswork
+
+# ---------------------------------------------------------------------------
 # Layer field definitions
 # ---------------------------------------------------------------------------
 ATTRACTIVENESS_FIELDS = [
@@ -392,6 +404,31 @@ def _normalize_data_backed_scores(opp: dict) -> dict:
     return updates
 
 
+def compute_evidence_coverage(opp: dict, weights: dict) -> float:
+    """Fraction of COLLECTABLE evidence weight actually collected for this opp.
+
+    Only 4 of 23 dimensions can be data-backed, so an absolute weight-fraction
+    would max out around 0.19 even with every signal collected -- structurally
+    unreachable thresholds. Instead: denominator = total weight of all
+    data-backed fields in the weight map (what evidence COULD exist),
+    numerator = weight of those actually present on the opp.
+    0.0 = pure AI inference; 1.0 = every collectable signal collected.
+    """
+    weight_map = weights.get("weights", {})
+    collectable = sum(
+        w for field, w in weight_map.items()
+        if field in DATA_BACKED_FIELDS and w > 0
+    )
+    if collectable == 0:
+        return 0.0
+    collected = sum(
+        weight_map.get(field, 0.0)
+        for field in DATA_BACKED_FIELDS
+        if opp.get(field) is not None
+    )
+    return collected / collectable
+
+
 def score_opportunity(opp_dict: dict) -> dict:
     """Main scoring function.
 
@@ -473,5 +510,19 @@ def score_opportunity(opp_dict: dict) -> dict:
         result["scoring_incomplete"] = True
     else:
         result.pop("scoring_incomplete", None)
+
+    # Evidence coverage: make guess-built conviction visible. A high score with
+    # near-zero coverage is a research-queue signal, not a green light. The flag
+    # is stamped only when true and cleared otherwise so rescoring stays idempotent.
+    coverage = compute_evidence_coverage(opp, weights)
+    result["evidence_coverage"] = round(coverage, 4)
+    if (
+        has_scoreable_field
+        and final >= HIGH_SCORE_EVIDENCE_BAR
+        and coverage < MIN_EVIDENCE_COVERAGE
+    ):
+        result["low_evidence_flag"] = True
+    else:
+        result.pop("low_evidence_flag", None)
 
     return result
