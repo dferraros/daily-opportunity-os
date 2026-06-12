@@ -16,6 +16,12 @@ competition_intensity, operational_simplicity, distribution_accessibility, n=76)
 "execution ease" factor counted 5x; candidate consolidation at next weight edit.
 Leak fixed: conftest now redirects outcome_tracking._outcome_file to tmp (bridge CLI
 tests were writing live data).
+Follow-up shipped (1eb9806, d1d4737 — local): execution-ease consolidation
+(capital_efficiency + operational_simplicity -> 0, speed_to_mvp 0.04 -> 0.07 carrier;
+portfolio rescored 74/80 small corrections, idempotency 0/80) and research-queue
+priority (low_evidence_flag jumps free-research + apify-research queues). 494 tests.
+NOTE: repo history was rewritten + force-pushed 2026-06-12 (employer/external-project
+purge) — re-clone anywhere a stale clone exists.
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
