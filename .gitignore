@@ -56,3 +56,10 @@ scripts/notion_matches.json
 
 # User scripts outside project scope
 Scripts/
+
+# Personal documents and unrelated Desktop folders (never commit)
+DAFS Docs/
+Projects OS/
+.github/DAF CV/
+/*.pdf
+data/machine_metrics.jsonl
