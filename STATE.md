@@ -1,5 +1,21 @@
 # STATE.md — Daily Opportunity OS
-Last updated: 2026-06-10 (second audit pass: multi-agent audit + 3 fix commits pushed)
+Last updated: 2026-06-12 (calibration loop shipped: goal rubric + calibrate CLI + evidence coverage)
+
+## Calibration loop (2026-06-12) — Wave 3.3 shipped, NOT pushed yet
+Goal rubric: docs/plans/2026-06-12-scoring-calibration-goal.md ("the score must predict
+reality"). Commits on main (local, push pending): 9813ca9 evidence_coverage +
+low_evidence_flag (collected/collectable evidence, flag at final>=7.5 & coverage<0.5),
+e42a94f calibration engine + `opp-os calibrate` (bucket discrimination, Brier skill,
+dimension effects, damped never-auto-applied proposals, HOLD_WEIGHTS_VALIDATE_ONLY under
+30 resolved outcomes), ccccb9b goal doc, 5c0a2e7 leaked-data cleanup. Tests 491 green;
+rescore-all --dry-run 0/80.
+First live findings: (1) ZERO resolved outcomes — bottleneck is recording; bridge
+`outcome` cmd now auto-snapshots into outcome_tracking.jsonl BEFORE kill cap zeroes the
+score. (2) speed_to_mvp redundancy cluster (spearman 0.71-0.82 with capital_efficiency,
+competition_intensity, operational_simplicity, distribution_accessibility, n=76) — one
+"execution ease" factor counted 5x; candidate consolidation at next weight edit.
+Leak fixed: conftest now redirects outcome_tracking._outcome_file to tmp (bridge CLI
+tests were writing live data).
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
