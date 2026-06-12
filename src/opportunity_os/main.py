@@ -1013,6 +1013,18 @@ def outcome(opp_id, status, note):
         "outcome_at": datetime.now().isoformat(),
     }
 
+    # Snapshot into the calibration log BEFORE stamping: for 'killed' the kill
+    # cap will zero final_score on the next rescore, destroying the record of
+    # what the model predicted. This snapshot is what `opp-os calibrate` reads.
+    from opportunity_os.engines.calibration_engine import BRIDGE_OUTCOME_MAP
+    from opportunity_os.outcome_tracking import record_outcome
+
+    try:
+        record_outcome(opp_id, BRIDGE_OUTCOME_MAP[status], notes=note or f"bridge: {status}")
+    except OSError as exc:
+        logger.error("outcome: calibration snapshot failed for %s: %s", opp_id, exc)
+        click.echo("  Warning: calibration snapshot failed (stamp still applied).", err=True)
+
     # Status-specific stamps
     if status == "killed":
         stamps["kill_decision"] = True
@@ -1036,6 +1048,80 @@ def outcome(opp_id, status, note):
         click.echo(f"\nNext: opp-os build {opp_id} --mode build")
     elif status == "killed":
         click.echo(f"\nMarked for kill-list review.")
+
+
+@cli.command()
+@click.option(
+    "--include-stamps/--no-include-stamps",
+    default=True,
+    show_default=True,
+    help="Also derive outcomes from conviction-bridge stamps on opportunity records.",
+)
+def calibrate(include_stamps):
+    """Quantitative calibration: does final_score actually predict outcomes?
+
+    Reads outcome_tracking.jsonl (plus bridge stamps), then reports score-bucket
+    discrimination, Brier skill vs base rate, per-dimension effect sizes, and a
+    damped weight proposal. Proposals are NEVER auto-applied -- edit
+    config/scoring_weights.yaml manually with an audit comment.
+    """
+    from opportunity_os.engines.calibration_engine import (
+        calibration_summary,
+        dimension_redundancy,
+        outcomes_from_opportunity_stamps,
+    )
+    from opportunity_os.engines.scoring_engine import load_weights
+    from opportunity_os.outcome_tracking import SCORING_DIMENSIONS, _read_outcomes
+    from opportunity_os.storage import read_all_opportunities
+
+    outcomes = _read_outcomes()
+    all_opps = read_all_opportunities()
+    if include_stamps:
+        tracked_ids = {o.get("opp_id") for o in outcomes}
+        derived = [
+            d for d in outcomes_from_opportunity_stamps(all_opps, SCORING_DIMENSIONS)
+            if d["opp_id"] not in tracked_ids
+        ]
+        outcomes = outcomes + derived
+        click.echo(f"Outcomes: {len(outcomes)} ({len(derived)} derived from bridge stamps)")
+    else:
+        click.echo(f"Outcomes: {len(outcomes)} (tracking log only)")
+
+    weights = load_weights().get("weights", {})
+    summary = calibration_summary(outcomes, weights, SCORING_DIMENSIONS)
+
+    disc = summary["discrimination"]
+    click.echo(f"\n-- Discrimination: {disc['verdict']} "
+               f"({disc['resolved_count']} resolved outcomes)")
+    for b in disc.get("buckets", []):
+        rate = f"{b['success_rate']:.0%}" if b["success_rate"] is not None else "--"
+        click.echo(f"   bucket {b['bucket']} (n={b['n']}): success rate {rate}")
+
+    brier = summary["brier"]
+    if "skill" in brier:
+        click.echo(f"\n-- Brier: {brier['brier']} vs base-rate {brier['brier_reference']} "
+                   f"-> skill {brier['skill']:+.2f} (positive = score beats guessing the average)")
+
+    if summary["dimension_effects"]:
+        click.echo("\n-- Dimension effects (success avg - failure avg, top 8):")
+        for e in summary["dimension_effects"][:8]:
+            click.echo(f"   {e['dimension']:<28} {e['effect']:+.3f} "
+                       f"(succ {e['avg_success']} vs fail {e['avg_failure']}, "
+                       f"n={e['n_success']}+{e['n_failure']})")
+
+    proposal = summary["weight_proposal"]
+    click.echo(f"\n-- Weight proposal: {proposal.get('recommendation', proposal.get('note', ''))}")
+    for dim, adj in proposal.get("adjusted_dimensions", {}).items():
+        click.echo(f"   {dim:<28} {adj['current']:.4f} -> {adj['proposed']:.4f} "
+                   f"(effect {adj['effect']:+.3f}, n={adj['n']})")
+    if proposal.get("adjusted_dimensions"):
+        click.echo("   Apply manually in config/scoring_weights.yaml with an audit comment.")
+
+    redundant = dimension_redundancy(all_opps, SCORING_DIMENSIONS)
+    if redundant:
+        click.echo("\n-- Redundant dimension pairs (|spearman| >= 0.6 -- double-counted signal):")
+        for r in redundant[:5]:
+            click.echo(f"   {r['dim_a']} ~ {r['dim_b']}: rho {r['spearman']} (n={r['n']})")
 
 
 if __name__ == "__main__":
