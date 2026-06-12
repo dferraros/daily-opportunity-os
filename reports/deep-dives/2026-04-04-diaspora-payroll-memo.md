@@ -20,8 +20,8 @@ Spanish tech company (5–50 employees) with 2–10 Venezuelan remote contractor
 - Spain's 2025 digital nomad visa + remote work boom sent Spanish companies actively hiring Latin American talent cheaper than EU hires — supply and demand meeting with no infrastructure.
 
 ## Why Daniel Wins
-**Wedges matched: 5/6** — growth_gtm (WhatsApp + Reddit community launch), latam_intuition (knows VE informal payment rails firsthand), fintech_crypto_adjacency ([external] USDT infrastructure directly applicable), speed_to_prototype (WhatsApp bot + Sheets + USDT API = 2-week concierge MVP), distribution_instincts (Reddit r/dev_venezuela is an untapped cold outreach goldmine).
-**Strongest wedge:** [external] USDT settlement rails + Daniel's 10 years of CRM lifecycle loops = can build the "contractor gets paid, employer gets receipt, accounting reconciles" in weeks not months.
+**Wedges matched: 5/6** — growth_gtm (WhatsApp + Reddit community launch), latam_intuition (knows VE informal payment rails firsthand), fintech_crypto_adjacency (Employer USDT infrastructure directly applicable), speed_to_prototype (WhatsApp bot + Sheets + USDT API = 2-week concierge MVP), distribution_instincts (Reddit r/dev_venezuela is an untapped cold outreach goldmine).
+**Strongest wedge:** Employer USDT settlement rails + Daniel's 10 years of CRM lifecycle loops = can build the "contractor gets paid, employer gets receipt, accounting reconciles" in weeks not months.
 
 ## First EUR 1,000 Path
 **Customer:** Spanish startup founder paying 3–5 Venezuelan contractors monthly via manual USDT.
@@ -33,7 +33,7 @@ Spanish tech company (5–50 employees) with 2–10 Venezuelan remote contractor
 ## Key Risks
 1. **Contractor trust:** Venezuelan contractors are burned by payment scams — won't trust a new tool with first payroll — *mitigation: start with 1 contractor you know personally and document the flow publicly.*
 2. **FX volatility:** USDT/bolivar rate moves 2–5% daily — *mitigation: settle in USDT to contractor, never bolivar; employer invoiced in EUR.*
-3. **[external] conflict:** Same concern as escrow memo — *mitigation: confirm employment contract scope, this is non-Spain-market.*
+3. **Employer conflict:** Same concern as escrow memo — *mitigation: confirm employment contract scope, this is non-Spain-market.*
 
 ## Kill Conditions
 - r/dev_venezuela post gets 10+ responses but 0 employers willing to pay €29/contractor vs continuing manual process by 2026-04-11.

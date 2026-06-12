@@ -50,8 +50,8 @@ Format: `[version] date — description`
 
 ### Code quality
 - `pyproject.toml`: Added `[tool.pytest.ini_options] testpaths = ["src/opportunity_os"]` — isolates pytest from 19 unrelated projects in Desktop root that caused collection errors.
-- `.gitignore`: Added `data/backups/`, `.pytest_cache/`, `.playwright-mcp/`, `Arranca/`, `[external]/`, `[external]-growth-model/`, `Obsidian/`, `*.lnk`, `desktop.ini`, `.claude/launch.json`, `.claude/worktrees/`, `Reports/deep-dives/`, `reports/validation/`, `Scripts/`.
-- Removed stale tracked files: [external] project files, old reports, machine_metrics.jsonl, exports CSV.
+- `.gitignore`: Added runtime data, cache, OS artifacts, and unrelated local folder exclusions.
+- Removed stale tracked files: unrelated project files, old reports, machine_metrics.jsonl, exports CSV.
 
 ### Test coverage (53 → 105 tests)
 - `test_kill_gate.py` (10 tests) — all evaluate_kill_gate paths, format_kill_report

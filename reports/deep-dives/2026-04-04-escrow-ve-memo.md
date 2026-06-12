@@ -19,8 +19,8 @@ Venezuelan Instagram/WhatsApp seller with 20–100 transactions/month in Caracas
 - No fintech entered this vacuum post-2025 policy shift — first-mover window is open but will close when Mercado Libre or a regional fintech notices.
 
 ## Why Daniel Wins
-**Wedges matched: 6/6** — growth_gtm (launch + distribution loops), narrative_positioning (trust = story that sells itself), latam_intuition (VE informal commerce native), fintech_crypto_adjacency ([external] USDT rails directly usable), speed_to_prototype (USDT escrow + WhatsApp bot = 2–3 week MVP), distribution_instincts (WhatsApp referral from seller networks is the playbook).
-**Strongest wedge:** [external] already runs USDT rails — Daniel can white-label or integrate directly without building custody infrastructure.
+**Wedges matched: 6/6** — growth_gtm (launch + distribution loops), narrative_positioning (trust = story that sells itself), latam_intuition (VE informal commerce native), fintech_crypto_adjacency (Employer USDT rails directly usable), speed_to_prototype (USDT escrow + WhatsApp bot = 2–3 week MVP), distribution_instincts (WhatsApp referral from seller networks is the playbook).
+**Strongest wedge:** Employer already runs USDT rails — Daniel can white-label or integrate directly without building custody infrastructure.
 
 ## First EUR 1,000 Path
 **Customer:** Venezuelan Instagram seller, Caracas/Valencia, 50+ transactions/month in electronics or clothing.
@@ -32,7 +32,7 @@ Venezuelan Instagram/WhatsApp seller with 20–100 transactions/month in Caracas
 ## Key Risks
 1. **Regulatory:** VE informal market has low scrutiny now, but SUNACRIP could reclassify USDT custody as a financial service requiring license — *mitigation: structure as "payment coordination" not "custody", legal review week 1.*
 2. **Trust cold start:** Sellers won't use escrow if buyers don't demand it — *mitigation: start buyer-side (educate buyers first via TikTok fraud content, then sellers follow).*
-3. **[external] conflict:** Building a Venezuela product while employed at [external] — *mitigation: check employment contract non-compete scope, likely limited to Spain/EU markets.*
+3. **Employer conflict:** Building a Venezuela product while employed at a crypto exchange — *mitigation: check employment contract non-compete scope, likely limited to Spain/EU markets.*
 
 ## Kill Conditions
 - 20 cold DMs to active Instagram sellers yield 0 interest in being the "held" side (sellers prefer scamming to paying 2%) by Friday 2026-04-11.

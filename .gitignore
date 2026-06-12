@@ -15,18 +15,13 @@ data/backups/
 .pytest_cache/
 .playwright-mcp/
 
-# [external] internal projects — not part of this repo
-[external]-journey-os/
-[external]-pbw/
+# Unrelated local projects — not part of this repo
 Projects/
 memory/
 TASKS.md
 
 # Unrelated consulting work / Desktop projects
 .planning/quick/
-Arranca/
-[external]/
-[external]-growth-model/
 Obsidian/
 
 # Desktop shortcuts and OS artifacts
@@ -38,7 +33,7 @@ nul
 .claude/launch.json
 .claude/worktrees/
 
-# [external] LC-OS lifecycle playbook phases (wrong repo)
+# Foreign planning folders from other local projects (wrong repo)
 .planning/phases/01-foundation-safety-architecture/
 .planning/phases/02-taxonomy-competitive-benchmark/
 .planning/phases/03-scoring-system-master-trigger-table/
