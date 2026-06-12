@@ -7,6 +7,16 @@
 #                           defensibility=1.7, competition_intensity=1.6
 #   LOW variance (noise):   capital_efficiency=0.8, speed_to_mvp=0.9,
 #                           timing_tailwind=1.1, pain_severity=1.1
+#
+# Redundancy audit 2026-06-12 (opp-os calibrate, n=76 live opps):
+#   speed_to_mvp rank-correlates 0.71-0.82 with capital_efficiency,
+#   operational_simplicity, competition_intensity, distribution_accessibility —
+#   one "execution ease" factor was being counted multiple times.
+#   Consolidation: speed_to_mvp is the single carrier (0.04 -> 0.07, absorbing
+#   capital_efficiency); capital_efficiency and operational_simplicity -> 0.0
+#   (kept as keys so load_weights does not warn; score_layer skips weight 0).
+#   competition_intensity and distribution_accessibility kept — conceptually
+#   distinct and high-variance despite the correlation.
 weights:
   market_size: 0.10
   timing_tailwind: 0.06        # was 0.08 — clusters high (avg 8.3), low discrimination
@@ -14,8 +24,8 @@ weights:
   willingness_to_pay: 0.12     # was 0.08 — best discriminator (stdev=2.5), real commitment signal
   monetization_clarity: 0.09   # was 0.08 — stdev=2.0, strongly separates real opps from ideas
   pain_validation_score: 0.10  # was 0.08 — from execute_pain_research; absent = neutral
-  speed_to_mvp: 0.04           # was 0.08 — clusters at 8+ for everything; near-useless for ranking
-  capital_efficiency: 0.03     # was 0.07 — lowest variance (0.8); basically constant across opps
+  speed_to_mvp: 0.07           # 2026-06-12: carrier of the "execution ease" factor (absorbed capital_efficiency)
+  capital_efficiency: 0.0      # 2026-06-12: redundant with speed_to_mvp (spearman 0.82, n=76) — folded in
   distribution_accessibility: 0.08
   distribution_quality: 0.07   # derived from distribution_validated bool; absent = neutral
   competition_intensity: 0.09  # was 0.07 — stdev=1.6; inverted: lower competition → higher score
@@ -23,7 +33,7 @@ weights:
   regional_fit: 0.07
   founder_fit: 0.05
   ai_leverage: 0.04
-  operational_simplicity: 0.03 # was 0.05 — near-constant across opps
+  operational_simplicity: 0.0  # 2026-06-12: redundant with speed_to_mvp (spearman 0.73, n=76) — execution ease lives there
   regulatory_simplicity: 0.03  # was 0.04 — near-constant; almost never kills an opp
   revenue_speed_score: 0.04
   gross_margin_potential: 0.06   # SaaS/software=9, services=4, hardware=3; absent = neutral

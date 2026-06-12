@@ -149,8 +149,8 @@ def apify_research(top_n, force, dry_run):
         return
 
     alive = [o for o in all_opps if not o.get("kill_decision")]
-    sorted_alive = sorted(alive, key=lambda o: float(o.get("final_score") or 0), reverse=True)
-    candidates = sorted_alive[: min(top_n, 10)]
+    from opportunity_os.free_research import sort_research_candidates
+    candidates = sort_research_candidates(alive)[: min(top_n, 10)]
 
     if force:
         # Strip the skip-guard timestamp on copies -- never mutate storage dicts
@@ -698,10 +698,10 @@ def free_research(top_n, force, dry_run):
         )
         click.echo("  Zero news/pain counts may reflect missing keys, not absent demand.", err=True)
 
-    # Sort by score, take top-N alive opps as candidates
+    # Take top-N alive opps; low-evidence high scorers jump the queue
     alive = [o for o in all_opps if not o.get("kill_decision")]
-    sorted_alive = sorted(alive, key=lambda o: float(o.get("final_score") or 0), reverse=True)
-    candidates = sorted_alive[:top_n]
+    from opportunity_os.free_research import sort_research_candidates
+    candidates = sort_research_candidates(alive)[:top_n]
 
     # Apply skip guard unless --force
     if not force:
@@ -1121,7 +1121,10 @@ def calibrate(include_stamps):
     if redundant:
         click.echo("\n-- Redundant dimension pairs (|spearman| >= 0.6 -- double-counted signal):")
         for r in redundant[:5]:
-            click.echo(f"   {r['dim_a']} ~ {r['dim_b']}: rho {r['spearman']} (n={r['n']})")
+            # A pair is already harmless if either side carries no weight
+            neutralized = weights.get(r["dim_a"], 0) == 0 or weights.get(r["dim_b"], 0) == 0
+            marker = "  [resolved: weight 0]" if neutralized else ""
+            click.echo(f"   {r['dim_a']} ~ {r['dim_b']}: rho {r['spearman']} (n={r['n']}){marker}")
 
 
 if __name__ == "__main__":
