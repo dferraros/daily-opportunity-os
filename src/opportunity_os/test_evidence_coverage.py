@@ -123,3 +123,35 @@ class TestScoringStampsCoverage:
         snapshot = dict(opp)
         score_opportunity(opp)
         assert opp == snapshot
+
+
+class TestResearchQueuePriority:
+    """The evidence loop's reinvestment step: flagged opps jump the research queue."""
+
+    def test_flagged_opp_outranks_higher_scored_unflagged(self):
+        from opportunity_os.free_research import sort_research_candidates
+        opps = [
+            {"id": "a", "final_score": 9.0},
+            {"id": "b", "final_score": 7.6, "low_evidence_flag": True},
+            {"id": "c", "final_score": 8.2},
+        ]
+        ordered = sort_research_candidates(opps)
+        assert [o["id"] for o in ordered] == ["b", "a", "c"]
+
+    def test_score_order_within_groups(self):
+        from opportunity_os.free_research import sort_research_candidates
+        opps = [
+            {"id": "low_flag", "final_score": 7.5, "low_evidence_flag": True},
+            {"id": "high_flag", "final_score": 8.1, "low_evidence_flag": True},
+            {"id": "plain", "final_score": 9.9},
+        ]
+        ordered = sort_research_candidates(opps)
+        assert [o["id"] for o in ordered] == ["high_flag", "low_flag", "plain"]
+
+    def test_missing_score_treated_as_zero_and_input_unmutated(self):
+        from opportunity_os.free_research import sort_research_candidates
+        opps = [{"id": "noscore"}, {"id": "scored", "final_score": 1.0}]
+        snapshot = [dict(o) for o in opps]
+        ordered = sort_research_candidates(opps)
+        assert [o["id"] for o in ordered] == ["scored", "noscore"]
+        assert opps == snapshot

@@ -31,6 +31,25 @@ from opportunity_os import tavily_client
 
 logger = logging.getLogger(__name__)
 
+
+def sort_research_candidates(opps: list) -> list:
+    """Order research targets: low-evidence high scorers jump the queue.
+
+    A high score built on AI guesses (low_evidence_flag from the scoring
+    engine) is exactly where research changes decisions the most, so flagged
+    opps outrank unflagged ones regardless of score; within each group,
+    highest final_score first. Returns a new list; input is not mutated.
+    """
+    return sorted(
+        opps,
+        key=lambda o: (
+            1 if o.get("low_evidence_flag") else 0,
+            float(o.get("final_score") or 0),
+        ),
+        reverse=True,
+    )
+
+
 JINA_SEARCH_BASE = "https://s.jina.ai/"
 JINA_READER_BASE = "https://r.jina.ai/"
 HN_ALGOLIA_BASE = "https://hn.algolia.com/api/v1/search"
