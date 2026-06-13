@@ -62,11 +62,23 @@ kill_thesis with strength >= 7 and a capped score"). Dry-run verified target sel
 - All new pipeline fields declared on the model + drift guard (no silent-drop). 562 tests,
   ruff clean, idempotency 0/80.
 
-## Backlog now (all need Daniel / API spend or upstream data)
-- Populate direct_competitors upstream — the real unlock for competitor_weakness signal.
+## direct_competitors gap CLOSED in code (2026-06-12) — commit below
+research_executor now extracts direct_competitors in BOTH paths (combined web_search +
+Tavily-context), free (rides existing per-opp Claude call); added to deep_dive merge-back
+allowlist. Verified live: top opp -> Alegra, Siigo, Pagero, Fonoa; competitor_intelligence
+upgrades category_fallback -> grounded per-competitor search. 566 tests.
+CAVEAT (action needed): the 80 EXISTING opps have research_executed_at set, so the executor
+SKIPS them -- they stay competitor-less until re-researched. New opps get competitors
+automatically. To backfill existing: clear research_executed_at on target opps and re-run
+research (costs ~$0.01-0.015/opp, ~$1-2 for all 80). NOT done autonomously -- bulk data
+rewrite is Daniel's call. Could add a surgical `opp-os backfill-competitors` if wanted.
+
+## Backlog now (all need Daniel / API spend)
+- Backfill direct_competitors on existing 80 opps (optional, ~$1-2) to activate grounded
+  competitor signal portfolio-wide now rather than as opps refresh.
 - Record outcomes (`opp-os outcome <id> <status>`) — calibration still at 0 resolved.
 - Live `opp-os kill-thesis` run (Wave 2 success criterion).
-~13-14 commits ahead of origin, NONE pushed (Daniel pushes).
+~15 commits ahead of origin, NONE pushed (Daniel pushes).
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
