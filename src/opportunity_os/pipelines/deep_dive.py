@@ -148,6 +148,9 @@ def _build_deep_dive_content(opp: dict, opp_id: str, date: str, archetype: str,
     # --- Founder fit & Daniel's wedges ---
     lines += _section_founder_fit(opp).split("\n")
 
+    # --- Full per-variable scoring breakdown (every dimension + reason) ---
+    lines += _section_scoring_breakdown(opp)
+
     # --- Decision filters ---
     lines += _section_decision_filters(opp).split("\n")
 
@@ -401,6 +404,111 @@ def _section_founder_fit(opp: dict) -> str:
     lines.append("")
 
     return "\n".join(lines)
+
+
+_DATA_BACKED_DIMS = {
+    "pain_validation_score", "market_momentum_score",
+    "competitor_weakness_score", "distribution_quality",
+}
+_DIM_LABELS = {
+    "market_size": "Market size", "timing_tailwind": "Timing tailwind",
+    "pain_severity": "Pain severity", "willingness_to_pay": "Willingness to pay",
+    "monetization_clarity": "Monetization clarity", "pain_validation_score": "Pain validation (researched)",
+    "speed_to_mvp": "Speed to MVP", "capital_efficiency": "Capital efficiency",
+    "distribution_accessibility": "Distribution accessibility",
+    "distribution_quality": "Distribution quality (validated)",
+    "competition_intensity": "Competition intensity (inverted)", "defensibility": "Defensibility",
+    "regional_fit": "Regional fit", "founder_fit": "Founder fit", "ai_leverage": "AI leverage",
+    "operational_simplicity": "Operational simplicity", "regulatory_simplicity": "Regulatory simplicity",
+    "revenue_speed_score": "Revenue speed", "gross_margin_potential": "Gross margin potential",
+    "network_effect_strength": "Network effect strength", "switching_cost_score": "Switching cost",
+    "market_momentum_score": "Market momentum (job postings)",
+    "competitor_weakness_score": "Competitor weakness (reviews)",
+}
+
+
+def _scoring_layer_table(opp: dict, fields: list, weight_map: dict) -> list:
+    """One markdown table: every dimension in a layer with score, weight, contribution, why.
+
+    Surfaces the per-dimension `<dim>_reason` the AI scorer already computes (and
+    that the report previously discarded), plus the data-backed basis. Weight-0
+    dimensions are shown but marked 'not scored' so the breakdown is honest about
+    what actually moved the number.
+    """
+    rows = []
+    for field in fields:
+        value = opp.get(field)
+        weight = weight_map.get(field, 0.0)
+        label = _DIM_LABELS.get(field, field)
+        score_str = f"{value}/10" if value is not None else "—"
+
+        if weight == 0.0:
+            weight_str, contrib_str = "0 (consolidated)", "—"
+        else:
+            weight_str = f"{weight:.2f}"
+            if value is not None:
+                eff = (10.0 - float(value)) if field == "competition_intensity" else float(value)
+                contrib_str = f"{eff * weight:.2f}"
+            else:
+                contrib_str = "—"
+
+        why = opp.get(f"{field}_reason") or ""
+        if not why and field in _DATA_BACKED_DIMS:
+            why = "_data-backed signal (no narrative)_"
+        why = str(why).replace("\n", " ").replace("|", "/")[:160] or "—"
+
+        rows.append(f"| {label} | {score_str} | {weight_str} | {contrib_str} | {why} |")
+    return rows
+
+
+def _section_scoring_breakdown(opp: dict) -> list:
+    """Complete dimension-by-dimension scoring breakdown -- the deep research the
+    layer-aggregate summary hides. Every one of the ~23 dimensions with its score,
+    weight, weighted contribution, and the reasoning behind it."""
+    from opportunity_os.engines.scoring_engine import (
+        ATTRACTIVENESS_FIELDS, EXECUTABILITY_FIELDS, STRATEGIC_VALUE_FIELDS, load_weights,
+    )
+
+    weight_map = load_weights().get("weights", {})
+    lines = [
+        "## Scoring Breakdown — Every Variable",
+        "",
+        "Each dimension the score is built from: its 1-10 value, its weight, its weighted "
+        "contribution, and the reasoning behind the value. Weight-0 rows were consolidated "
+        "out (redundant signal) and do not move the score.",
+        "",
+    ]
+
+    for layer_name, layer_pct, fields, layer_score_field in [
+        ("Attractiveness", "50%", ATTRACTIVENESS_FIELDS, "attractiveness_score"),
+        ("Executability", "30%", EXECUTABILITY_FIELDS, "executability_score"),
+        ("Strategic Value", "20%", STRATEGIC_VALUE_FIELDS, "strategic_value_score"),
+    ]:
+        layer_score = opp.get(layer_score_field)
+        score_label = f" — layer score {layer_score}/10" if layer_score is not None else ""
+        lines += [
+            f"### {layer_name} ({layer_pct} of composite){score_label}",
+            "",
+            "| Dimension | Score | Weight | Contribution | Why |",
+            "|-----------|-------|--------|--------------|-----|",
+        ]
+        lines += _scoring_layer_table(opp, fields, weight_map)
+        lines.append("")
+
+    # Adversarial counterweight: the kill thesis caps the score regardless of the above.
+    kt = opp.get("kill_thesis")
+    if kt:
+        strength = opp.get("kill_thesis_strength")
+        lines += [
+            "### Adversarial check (kill thesis)",
+            "",
+            f"**Strength {strength}/10** — {str(kt).replace(chr(10), ' ')}",
+            ("_Strength >= 7 caps the final score at 5.0._" if (strength or 0) >= 7
+             else "_Below the cap threshold; recorded as a watch-item._"),
+            "",
+        ]
+
+    return lines
 
 
 def _section_decision_filters(opp: dict) -> str:

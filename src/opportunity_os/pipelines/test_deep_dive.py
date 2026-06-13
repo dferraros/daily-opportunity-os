@@ -4,6 +4,7 @@ from opportunity_os.pipelines.deep_dive import (
     _section_decision_filters,
     _section_founder_fit,
     _section_kill_gate,
+    _section_scoring_breakdown,
     _score_bar,
     _derive_tam_inputs,
     _infer_wedge_matches,
@@ -60,6 +61,47 @@ def minimal_opp():
         "target_customer": "SMB owners",
         "problem_statement": "Manual processes waste time",
     }
+
+
+# ─── _section_scoring_breakdown ──────────────────────────────────────────────
+
+class TestScoringBreakdown:
+    def test_renders_three_layers(self, ve_opp):
+        text = "\n".join(_section_scoring_breakdown(ve_opp))
+        assert "Scoring Breakdown — Every Variable" in text
+        assert "Attractiveness (50%" in text
+        assert "Executability (30%" in text
+        assert "Strategic Value (20%" in text
+
+    def test_surfaces_per_dimension_reasons(self, ve_opp):
+        opp = {**ve_opp,
+               "pain_severity_reason": "Reconciliation errors cost real money monthly",
+               "defensibility_reason": "Data lock-in once books migrate"}
+        text = "\n".join(_section_scoring_breakdown(opp))
+        assert "Reconciliation errors cost real money monthly" in text
+        assert "Data lock-in once books migrate" in text
+
+    def test_shows_scores_and_competition_inversion_label(self, ve_opp):
+        text = "\n".join(_section_scoring_breakdown(ve_opp))
+        assert "Competition intensity (inverted)" in text
+        assert "8/10" in text  # pain_severity value rendered
+
+    def test_missing_dimension_renders_dash_not_crash(self, minimal_opp):
+        # minimal_opp has almost no dimension values -> must render, not raise
+        lines = _section_scoring_breakdown(minimal_opp)
+        assert any("—" in ln for ln in lines)
+
+    def test_kill_thesis_counterweight_shown_when_present(self, ve_opp):
+        opp = {**ve_opp, "kill_thesis": "Incumbents bundle this free", "kill_thesis_strength": 8}
+        text = "\n".join(_section_scoring_breakdown(opp))
+        assert "Adversarial check (kill thesis)" in text
+        assert "caps the final score at 5.0" in text
+
+    def test_pipe_in_reason_does_not_break_table(self, ve_opp):
+        opp = {**ve_opp, "market_size_reason": "Big | growing | fast"}
+        text = "\n".join(_section_scoring_breakdown(opp))
+        # the embedded pipes must be sanitized so the markdown row stays intact
+        assert "Big / growing / fast" in text
 
 
 # ─── _section_decision_filters ───────────────────────────────────────────────
