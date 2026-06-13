@@ -40,3 +40,33 @@ def test_search_with_content_returns_list():
             results = search_with_content("fintech")
             assert isinstance(results, list)
             assert len(results) == 1
+
+
+def test_search_retries_transient_timeout_then_succeeds():
+    """A single httpx timeout must not drop the result -- the retry helper
+    recovers on the next attempt. Sleep is patched out so the test is instant."""
+    import httpx
+
+    ok = MagicMock()
+    ok.status_code = 200
+    ok.json.return_value = {"results": [{"title": "recovered"}]}
+    flaky = [httpx.TimeoutException("transient"), ok]
+
+    with patch("opportunity_os.tavily_client.httpx.post", side_effect=flaky):
+        with patch("opportunity_os.tavily_client._api_key", "test-key"):
+            with patch("opportunity_os.retry.time.sleep"):  # no real backoff wait
+                from opportunity_os.tavily_client import search
+                results = search("fintech")
+    assert results == [{"title": "recovered"}]
+
+
+def test_search_gives_up_after_persistent_timeouts():
+    """Persistent transient errors exhaust retries and return None (not crash)."""
+    import httpx
+
+    with patch("opportunity_os.tavily_client.httpx.post",
+               side_effect=httpx.TimeoutException("down")):
+        with patch("opportunity_os.tavily_client._api_key", "test-key"):
+            with patch("opportunity_os.retry.time.sleep"):
+                from opportunity_os.tavily_client import search
+                assert search("fintech") is None

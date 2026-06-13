@@ -16,10 +16,14 @@ from typing import Optional
 
 import httpx
 
+from opportunity_os.retry import call_with_retry
+
 logger = logging.getLogger(__name__)
 
 MAX_RESULTS = 5       # 5 results per query gives enough signal
 RATE_LIMIT_SECONDS = 0.5
+# httpx transient failures worth retrying: timeouts, connection resets, pool drains.
+_RETRYABLE_HTTP_ERRORS = (httpx.TimeoutException, httpx.TransportError)
 
 _api_key: Optional[str] = None  # populated lazily via _load_tavily_key()
 
@@ -63,8 +67,8 @@ def search(query: str, max_results: int = MAX_RESULTS, search_depth: str = "basi
     if not api_key:
         return None
 
-    try:
-        resp = httpx.post(
+    def _post():
+        return httpx.post(
             "https://api.tavily.com/search",
             json={
                 "api_key": api_key,
@@ -76,9 +80,16 @@ def search(query: str, max_results: int = MAX_RESULTS, search_depth: str = "basi
             },
             timeout=20.0,
         )
+
+    try:
+        # Retry transient network failures (timeout/reset); a single blip should
+        # not silently drop a research result. Non-200 is not retried -- the
+        # server is answering, just not with data we want.
+        resp = call_with_retry(
+            _post, retry_on=_RETRYABLE_HTTP_ERRORS, label=f"tavily.search({query[:40]!r})"
+        )
         if resp.status_code == 200:
-            data = resp.json()
-            return data.get("results", [])
+            return resp.json().get("results", [])
         return None
     except Exception as exc:
         logger.warning("Tavily search failed for %r: %s", query, exc)
