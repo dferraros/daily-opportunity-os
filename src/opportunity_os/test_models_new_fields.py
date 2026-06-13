@@ -50,6 +50,8 @@ def test_pipeline_written_fields_are_declared():
         # 2026-06-12: evidence coverage (calibration) + kill-thesis (Wave 2.1)
         "evidence_coverage", "low_evidence_flag",
         "kill_thesis", "kill_thesis_strength", "kill_thesis_evidence", "kill_thesis_at",
+        # 2026-06-12: competitor intelligence (G2 retool)
+        "competitor_complaint_themes", "competitor_signal_basis", "competitor_research_at",
     ]
     missing = [f for f in pipeline_fields if f not in Opportunity.model_fields]
     assert not missing, f"Pipeline-written fields missing from model: {missing}"

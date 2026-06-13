@@ -74,11 +74,19 @@ def _enrich_apify(opps: list[dict], dry_run: bool) -> list[dict]:
             if job_count:
                 updates["job_posting_count"] = job_count
 
-            g2 = apify_client.fetch_g2_reviews(vertical) or {}
-            if g2.get("neg_rate") is not None:
-                updates["competitor_negative_review_rate"] = g2["neg_rate"]
-            if g2.get("top_complaints") and not opp.get("exact_customer_phrases"):
-                updates["exact_customer_phrases"] = g2["top_complaints"]
+            # Competitor weakness: prefer the Tavily+Haiku path (Apify G2 category
+            # mode returns garbage -- 2026-06-10 audit). Fall back to Apify G2 only
+            # if the search path produced nothing.
+            from opportunity_os import competitor_intelligence
+            comp = competitor_intelligence.analyze_competitor_weakness(opp)
+            if comp.get("competitor_negative_review_rate") is not None:
+                updates.update(comp)
+            else:
+                g2 = apify_client.fetch_g2_reviews(vertical) or {}
+                if g2.get("neg_rate") is not None:
+                    updates["competitor_negative_review_rate"] = g2["neg_rate"]
+                if g2.get("top_complaints") and not opp.get("exact_customer_phrases"):
+                    updates["exact_customer_phrases"] = g2["top_complaints"]
 
             updates["apify_researched_at"] = datetime.now(timezone.utc).isoformat()
             enriched = {**opp, **updates}

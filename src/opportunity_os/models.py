@@ -330,6 +330,11 @@ class Opportunity(BaseModel):
     kill_thesis_evidence: Optional[List] = None        # short cites from inverted searches
     kill_thesis_at: Optional[str] = None               # ISO timestamp: adversarial pass ran
 
+    # ── Competitor intelligence (G2 retool, 2026-06-12) ──────────────────────
+    competitor_complaint_themes: Optional[List] = None  # recurring incumbent complaints (review search)
+    competitor_signal_basis: Optional[str] = None       # "named_competitors" | "category_fallback"
+    competitor_research_at: Optional[str] = None        # ISO timestamp: competitor weakness analysed
+
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""
         return self.model_dump_json()
