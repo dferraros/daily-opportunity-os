@@ -5,7 +5,6 @@ Uses Firecrawl /v1/scrape endpoint to extract text content from target URLs.
 """
 
 import logging
-import os
 import time
 from typing import Optional
 
@@ -39,24 +38,9 @@ COMPETITOR_PAGE_SCHEMA: dict = {
 
 
 def _load_firecrawl_key() -> Optional[str]:
-    """Load FIRECRAWL_API_KEY from .env file or environment."""
-    key = os.environ.get("FIRECRAWL_API_KEY")
-    if key:
-        return key
-    from pathlib import Path
-    current = Path(__file__).resolve().parent
-    for parent in [current] + list(current.parents):
-        env_path = parent / ".env"
-        if env_path.exists():
-            with open(env_path, "r") as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("FIRECRAWL_API_KEY="):
-                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val and val != "your_key_here":
-                            return val
-            break
-    return None
+    """Firecrawl API key via the shared env loader (respects OPP_OS_SKIP_DOTENV)."""
+    from opportunity_os.env import get_key
+    return get_key("FIRECRAWL_API_KEY")
 
 
 def _get_api_key() -> Optional[str]:

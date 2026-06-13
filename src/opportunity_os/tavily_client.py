@@ -8,9 +8,7 @@ than raw web_search tool output for structured extraction.
 Cost: ~$0.004/search vs $0.01 for Anthropic web_search_20250305
 """
 
-import json
 import logging
-import os
 import time
 from typing import Optional
 
@@ -29,22 +27,8 @@ _api_key: Optional[str] = None  # populated lazily via _load_tavily_key()
 
 
 def _load_tavily_key() -> Optional[str]:
-    key = os.environ.get("TAVILY_API_KEY")
-    if key:
-        return key
-    from pathlib import Path
-    for parent in [Path(__file__).resolve().parent] + list(Path(__file__).resolve().parents):
-        env_path = parent / ".env"
-        if env_path.exists():
-            with open(env_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("TAVILY_API_KEY="):
-                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val and val != "your_key_here":
-                            return val
-            break
-    return None
+    from opportunity_os.env import get_key
+    return get_key("TAVILY_API_KEY")
 
 
 def _get_api_key() -> Optional[str]:

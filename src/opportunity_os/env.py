@@ -65,3 +65,23 @@ def load_env_file(path: Optional[str] = None) -> int:
     if loaded:
         logger.debug("[env] loaded %d keys from %s", loaded, env_path)
     return loaded
+
+
+def get_key(name: str) -> Optional[str]:
+    """Return an API key from the environment, loading .env on first miss.
+
+    Single source of truth for API-key access. Replaces the per-client .env
+    walkers (tavily/apify/firecrawl/ai_scorer), which each re-implemented this
+    AND ignored OPP_OS_SKIP_DOTENV -- meaning they could read the real .env
+    during tests. Routing through load_env_file() closes that isolation hole:
+    when the skip flag is set, no .env is read and only os.environ is consulted.
+
+    Placeholder values ("your_key_here") and empty strings are treated as unset.
+    """
+    val = os.environ.get(name)
+    if val is None:
+        load_env_file()  # idempotent, respects OPP_OS_SKIP_DOTENV, only fills missing keys
+        val = os.environ.get(name)
+    if not val or val == PLACEHOLDER:
+        return None
+    return val

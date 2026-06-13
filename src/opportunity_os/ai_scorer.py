@@ -437,26 +437,9 @@ def score_dimensions_with_ai(opp: dict) -> dict:
 
 
 def _load_env_key() -> Optional[str]:
-    """Try to read ANTHROPIC_API_KEY from .env file in project root."""
-    root = _find_project_root()
-    env_path = os.path.join(root, ".env")
-    if os.path.exists(env_path):
-        with open(env_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("ANTHROPIC_API_KEY="):
-                    key = line.split("=", 1)[1].strip().strip('"').strip("'")
-                    return key or None
-    return None
-
-
-def _find_project_root() -> str:
-    from pathlib import Path
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "pyproject.toml").exists():
-            return str(parent)
-    return str(current.parents[4])
+    """ANTHROPIC_API_KEY via the shared env loader (respects OPP_OS_SKIP_DOTENV)."""
+    from opportunity_os.env import get_key
+    return get_key("ANTHROPIC_API_KEY")
 
 
 def _heuristic_fallback(opp: dict) -> dict:

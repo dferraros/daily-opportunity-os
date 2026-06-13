@@ -6,9 +6,7 @@ Supports LinkedIn job-count scraping and G2 review sentiment extraction.
 """
 
 import logging
-import os
 from functools import lru_cache
-from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -20,23 +18,9 @@ except ImportError:
 
 
 def _load_apify_key() -> Optional[str]:
-    """Walk up from this file looking for a .env with APIFY_API_TOKEN."""
-    key = os.environ.get("APIFY_API_TOKEN")
-    if key:
-        return key
-    current = Path(__file__).resolve().parent
-    for parent in [current] + list(current.parents):
-        env_path = parent / ".env"
-        if env_path.exists():
-            with open(env_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("APIFY_API_TOKEN="):
-                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                        if val and val != "your_key_here":
-                            return val
-            break
-    return None
+    """Apify API token via the shared env loader (respects OPP_OS_SKIP_DOTENV)."""
+    from opportunity_os.env import get_key
+    return get_key("APIFY_API_TOKEN")
 
 
 @lru_cache(maxsize=1)
