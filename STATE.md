@@ -50,9 +50,23 @@ kill_thesis with strength >= 7 and a capped score"). Dry-run verified target sel
   walkers (which IGNORED OPP_OS_SKIP_DOTENV — a test could read the real .env). Now all
   route through env.get_key which respects the skip flag. Removed dead os/Path imports +
   ai_scorer._find_project_root orphan. Ruff clean, 532 tests.
-Milestone 2 backlog REMAINING: G2 retool (competitor_weakness, needs Apify G2 — audit found
-category mode returns garbage); Wave 2.2 Sonnet deep-dive (costs API). Both need API spend.
-~11 commits ahead of origin, none pushed.
+## G2 retool + Wave 2.2 shipped (2026-06-12, live-verified) — commits f-block below
+- competitor_intelligence.py: Tavily review search + Haiku weakness extraction replaces the
+  broken Apify G2 category mode. Wired into enrichment as primary, Apify G2 as fallback.
+  Verified live (search->Haiku->clamped rate). FINDING: 0/80 opps have direct_competitors
+  populated, so it runs on a name-keyword category fallback (weak signal) — tagged
+  competitor_signal_basis. REAL UNLOCK: populate direct_competitors upstream (scout/enrich gap).
+- deep_dive_synthesis.py: Sonnet bull-case/risks/go-validate-pass section, opt-in via
+  `opp-os deep-dive <id> --synthesize` (~$0.10). Verified live on #1 opp — sharp, named real
+  incumbents + per-country cert risk + $0 govt price anchor -> VALIDATE with gates.
+- All new pipeline fields declared on the model + drift guard (no silent-drop). 562 tests,
+  ruff clean, idempotency 0/80.
+
+## Backlog now (all need Daniel / API spend or upstream data)
+- Populate direct_competitors upstream — the real unlock for competitor_weakness signal.
+- Record outcomes (`opp-os outcome <id> <status>`) — calibration still at 0 resolved.
+- Live `opp-os kill-thesis` run (Wave 2 success criterion).
+~13-14 commits ahead of origin, NONE pushed (Daniel pushes).
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
