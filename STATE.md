@@ -40,6 +40,20 @@ run to satisfy the plan's Wave 2 success criterion ("at least one live opp carri
 kill_thesis with strength >= 7 and a capped score"). Dry-run verified target selection.
 4 commits ahead of origin (1eb9806, d1d4737, c86da71, 57c5091, ece86b4) — not pushed.
 
+## Milestone 2 hygiene shipped (2026-06-12) — local commits 5d27131, 749e9cd, 11e5862
+- CLI smoke tests (test_cli_smoke.py): introspects cli.commands, frozen EXPECTED_COMMANDS
+  guard + `<cmd> --help` for all 23 commands (catches import/option-wiring breakage).
+- Shared retry helper (retry.py): call_with_retry, bounded exponential backoff, injectable
+  sleep. Wired into tavily.search (hot path for free-research AND kill-thesis) — transient
+  httpx timeout/transport errors now retry instead of silently dropping a result.
+- env.get_key consolidation: tavily/apify/firecrawl/ai_scorer dropped their duplicate .env
+  walkers (which IGNORED OPP_OS_SKIP_DOTENV — a test could read the real .env). Now all
+  route through env.get_key which respects the skip flag. Removed dead os/Path imports +
+  ai_scorer._find_project_root orphan. Ruff clean, 532 tests.
+Milestone 2 backlog REMAINING: G2 retool (competitor_weakness, needs Apify G2 — audit found
+category mode returns garbage); Wave 2.2 Sonnet deep-dive (costs API). Both need API spend.
+~11 commits ahead of origin, none pushed.
+
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
 against code AND live data killed 2 as false positives before any fix:
