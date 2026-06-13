@@ -47,9 +47,31 @@ def test_pipeline_written_fields_are_declared():
         "distribution_validated_date", "validation_start_date", "validation_deadline",
         "scoring_incomplete",
         "kickoff_at", "build_mode", "outcome", "outcome_note", "outcome_at",
+        # 2026-06-12: evidence coverage (calibration) + kill-thesis (Wave 2.1)
+        "evidence_coverage", "low_evidence_flag",
+        "kill_thesis", "kill_thesis_strength", "kill_thesis_evidence", "kill_thesis_at",
     ]
     missing = [f for f in pipeline_fields if f not in Opportunity.model_fields]
     assert not missing, f"Pipeline-written fields missing from model: {missing}"
+
+
+def test_round_trip_preserves_kill_thesis_and_evidence_fields():
+    """The 2026-06-12 fields must survive a dict -> model -> dict round-trip."""
+    opp = Opportunity.empty(name="Kill Thesis RT")
+    record = {
+        **opp.model_dump(),
+        "evidence_coverage": 0.33,
+        "low_evidence_flag": True,
+        "kill_thesis": "Market is too small after the kill-gate filter.",
+        "kill_thesis_strength": 8,
+        "kill_thesis_evidence": ["postmortem cite", "TAM cite"],
+        "kill_thesis_at": "2026-06-12T10:00:00",
+    }
+    restored = Opportunity.model_validate(record).model_dump()
+    assert restored["evidence_coverage"] == 0.33
+    assert restored["low_evidence_flag"] is True
+    assert restored["kill_thesis_strength"] == 8
+    assert restored["kill_thesis_evidence"] == ["postmortem cite", "TAM cite"]
 
 
 def test_round_trip_preserves_pipeline_fields():

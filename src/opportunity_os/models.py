@@ -320,6 +320,16 @@ class Opportunity(BaseModel):
     outcome_note: Optional[str] = None                 # outcome reason/context
     outcome_at: Optional[str] = None                   # ISO timestamp: outcome recorded
 
+    # ── Evidence coverage (scoring_engine, 2026-06-12 calibration) ───────────
+    evidence_coverage: Optional[float] = None          # fraction of collectable evidence actually collected
+    low_evidence_flag: Optional[bool] = None           # True = high score (>=7.5) resting on guesswork
+
+    # ── Kill-thesis adversarial pass (Wave 2.1, 2026-06-12) ──────────────────
+    kill_thesis: Optional[str] = None                  # strongest argument the opportunity fails
+    kill_thesis_strength: Optional[int] = None         # 1-10; >= 7 caps final_score at 5.0
+    kill_thesis_evidence: Optional[List] = None        # short cites from inverted searches
+    kill_thesis_at: Optional[str] = None               # ISO timestamp: adversarial pass ran
+
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""
         return self.model_dump_json()
