@@ -791,6 +791,80 @@ def free_research(top_n, force, dry_run):
     )
 
 
+@cli.command("kill-thesis")
+@click.option("--top-n", default=5, type=int, show_default=True,
+              help="Run the adversarial pass on the top N opportunities by score.")
+@click.option("--force", is_flag=True, help="Re-run even if kill_thesis_at is within TTL.")
+@click.option("--dry-run", is_flag=True, help="Show targets without calling APIs or writing.")
+def kill_thesis_cmd(top_n, force, dry_run):
+    """Adversarial pass: hunt for reasons the top opportunities FAIL (Wave 2.1).
+
+    Runs inverted searches per opportunity, synthesizes the single strongest
+    kill thesis with a 1-10 strength, then rescores so a strength >= 7 caps
+    final_score at 5.0 (like a failed decision filter). Never fabricates a
+    verdict: missing keys or empty searches leave the opp unchanged.
+
+    Skip guard: opps with kill_thesis_at within the 30-day TTL are skipped
+    unless --force.
+    """
+    from opportunity_os.storage import read_all_opportunities, replace_all_opportunities
+    from opportunity_os.kill_thesis import run_kill_thesis_pass
+    from opportunity_os.engines.scoring_engine import (
+        score_opportunity, normalize_portfolio_scores, KILL_THESIS_CAP_THRESHOLD,
+    )
+    from opportunity_os.backup import create_backup
+    from opportunity_os import tavily_client
+
+    all_opps = read_all_opportunities()
+    if not all_opps:
+        click.echo("No opportunities found.", err=True)
+        return
+
+    if not tavily_client.is_available():
+        click.echo("TAVILY_API_KEY not set -- inverted searches unavailable, nothing to do.", err=True)
+        return
+
+    alive = [o for o in all_opps if not o.get("kill_decision")]
+    candidates = sorted(alive, key=lambda o: float(o.get("final_score") or 0), reverse=True)[:top_n]
+
+    click.echo(f"Adversarial kill-thesis pass on top {len(candidates)} opportunities...")
+    if dry_run:
+        for i, opp in enumerate(candidates, 1):
+            score_str = f"{float(opp.get('final_score') or 0):.2f}"
+            click.echo(f"  {i:2}. [{score_str}] {(opp.get('name') or '')[:60]}")
+        click.echo(f"\n[dry-run] Would run on {len(candidates)} opps. No APIs called, no files written.")
+        return
+
+    bak = create_backup("pre-kill-thesis")
+    if bak:
+        click.echo(f"Backup: {bak['filename']}")
+
+    opp_by_id: dict = {o.get("id"): o for o in all_opps}
+    thesis_count = capped_count = 0
+    for i, opp in enumerate(candidates, 1):
+        name = (opp.get("name") or "?")[:55]
+        click.echo(f"  [{i}/{len(candidates)}] {name}...", nl=False)
+        updated = run_kill_thesis_pass(opp, force=force)
+        if updated.get("kill_thesis_at") and updated.get("kill_thesis_at") != opp.get("kill_thesis_at"):
+            strength = updated.get("kill_thesis_strength")
+            opp_by_id[opp.get("id")] = score_opportunity(updated)  # rescore so the cap applies
+            will_cap = strength is not None and int(strength) >= KILL_THESIS_CAP_THRESHOLD
+            capped_count += 1 if will_cap else 0
+            thesis_count += 1
+            click.echo(f" strength={strength}/10{'  CAPPED' if will_cap else ''}")
+        else:
+            click.echo(" (skipped / no verdict)")
+
+    # Portfolio normalisation needs all opps together
+    final = normalize_portfolio_scores([opp_by_id.get(o.get("id"), o) for o in all_opps])
+
+    n = replace_all_opportunities(final)
+    click.echo(
+        f"\n{thesis_count}/{len(candidates)} got a kill thesis; "
+        f"{capped_count} capped at 5.0. Wrote {n} records."
+    )
+
+
 @cli.command()
 @click.argument("opp_id")
 @click.option("--dir", "out_dir", default=None, help="Output directory. Default: Projects/<slug>/")

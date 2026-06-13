@@ -57,6 +57,11 @@ HIGH_SCORE_EVIDENCE_BAR: float = 7.5  # final_score at/above this demands eviden
 MIN_EVIDENCE_COVERAGE: float = 0.50   # less than half the collectable evidence = guesswork
 
 # ---------------------------------------------------------------------------
+# Kill-thesis cap -- a strong adversarial thesis caps the score like a failed filter
+# ---------------------------------------------------------------------------
+KILL_THESIS_CAP_THRESHOLD: int = 7    # kill_thesis_strength >= this caps the score
+
+# ---------------------------------------------------------------------------
 # Layer field definitions
 # ---------------------------------------------------------------------------
 ATTRACTIVENESS_FIELDS = [
@@ -253,29 +258,43 @@ def apply_modifiers(score: float, opp: dict, weights: dict) -> float:
 def apply_caps(score: float, opp: dict, weights: dict) -> float:
     """Apply hard caps to the final score.
 
-    - kill_decision == True  ->  0.0
-    - 2+ decision filters failed  ->  cap at 5.0
+    - kill_decision == True            ->  0.0 (overrides everything)
+    - 2+ decision filters failed        ->  cap at 5.0
+    - kill_thesis_strength >= threshold ->  cap at 5.0 (adversarial pass, Wave 2.1)
+
+    Non-fatal caps combine by taking the minimum, so a score hit by both a failed
+    filter and a strong kill thesis is capped once, not stacked.
     """
     caps = weights.get("caps", {})
 
-    # Hard kill
+    # Hard kill — overrides all other caps
     if opp.get("kill_decision") is True:
         return float(caps.get("kill_decision_true", 0.0))
 
-    # Check decision_filter_results for should_cap_score flag
+    capped = score
+
+    # Decision filter cap: should_cap_score flag, or 2+ filters failed
     filter_results = opp.get("decision_filter_results") or {}
     should_cap = filter_results.get("should_cap_score", False)
-
-    # Also check simple integer counter: decision_filters_failed >= 2
     if not should_cap:
         filters_failed = opp.get("decision_filters_failed", 0) or 0
         should_cap = int(filters_failed) >= 2
-
     if should_cap:
-        cap_value = float(caps.get("decision_filter_2_failed", 5.0))
-        return min(score, cap_value)
+        capped = min(capped, float(caps.get("decision_filter_2_failed", 5.0)))
 
-    return score
+    # Kill-thesis cap: a strong adversarial thesis caps the score like a failed filter
+    strength = opp.get("kill_thesis_strength")
+    if strength is not None:
+        try:
+            if int(strength) >= KILL_THESIS_CAP_THRESHOLD:
+                capped = min(capped, float(caps.get("kill_thesis_strong", 5.0)))
+        except (TypeError, ValueError):
+            logger.warning(
+                "Opportunity '%s' has non-numeric kill_thesis_strength %r -- cap skipped",
+                opp.get("name", "<unknown>"), strength,
+            )
+
+    return capped
 
 
 def _true_raw_score(opp: dict, raw_field: str, output_field: str):

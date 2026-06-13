@@ -52,6 +52,7 @@ modifiers:
 caps:
   kill_decision_true: 0.0        # killed opportunities score 0 regardless
   decision_filter_2_failed: 5.0  # capped at 5.0 if 2+ decision filters fail
+  kill_thesis_strong: 5.0        # capped at 5.0 if kill_thesis_strength >= 7 (Wave 2.1 adversarial pass)
 
 # Promotion thresholds
 thresholds:
