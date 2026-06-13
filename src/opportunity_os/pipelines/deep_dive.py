@@ -56,7 +56,8 @@ def run_deep_dive(opp_id: str, dry_run: bool = False, synthesize: bool = False) 
                         "pain_evidence_sources", "workarounds_found",
                         "distribution_validated", "top_distribution_channels",
                         "estimated_cac_logic", "first_10_customer_path",
-                        "trust_mechanism_latam", "research_executed_at",
+                        "trust_mechanism_latam", "direct_competitors",
+                        "research_executed_at",
                     ) if k in opp
                 })
         except Exception as exc:

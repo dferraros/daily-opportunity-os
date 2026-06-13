@@ -146,7 +146,8 @@ After searching, return ONLY this JSON (no prose, no code block):
   "top_distribution_channels": [<up to 2 confirmed channels>],
   "estimated_cac_logic": "<channel + estimated CAC in one line>",
   "first_10_customer_path": "<how to get first 10 customers, max 2 sentences>",
-  "trust_mechanism_latam": "<primary trust signal for this geography>"
+  "trust_mechanism_latam": "<primary trust signal for this geography>",
+  "direct_competitors": [<up to 4 REAL named products/companies solving this; [] if none found>]
 }}"""
 
     client = anthropic.Anthropic(api_key=api_key)
@@ -191,6 +192,7 @@ After searching, return ONLY this JSON (no prose, no code block):
         ("pain_evidence_sources", 2, 300),
         ("workarounds_found", 2, 200),
         ("top_distribution_channels", 2, 100),
+        ("direct_competitors", 4, 60),
     ]:
         items = data.get(list_field)
         if isinstance(items, list):
@@ -230,7 +232,8 @@ Based on the research above, extract and return ONLY this JSON (no prose, no cod
   "top_distribution_channels": [<up to 3 channels with evidence>],
   "estimated_cac_logic": "<channel + estimated CAC in one line>",
   "first_10_customer_path": "<how to reach first 10 customers given this evidence, max 2 sentences>",
-  "trust_mechanism_latam": "<primary trust signal for {geo_label}>"
+  "trust_mechanism_latam": "<primary trust signal for {geo_label}>",
+  "direct_competitors": [<up to 4 REAL named products/companies named in the results; [] if none>]
 }}"""
 
     client = anthropic.Anthropic(api_key=api_key)
@@ -269,6 +272,7 @@ Based on the research above, extract and return ONLY this JSON (no prose, no cod
         ("pain_evidence_sources", 2, 300),
         ("workarounds_found", 2, 200),
         ("top_distribution_channels", 3, 100),
+        ("direct_competitors", 4, 60),
     ]:
         items = data.get(list_field)
         if isinstance(items, list):
