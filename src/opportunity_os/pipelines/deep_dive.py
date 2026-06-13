@@ -21,10 +21,12 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
+def run_deep_dive(opp_id: str, dry_run: bool = False, synthesize: bool = False) -> dict:
     """
     Run a full deep dive for a single opportunity by ID.
-    Returns summary dict: {opp_id, path, archetype} or {error}.
+
+    synthesize=True adds a Sonnet-powered judgment section (~$0.10/dive, Wave 2.2).
+    Returns summary dict: {opp_id, path, archetype, synthesized} or {error}.
     """
     from opportunity_os.storage import get_opportunity_by_id, update_opportunity
     from opportunity_os.engines.tam_engine import estimate_tam
@@ -76,8 +78,16 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
         )
         opp = {**opp, "tam_usd_estimate": tam_result.get("tam_usd")}
 
+    # Optional Sonnet synthesis (Wave 2.2) -- opt-in, costs ~$0.10/dive
+    synthesis = None
+    if synthesize:
+        from opportunity_os.deep_dive_synthesis import synthesize_opportunity
+        synthesis = synthesize_opportunity(opp)
+        if synthesis is None:
+            logger.warning("[deep_dive] Synthesis requested but unavailable for %s -- writing without it", opp_id)
+
     date = datetime.now().strftime("%Y-%m-%d")
-    lines = _build_deep_dive_content(opp, opp_id, date, archetype, analogs, whitespace)
+    lines = _build_deep_dive_content(opp, opp_id, date, archetype, analogs, whitespace, synthesis)
     content = "\n".join(lines) + "\n"
 
     path = os.path.join(
@@ -88,16 +98,18 @@ def run_deep_dive(opp_id: str, dry_run: bool = False) -> dict:
     )
     if not dry_run:
         write_report(content, path)
-        update_opportunity(
-            opp_id,
-            {"deep_dive_status": "complete", "benchmark_archetype": archetype},
-        )
+        dd_updates = {"deep_dive_status": "complete", "benchmark_archetype": archetype}
+        if synthesis:
+            dd_updates.update(synthesis)
+        update_opportunity(opp_id, dd_updates)
 
     logger.info("Deep dive written: %s", os.path.basename(path))
-    return {"opp_id": opp_id, "path": path, "archetype": archetype}
+    return {"opp_id": opp_id, "path": path, "archetype": archetype,
+            "synthesized": synthesis is not None}
 
 
-def _build_deep_dive_content(opp: dict, opp_id: str, date: str, archetype: str, analogs: list, whitespace: dict) -> list:
+def _build_deep_dive_content(opp: dict, opp_id: str, date: str, archetype: str,
+                             analogs: list, whitespace: dict, synthesis: dict = None) -> list:
     """Build full deep dive markdown lines from all enriched opp fields."""
     lines = []
 
@@ -107,6 +119,11 @@ def _build_deep_dive_content(opp: dict, opp_id: str, date: str, archetype: str, 
         f"**Date:** {date} | **ID:** {opp_id}",
         "",
     ]
+
+    # --- Analyst synthesis (Sonnet) -- judgment up top, before the raw layout ---
+    if synthesis:
+        from opportunity_os.deep_dive_synthesis import build_synthesis_section
+        lines += build_synthesis_section(synthesis)
 
     # --- Thesis snapshot ---
     lines += _section_thesis(opp)

@@ -335,6 +335,12 @@ class Opportunity(BaseModel):
     competitor_signal_basis: Optional[str] = None       # "named_competitors" | "category_fallback"
     competitor_research_at: Optional[str] = None        # ISO timestamp: competitor weakness analysed
 
+    # ── Deep-dive Sonnet synthesis (Wave 2.2, 2026-06-12) ────────────────────
+    synthesis_bull_case: Optional[str] = None           # strongest reason this wins
+    synthesis_key_risks: Optional[List] = None          # 2-3 risks most likely to kill it
+    synthesis_recommendation: Optional[str] = None      # "go" | "validate" | "pass"
+    synthesis_rationale: Optional[str] = None           # one-sentence justification
+
     def to_jsonl(self) -> str:
         """Serialize to JSONL-compatible JSON string."""
         return self.model_dump_json()

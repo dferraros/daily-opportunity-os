@@ -59,15 +59,19 @@ def weekly(dry_run):
 @cli.command("deep-dive")
 @click.argument("opp_id")
 @click.option("--dry-run", is_flag=True)
-def deep_dive(opp_id, dry_run):
+@click.option("--synthesize", is_flag=True,
+              help="Add a Sonnet analyst-judgment section (bull case / risks / recommendation). ~$0.10/dive.")
+def deep_dive(opp_id, dry_run, synthesize):
     """Run full deep dive on a specific opportunity ID."""
     from opportunity_os.pipelines.deep_dive import run_deep_dive
 
-    result = run_deep_dive(opp_id=opp_id, dry_run=dry_run)
+    result = run_deep_dive(opp_id=opp_id, dry_run=dry_run, synthesize=synthesize)
     if "error" in result:
         click.echo(f"Error: {result['error']}", err=True)
         sys.exit(1)
     click.echo(f"Deep dive complete: {result.get('path', 'unknown path')}")
+    if synthesize:
+        click.echo("  Sonnet synthesis: " + ("added" if result.get("synthesized") else "unavailable (see logs)"))
 
 
 @cli.command()
