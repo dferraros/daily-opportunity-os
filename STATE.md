@@ -23,6 +23,23 @@ priority (low_evidence_flag jumps free-research + apify-research queues). 494 te
 NOTE: repo history was rewritten + force-pushed 2026-06-12 (employer/external-project
 purge) — re-clone anywhere a stale clone exists.
 
+## Wave 2.1 kill-thesis shipped (2026-06-12) — local commits 57c5091, ece86b4
+Adversarial pass: `opp-os kill-thesis [--top-n 5] [--force] [--dry-run]`. Inverted
+searches (tavily) per top opp -> skeptic prompt (Haiku) -> single kill_thesis +
+strength 1-10; strength >= 7 caps final_score at 5.0 via apply_caps (new
+KILL_THESIS_CAP_THRESHOLD const + kill_thesis_strong cap in scoring_weights.yaml,
+combines with decision-filter cap by min). Never fabricates: missing key/empty
+search/parse-fail -> opp unchanged + loud log. 30d TTL skip guard. kill_thesis.py +
+test_kill_thesis.py (26 tests, 516 total).
+ALSO fixed latent bug (57c5091): evidence_coverage + low_evidence_flag were written
+by the scoring engine since the calibration work but never declared on the
+Opportunity model — Pydantic extra='ignore' was silently dropping them on every
+round-trip. Now declared + drift guard extended.
+REMAINING (manual, costs API credits — Daniel's call): a live `opp-os kill-thesis`
+run to satisfy the plan's Wave 2 success criterion ("at least one live opp carries a
+kill_thesis with strength >= 7 and a capped score"). Dry-run verified target selection.
+4 commits ahead of origin (1eb9806, d1d4737, c86da71, 57c5091, ece86b4) — not pushed.
+
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
 against code AND live data killed 2 as false positives before any fix:
