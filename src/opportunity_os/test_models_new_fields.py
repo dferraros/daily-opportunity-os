@@ -55,6 +55,8 @@ def test_pipeline_written_fields_are_declared():
         # 2026-06-12: deep-dive Sonnet synthesis (Wave 2.2)
         "synthesis_bull_case", "synthesis_key_risks", "synthesis_recommendation",
         "synthesis_rationale",
+        # 2026-06-12: deep-dive depth
+        "dimension_reasons_at",
     ]
     missing = [f for f in pipeline_fields if f not in Opportunity.model_fields]
     assert not missing, f"Pipeline-written fields missing from model: {missing}"

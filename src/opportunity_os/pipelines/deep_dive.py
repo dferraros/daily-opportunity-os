@@ -15,10 +15,28 @@ Auto-runs research_executor if the opp has not been researched yet.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 logger = logging.getLogger(__name__)
+
+RICH_REASONS_TTL_DAYS = 30
+
+
+def _needs_rich_reasons(opp: dict) -> bool:
+    """True if the opp lacks fresh full-dimension reasoning.
+
+    The daily batch scorer stores only 4 sample reasons; a deep dive wants all
+    16 evidence-backed ones. Skip the refresh only if it ran within the TTL, so
+    repeat dives of the same opp don't re-pay for the Haiku call.
+    """
+    stamp = opp.get("dimension_reasons_at")
+    if not stamp:
+        return True
+    try:
+        return datetime.fromisoformat(stamp) <= datetime.now() - timedelta(days=RICH_REASONS_TTL_DAYS)
+    except ValueError:
+        return True
 
 
 def run_deep_dive(opp_id: str, dry_run: bool = False, synthesize: bool = False) -> dict:
@@ -62,6 +80,26 @@ def run_deep_dive(opp_id: str, dry_run: bool = False, synthesize: bool = False) 
                 })
         except Exception as exc:
             logger.warning("[deep_dive] Research executor failed (%s: %s) — continuing without research", type(exc).__name__, exc)
+
+    # Refresh full per-dimension reasoning for THIS opp (the daily batch scorer
+    # only stores 4 sample reasons to save tokens; the deep dive is where the
+    # full 16 evidence-backed reasons earn their cost). Guarded so repeat dives
+    # of the same opp don't re-pay.
+    if _needs_rich_reasons(opp):
+        try:
+            from opportunity_os.ai_scorer import score_dimensions_with_ai
+            scored = score_dimensions_with_ai({**opp, "rescore_requested": True})
+            # Take ONLY the _reason text, never the re-scored numbers: the numeric
+            # dimensions feed final_score + portfolio normalization (computed by the
+            # batch scorer across all opps), so re-scoring one opp here would desync
+            # its report from its stored/normalized score.
+            reason_updates = {k: v for k, v in scored.items() if k.endswith("_reason")}
+            reason_updates["dimension_reasons_at"] = datetime.now().isoformat()
+            opp = {**opp, **reason_updates}
+            if not dry_run:
+                update_opportunity(opp_id, reason_updates)
+        except Exception as exc:
+            logger.warning("[deep_dive] Dimension reasoning refresh failed (%s: %s)", type(exc).__name__, exc)
 
     # Run benchmark analysis
     archetype = classify_archetype(opp)

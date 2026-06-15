@@ -1,14 +1,33 @@
 """Tests for deep_dive.py — decision filters, founder fit, kill gate, helpers."""
 import pytest
+from datetime import datetime, timedelta
+
 from opportunity_os.pipelines.deep_dive import (
     _section_decision_filters,
     _section_founder_fit,
     _section_kill_gate,
     _section_scoring_breakdown,
+    _needs_rich_reasons,
     _score_bar,
     _derive_tam_inputs,
     _infer_wedge_matches,
 )
+
+
+class TestNeedsRichReasons:
+    def test_true_when_never_refreshed(self):
+        assert _needs_rich_reasons({"name": "x"}) is True
+
+    def test_false_within_ttl(self):
+        fresh = datetime.now().isoformat()
+        assert _needs_rich_reasons({"dimension_reasons_at": fresh}) is False
+
+    def test_true_when_stale(self):
+        old = (datetime.now() - timedelta(days=40)).isoformat()
+        assert _needs_rich_reasons({"dimension_reasons_at": old}) is True
+
+    def test_true_on_corrupt_timestamp(self):
+        assert _needs_rich_reasons({"dimension_reasons_at": "not-a-date"}) is True
 
 
 # ─── Fixtures ────────────────────────────────────────────────────────────────

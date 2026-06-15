@@ -335,6 +335,9 @@ class Opportunity(BaseModel):
     competitor_signal_basis: Optional[str] = None       # "named_competitors" | "category_fallback"
     competitor_research_at: Optional[str] = None        # ISO timestamp: competitor weakness analysed
 
+    # ── Deep-dive depth (2026-06-12) ─────────────────────────────────────────
+    dimension_reasons_at: Optional[str] = None          # ISO timestamp: full 16-dim reasoning refreshed
+
     # ── Deep-dive Sonnet synthesis (Wave 2.2, 2026-06-12) ────────────────────
     synthesis_bull_case: Optional[str] = None           # strongest reason this wins
     synthesis_key_risks: Optional[List] = None          # 2-3 risks most likely to kill it

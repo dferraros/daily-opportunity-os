@@ -353,7 +353,10 @@ def score_dimensions_with_ai(opp: dict) -> dict:
             )
 
         json_template = "{\n" + ",\n".join(
-            f'  "{d}": <int 1-10>,\n  "{d}_reason": "<one sentence max 15 words>"'
+            f'  "{d}": <int 1-10>,\n  "{d}_reason": '
+            '"<2-3 sentences: justify the number with SPECIFIC evidence — name '
+            'competitors, cite numbers/regulations/channels, state the key risk. '
+            'No filler. If the basis is a guess not evidence, say so.>"'
             for d in DIMENSIONS
         ) + "\n}"
 
@@ -369,7 +372,7 @@ def score_dimensions_with_ai(opp: dict) -> dict:
 
         response = client.messages.create(
             model=MODEL,
-            max_tokens=2000,
+            max_tokens=3500,  # 16 dims x 2-3 evidence sentences needs headroom
             system=(
                 "You are a hard-nosed business opportunity scoring analyst. Score on 16 dimensions. "
                 "DISTRIBUTION RULE: 30% of scores must be <= 5 (real weaknesses), 40% in 5-7 (neutral), "
@@ -415,7 +418,7 @@ def score_dimensions_with_ai(opp: dict) -> dict:
                     pass
             reason = scores.get(f"{dim}_reason")
             if reason:
-                dims_update[f"{dim}_reason"] = str(reason)[:200]
+                dims_update[f"{dim}_reason"] = str(reason)[:450]
 
         result = {
             k: v for k, v in opp.items() if k != "rescore_requested"
