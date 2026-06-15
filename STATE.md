@@ -87,6 +87,25 @@ DISCARDED the 16 per-dimension reasons the scorer computes. Fixed in three layer
 All live-verified on #1 opp (e-invoicing): named Alegra/Siigo/Contacloud, $5-15/mo, cert
 6-18mo bottleneck, "6-week MVP vs 18-month regulatory odyssey". 579 tests, ruff clean, 0/80.
 
+## ACT 1 RUN — drove OS to a decision (2026-06-15, ~$2-3 API)
+First live kill-thesis: 2 rounds on top 8 then top 6 -> 8 opps capped to 5.0 (strong >=7
+theses). 3 survivors (all KT=6, uncapped) deep-dived with --synthesize (fresh research =
+real competitors + rich per-dim reasons + Sonnet swing-factors/decisive-unknown).
+Memos at reports/deep-dives/2026-06-15-*.md (gitignored — local only).
+THE 3 CONTENDERS (all came back VALIDATE, none go/pass):
+1. E-Invoicing Compliance SaaS LATAM (9.5) — competitors Alegra/Siigo/Fonoa/Pagero.
+   Decisive unknown: do SMBs pay for STANDALONE compliance SaaS or only bundled in
+   accounting tools / free govt portals? Validate: 2wk accountant interviews CO/MX.
+   LOWEST legal risk, clearest mandatory tailwind, cheapest validation.
+2. VE USDT Merchant Commerce (9.06) — competitors not extracted. Decisive unknown: have
+   any of 40+ SUDEBAN fintechs already built merchant settlement internally? Validate:
+   3-5 fintech convos. Carries B2B-partner dependency.
+3. VE Gig Worker USDT Payment (8.92) — competitors Ledn/informal networks. Decisive
+   unknown: actual cash-out spread today + is one player already capturing it? Validate:
+   signed LOI from 1 fintech + OFAC legal opinion. Carries sanctions risk.
+CROSS-CUTTING: all 3 hinge on (a) real WTP vs free/incumbent alternatives, (b)
+standalone-business vs feature-of-incumbent. Daniel's pick (Act 2) pending.
+
 ## Backlog now (all need Daniel / API spend)
 - Backfill direct_competitors on existing 80 opps (optional, ~$1-2) to activate grounded
   competitor signal portfolio-wide now rather than as opps refresh.
