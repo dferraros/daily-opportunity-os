@@ -92,7 +92,9 @@ All live-verified on #1 opp (e-invoicing): named Alegra/Siigo/Contacloud, $5-15/
   competitor signal portfolio-wide now rather than as opps refresh.
 - Record outcomes (`opp-os outcome <id> <status>`) — calibration still at 0 resolved.
 - Live `opp-os kill-thesis` run (Wave 2 success criterion).
-~19 commits ahead of origin, NONE pushed (Daniel pushes).
+DEPLOYED 2026-06-12: all 19 commits pushed to origin/main (6534417..b019000). Tree clean,
+ruff + 579 tests green pre-push. origin/main now current. (gh not auth'd locally — verify
+CI green on GitHub if needed.)
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
