@@ -465,44 +465,76 @@ _DIM_LABELS = {
 }
 
 
-def _scoring_layer_table(opp: dict, fields: list, weight_map: dict) -> list:
-    """One markdown table: every dimension in a layer with score, weight, contribution, why.
+def _data_backed_basis(opp: dict, field: str) -> str:
+    """Narrative for the 4 data-backed dims, reconstructed from their source signals.
 
-    Surfaces the per-dimension `<dim>_reason` the AI scorer already computes (and
-    that the report previously discarded), plus the data-backed basis. Weight-0
-    dimensions are shown but marked 'not scored' so the breakdown is honest about
-    what actually moved the number.
+    These have no AI `<dim>_reason` (they're derived, not LLM-scored), so explain
+    what evidence produced the number instead of leaving them blank.
     """
-    rows = []
+    if field == "pain_validation_score":
+        n = opp.get("pain_signal_count")
+        if n is not None:
+            return (f"Derived from {n} pain signal(s) surfaced in forum/Reddit research "
+                    f"(higher signal count -> higher validation; absent research = neutral).")
+        return "From pain research (`execute_pain_research`); absent research scores neutral."
+    if field == "market_momentum_score":
+        n = opp.get("job_posting_count")
+        if n is not None:
+            return (f"Derived from {n} LinkedIn job postings for this vertical+geography "
+                    f"(50+ = max momentum). Hiring is a proxy for real market activity.")
+        return "Derived from LinkedIn job-posting volume (Apify); absent = no momentum signal."
+    if field == "competitor_weakness_score":
+        rate = opp.get("competitor_negative_review_rate")
+        basis = opp.get("competitor_signal_basis")
+        if rate is not None:
+            basis_note = (f" — basis: {basis}" if basis else "")
+            return (f"Derived from a {float(rate) * 100:.0f}% negative-review rate across "
+                    f"competitor reviews (higher = weaker incumbents = bigger opening){basis_note}.")
+        return "Derived from competitor negative-review rate (G2/Capterra/Reddit search); absent = neutral."
+    if field == "distribution_quality":
+        v = opp.get("distribution_validated")
+        if v is True:
+            return "Derived from a confirmed distribution channel in research (validated -> 8.0)."
+        if v is False:
+            return "Derived from distribution research: no channel confirmed (-> 3.0)."
+        return "Derived from the distribution-validation test; untested = neutral."
+    return ""
+
+
+def _scoring_layer_blocks(opp: dict, fields: list, weight_map: dict) -> list:
+    """Per-variable blocks: each dimension gets its score, weight, contribution, and the
+    FULL reasoning behind it (no truncation). Data-backed dims get a reconstructed basis;
+    weight-0 dims are flagged consolidated; unscored dims say so honestly."""
+    lines = []
     for field in fields:
         value = opp.get(field)
         weight = weight_map.get(field, 0.0)
         label = _DIM_LABELS.get(field, field)
-        score_str = f"{value}/10" if value is not None else "—"
+        score_str = f"{value}/10" if value is not None else "not scored"
 
         if weight == 0.0:
-            weight_str, contrib_str = "0 (consolidated)", "—"
+            meta = "weight 0 · consolidated (redundant signal — folded into speed_to_mvp)"
+        elif value is not None:
+            eff = (10.0 - float(value)) if field == "competition_intensity" else float(value)
+            meta = f"weight {weight:.2f} · contributes {eff * weight:.2f}"
         else:
-            weight_str = f"{weight:.2f}"
-            if value is not None:
-                eff = (10.0 - float(value)) if field == "competition_intensity" else float(value)
-                contrib_str = f"{eff * weight:.2f}"
-            else:
-                contrib_str = "—"
+            meta = f"weight {weight:.2f} · no value yet (run the scorer to populate)"
 
         why = opp.get(f"{field}_reason") or ""
         if not why and field in _DATA_BACKED_DIMS:
-            why = "_data-backed signal (no narrative)_"
-        why = str(why).replace("\n", " ").replace("|", "/")[:160] or "—"
+            why = _data_backed_basis(opp, field)
+        why = str(why).replace("\n", " ").strip()[:450]
+        if not why:
+            why = "_No reasoning recorded for this dimension yet._"
 
-        rows.append(f"| {label} | {score_str} | {weight_str} | {contrib_str} | {why} |")
-    return rows
+        lines += [f"**{label} — {score_str}**  ·  {meta}", "", why, ""]
+    return lines
 
 
 def _section_scoring_breakdown(opp: dict) -> list:
     """Complete dimension-by-dimension scoring breakdown -- the deep research the
     layer-aggregate summary hides. Every one of the ~23 dimensions with its score,
-    weight, weighted contribution, and the reasoning behind it."""
+    weight, weighted contribution, and the FULL reasoning behind it."""
     from opportunity_os.engines.scoring_engine import (
         ATTRACTIVENESS_FIELDS, EXECUTABILITY_FIELDS, STRATEGIC_VALUE_FIELDS, load_weights,
     )
@@ -511,9 +543,9 @@ def _section_scoring_breakdown(opp: dict) -> list:
     lines = [
         "## Scoring Breakdown — Every Variable",
         "",
-        "Each dimension the score is built from: its 1-10 value, its weight, its weighted "
-        "contribution, and the reasoning behind the value. Weight-0 rows were consolidated "
-        "out (redundant signal) and do not move the score.",
+        "Every dimension the score is built from: its 1-10 value, its weight, its weighted "
+        "contribution, and the full reasoning behind the value. Weight-0 rows were "
+        "consolidated out (redundant signal) and do not move the score.",
         "",
     ]
 
@@ -524,14 +556,8 @@ def _section_scoring_breakdown(opp: dict) -> list:
     ]:
         layer_score = opp.get(layer_score_field)
         score_label = f" — layer score {layer_score}/10" if layer_score is not None else ""
-        lines += [
-            f"### {layer_name} ({layer_pct} of composite){score_label}",
-            "",
-            "| Dimension | Score | Weight | Contribution | Why |",
-            "|-----------|-------|--------|--------------|-----|",
-        ]
-        lines += _scoring_layer_table(opp, fields, weight_map)
-        lines.append("")
+        lines += [f"### {layer_name} ({layer_pct} of composite){score_label}", ""]
+        lines += _scoring_layer_blocks(opp, fields, weight_map)
 
     # Adversarial counterweight: the kill thesis caps the score regardless of the above.
     kt = opp.get("kill_thesis")

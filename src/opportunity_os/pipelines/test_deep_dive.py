@@ -105,22 +105,39 @@ class TestScoringBreakdown:
         assert "Competition intensity (inverted)" in text
         assert "8/10" in text  # pain_severity value rendered
 
-    def test_missing_dimension_renders_dash_not_crash(self, minimal_opp):
+    def test_missing_dimension_marked_not_scored(self, minimal_opp):
         # minimal_opp has almost no dimension values -> must render, not raise
-        lines = _section_scoring_breakdown(minimal_opp)
-        assert any("—" in ln for ln in lines)
+        text = "\n".join(_section_scoring_breakdown(minimal_opp))
+        assert "not scored" in text
+
+    def test_full_reason_not_truncated_at_160(self, ve_opp):
+        long_reason = (
+            "Mandatory e-invoicing compliance in Colombia (DIAN 2022+), Mexico (SAT), "
+            "Chile (SII), and Peru (SUNAT) creates daily operational friction with real "
+            "financial penalties, so SMBs must adopt a compliant tool to avoid fines."
+        )
+        opp = {**ve_opp, "pain_severity_reason": long_reason}
+        text = "\n".join(_section_scoring_breakdown(opp))
+        # the OLD table truncated at 160 chars mid-word; the full reason must now appear
+        assert long_reason in text
+        assert len(long_reason) > 160
+
+    def test_data_backed_dims_get_reconstructed_basis(self, ve_opp):
+        opp = {**ve_opp, "pain_validation_score": 7.0, "pain_signal_count": 6,
+               "market_momentum_score": 5.0, "job_posting_count": 25,
+               "competitor_weakness_score": 7.5, "competitor_negative_review_rate": 0.4,
+               "competitor_signal_basis": "named_competitors"}
+        text = "\n".join(_section_scoring_breakdown(opp))
+        assert "6 pain signal" in text           # pain_validation basis
+        assert "25 LinkedIn job postings" in text  # market_momentum basis
+        assert "40% negative-review rate" in text  # competitor_weakness basis
+        assert "no narrative" not in text          # the old placeholder is gone
 
     def test_kill_thesis_counterweight_shown_when_present(self, ve_opp):
         opp = {**ve_opp, "kill_thesis": "Incumbents bundle this free", "kill_thesis_strength": 8}
         text = "\n".join(_section_scoring_breakdown(opp))
         assert "Adversarial check (kill thesis)" in text
         assert "caps the final score at 5.0" in text
-
-    def test_pipe_in_reason_does_not_break_table(self, ve_opp):
-        opp = {**ve_opp, "market_size_reason": "Big | growing | fast"}
-        text = "\n".join(_section_scoring_breakdown(opp))
-        # the embedded pipes must be sanitized so the markdown row stays intact
-        assert "Big / growing / fast" in text
 
 
 # ─── _section_decision_filters ───────────────────────────────────────────────
