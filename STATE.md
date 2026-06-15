@@ -73,12 +73,26 @@ automatically. To backfill existing: clear research_executed_at on target opps a
 research (costs ~$0.01-0.015/opp, ~$1-2 for all 80). NOT done autonomously -- bulk data
 rewrite is Daniel's call. Could add a surgical `opp-os backfill-competitors` if wanted.
 
+## Deep-dive depth overhaul (2026-06-12) — commits below
+Root cause of "vague deep research": the report rendered 3 aggregate layer scores and
+DISCARDED the 16 per-dimension reasons the scorer computes. Fixed in three layers:
+1. _section_scoring_breakdown: every ~23 dims with value/weight/contribution/reason, by
+   layer, weight-0 (consolidated) dims marked, kill thesis as adversarial counterweight.
+   Zero API cost (surfaces existing data).
+2. Rich reasons at source: score_dimensions_with_ai now asks 2-3 evidence sentences/dim
+   (was 15-word stub; trunc 200->450, max_tokens 3500). Wired into deep-dive on-demand,
+   REASONS ONLY (numbers stay batch-normalized — avoids report/score desync), 30d TTL.
+3. Sonnet synthesis deepened: + swing_factors (what decides go/no-go) + key_unknown
+   (decisive missing evidence). Cross-cutting, not dimension restatement. Opt-in --synthesize.
+All live-verified on #1 opp (e-invoicing): named Alegra/Siigo/Contacloud, $5-15/mo, cert
+6-18mo bottleneck, "6-week MVP vs 18-month regulatory odyssey". 579 tests, ruff clean, 0/80.
+
 ## Backlog now (all need Daniel / API spend)
 - Backfill direct_competitors on existing 80 opps (optional, ~$1-2) to activate grounded
   competitor signal portfolio-wide now rather than as opps refresh.
 - Record outcomes (`opp-os outcome <id> <status>`) — calibration still at 0 resolved.
 - Live `opp-os kill-thesis` run (Wave 2 success criterion).
-~15 commits ahead of origin, NONE pushed (Daniel pushes).
+~19 commits ahead of origin, NONE pushed (Daniel pushes).
 
 ## Second audit pass (2026-06-10, evening) — verified-then-fixed
 6-agent workflow audit produced 45 raw findings -> 7 after dedup; manual verification
