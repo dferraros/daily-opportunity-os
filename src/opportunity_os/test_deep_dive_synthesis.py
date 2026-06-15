@@ -5,6 +5,8 @@ from opportunity_os import deep_dive_synthesis as dds
 VALID = (
     '{"bull_case": "Mandatory e-invoicing creates forced demand.", '
     '"key_risks": ["incumbent ERPs bundle it free", "regulatory timeline slips"], '
+    '"swing_factors": ["per-country certification feasibility solo", "contador channel access"], '
+    '"key_unknown": "Whether one country cert path is achievable by a solo founder.", '
     '"recommendation": "validate", "rationale": "Demand is real but distribution is unproven."}'
 )
 
@@ -15,6 +17,18 @@ class TestParseSynthesis:
         assert result["synthesis_recommendation"] == "validate"
         assert len(result["synthesis_key_risks"]) == 2
         assert result["synthesis_bull_case"].startswith("Mandatory")
+
+    def test_swing_factors_and_unknown_parsed(self):
+        result = dds._parse_synthesis(VALID)
+        assert len(result["synthesis_swing_factors"]) == 2
+        assert "certification" in result["synthesis_swing_factors"][0]
+        assert result["synthesis_key_unknown"].startswith("Whether one country")
+
+    def test_swing_factors_default_empty_when_absent(self):
+        raw = '{"bull_case": "x", "recommendation": "go", "key_risks": []}'
+        result = dds._parse_synthesis(raw)
+        assert result["synthesis_swing_factors"] == []
+        assert result["synthesis_key_unknown"] == ""
 
     def test_recommendation_lowercased(self):
         raw = '{"bull_case": "x", "recommendation": "GO", "key_risks": []}'
@@ -53,6 +67,13 @@ class TestBuildSection:
         assert "Analyst Synthesis (Sonnet)" in text
         assert "VALIDATE" in text
         assert "incumbent ERPs bundle it free" in text
+
+    def test_section_contains_swing_factors_and_unknown(self):
+        synthesis = dds._parse_synthesis(VALID)
+        text = "\n".join(dds.build_synthesis_section(synthesis))
+        assert "Swing factors" in text
+        assert "contador channel access" in text
+        assert "Decisive unknown:" in text
 
 
 class TestSynthesizeGracefulFail:

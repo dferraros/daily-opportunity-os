@@ -53,8 +53,8 @@ def test_pipeline_written_fields_are_declared():
         # 2026-06-12: competitor intelligence (G2 retool)
         "competitor_complaint_themes", "competitor_signal_basis", "competitor_research_at",
         # 2026-06-12: deep-dive Sonnet synthesis (Wave 2.2)
-        "synthesis_bull_case", "synthesis_key_risks", "synthesis_recommendation",
-        "synthesis_rationale",
+        "synthesis_bull_case", "synthesis_key_risks", "synthesis_swing_factors",
+        "synthesis_key_unknown", "synthesis_recommendation", "synthesis_rationale",
         # 2026-06-12: deep-dive depth
         "dimension_reasons_at",
     ]

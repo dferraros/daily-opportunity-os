@@ -26,12 +26,17 @@ MAX_TOKENS = 1200
 
 SYNTHESIS_SYSTEM_PROMPT = (
     "You are a senior venture analyst writing the judgment section of a deep dive "
-    "for a solo founder. You have the full enriched dossier below. Do NOT restate "
-    "it -- reason over it. Weigh the evidence into: the single strongest bull case, "
-    "the 2-3 risks most likely to actually kill this, and a recommendation of "
-    "exactly 'go', 'validate', or 'pass' with a one-sentence rationale. Be concrete "
-    "and skeptical; a solo founder with limited time is acting on this. Where the "
-    "evidence is thin or AI-guessed rather than researched, say so. Return ONLY valid JSON."
+    "for a solo founder. You have the full enriched dossier below, including a "
+    "per-dimension scoring breakdown. Do NOT restate the dimensions one by one -- "
+    "that table already exists. Your job is the CROSS-CUTTING synthesis the table "
+    "cannot do: weigh the evidence into the single strongest bull case; the 2-3 "
+    "risks most likely to actually kill this; the SWING FACTORS (the 2-3 specific "
+    "variables that most determine go vs no-go, and why those and not the others); "
+    "the single DECISIVE UNKNOWN (the one piece of missing evidence that would most "
+    "change your recommendation if you learned it); and a recommendation of exactly "
+    "'go', 'validate', or 'pass' with a one-sentence rationale. Be concrete and "
+    "skeptical; a solo founder with limited time acts on this. Where the evidence is "
+    "thin or AI-guessed rather than researched, say so. Return ONLY valid JSON."
 )
 
 # Fields worth feeding the model -- the researched/scored signal, not raw notes.
@@ -74,12 +79,16 @@ def _parse_synthesis(raw: str) -> Optional[dict]:
     if rec_norm not in {"go", "validate", "pass"}:
         return None
 
-    risks = data.get("key_risks")
-    if not isinstance(risks, list):
-        risks = [risks] if risks else []
+    def _str_list(value, cap=3):
+        if not isinstance(value, list):
+            value = [value] if value else []
+        return [str(v).strip() for v in value if str(v).strip()][:cap]
+
     return {
         "synthesis_bull_case": str(bull).strip(),
-        "synthesis_key_risks": [str(r).strip() for r in risks if str(r).strip()][:3],
+        "synthesis_key_risks": _str_list(data.get("key_risks")),
+        "synthesis_swing_factors": _str_list(data.get("swing_factors")),
+        "synthesis_key_unknown": str(data.get("key_unknown", "")).strip(),
         "synthesis_recommendation": rec_norm,
         "synthesis_rationale": str(data.get("rationale", "")).strip(),
     }
@@ -101,6 +110,8 @@ def synthesize_opportunity(opp: dict) -> Optional[dict]:
         "{\n"
         '  "bull_case": "<strongest reason this wins, max 70 words>",\n'
         '  "key_risks": ["<risk most likely to kill it>", "<second>", "<third optional>"],\n'
+        '  "swing_factors": ["<variable that most decides go/no-go + why>", "<second>", "<third optional>"],\n'
+        '  "key_unknown": "<the single missing piece of evidence that would most change the call>",\n'
         '  "recommendation": "go" | "validate" | "pass",\n'
         '  "rationale": "<one sentence justifying the recommendation>"\n'
         "}"
@@ -141,5 +152,16 @@ def build_synthesis_section(synthesis: dict) -> list:
         lines.append("**Key risks:**")
         lines += [f"- {r}" for r in risks]
         lines.append("")
+
+    swing = synthesis.get("synthesis_swing_factors") or []
+    if swing:
+        lines.append("**Swing factors (what most decides go/no-go):**")
+        lines += [f"- {s}" for s in swing]
+        lines.append("")
+
+    unknown = synthesis.get("synthesis_key_unknown")
+    if unknown:
+        lines += [f"**Decisive unknown:** {unknown}", ""]
+
     lines += ["_Synthesized by Sonnet from the researched dossier — judgment, not new data._", ""]
     return lines

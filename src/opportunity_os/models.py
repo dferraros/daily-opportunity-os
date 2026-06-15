@@ -341,6 +341,8 @@ class Opportunity(BaseModel):
     # ── Deep-dive Sonnet synthesis (Wave 2.2, 2026-06-12) ────────────────────
     synthesis_bull_case: Optional[str] = None           # strongest reason this wins
     synthesis_key_risks: Optional[List] = None          # 2-3 risks most likely to kill it
+    synthesis_swing_factors: Optional[List] = None      # 2-3 variables that most decide go/no-go
+    synthesis_key_unknown: Optional[str] = None         # decisive missing evidence
     synthesis_recommendation: Optional[str] = None      # "go" | "validate" | "pass"
     synthesis_rationale: Optional[str] = None           # one-sentence justification
 
