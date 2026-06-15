@@ -64,6 +64,98 @@ def _load_validation_report(opp_id: str) -> str | None:
     return None
 
 
+_REC_COLORS = {"go": "#22C55E", "validate": "#F59E0B", "pass": "#EF4444"}
+
+
+def _render_intelligence_panel(o: dict) -> None:
+    """Surface this-session intelligence: Sonnet synthesis, kill thesis, evidence coverage.
+
+    Renders nothing when an opp has none of these (e.g. not yet deep-dived with
+    --synthesize), so it degrades cleanly across the portfolio.
+    """
+    rec = (o.get("synthesis_recommendation") or "").lower()
+    bull = o.get("synthesis_bull_case")
+    swing = o.get("synthesis_swing_factors") or []
+    unknown = o.get("synthesis_key_unknown")
+    kt = o.get("kill_thesis")
+    kt_strength = o.get("kill_thesis_strength")
+    coverage = o.get("evidence_coverage")
+    low_ev = o.get("low_evidence_flag")
+
+    if not (rec or kt or coverage is not None):
+        return
+
+    badges = []
+    if rec:
+        rc = _REC_COLORS.get(rec, "#3B82F6")
+        badges.append(
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:{rc};'
+            f'background:{rc}15;border:1px solid {rc}40;border-radius:3px;padding:5px 12px">'
+            f'SONNET: {rec.upper()}</span>'
+        )
+    if kt_strength is not None:
+        ktc = "#EF4444" if kt_strength >= 7 else "#F59E0B" if kt_strength >= 4 else "#22C55E"
+        cap = " · CAPS 5.0" if kt_strength >= 7 else ""
+        badges.append(
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:{ktc};'
+            f'background:{ktc}15;border:1px solid {ktc}40;border-radius:3px;padding:5px 12px">'
+            f'KILL-THESIS {kt_strength}/10{cap}</span>'
+        )
+    if coverage is not None:
+        cvc = "#EF4444" if low_ev else "#22C55E" if coverage >= 0.5 else "#F59E0B"
+        warn = " · THIN" if low_ev else ""
+        badges.append(
+            f'<span style="font-family:JetBrains Mono,monospace;font-size:10px;color:{cvc};'
+            f'background:{cvc}15;border:1px solid {cvc}40;border-radius:3px;padding:5px 12px">'
+            f'EVIDENCE {coverage * 100:.0f}%{warn}</span>'
+        )
+
+    def _block(label, text, color="#A1A1AA"):
+        return (
+            '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+            f'letter-spacing:0.07em;text-transform:uppercase;margin:12px 0 5px 0">{label}</div>'
+            f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:12px;color:{color};'
+            f'line-height:1.7">{text}</div>'
+        )
+
+    body = ""
+    if o.get("synthesis_rationale"):
+        body += _block("Why", str(o.get("synthesis_rationale"))[:400], "#F4F4F5")
+    if bull:
+        body += _block("Bull case", str(bull)[:500])
+    if swing:
+        items = "".join(
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#9CA3AF;'
+            f'padding:3px 0;line-height:1.55">→ {str(s)[:240]}</div>'
+            for s in (swing if isinstance(swing, list) else [swing])[:3]
+        )
+        body += (
+            '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+            'letter-spacing:0.07em;text-transform:uppercase;margin:12px 0 5px 0">'
+            'Swing factors (what decides go/no-go)</div>' + items
+        )
+    if unknown:
+        body += (
+            '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#F59E0B;'
+            'letter-spacing:0.07em;text-transform:uppercase;margin:12px 0 5px 0">Decisive unknown</div>'
+            f'<div style="background:rgba(245,158,11,0.06);border-left:2px solid rgba(245,158,11,0.5);'
+            f'padding:8px 12px;border-radius:0 6px 6px 0;font-family:Plus Jakarta Sans,sans-serif;'
+            f'font-size:12px;color:#D4D4D8;line-height:1.6">{str(unknown)[:400]}</div>'
+        )
+    if kt:
+        body += _block("Strongest kill thesis", str(kt)[:400], "#C9D1D9")
+
+    st.html(f"""
+<div style="background:#18181B;border:1px solid rgba(255,255,255,0.07);
+     border-radius:10px;padding:20px 24px;margin-bottom:20px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525B;
+       letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Analyst Intelligence</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">{''.join(badges)}</div>
+  {body}
+</div>
+""")
+
+
 def tab_deep_dive(opps: list):
     """Super Deep Dive — full intelligence brief for a selected opportunity."""
     active_opps = sorted(
@@ -180,6 +272,9 @@ def tab_deep_dive(opps: list):
   </div>
 </div>
 """)
+
+    # ── Analyst Intelligence panel (Sonnet synthesis, kill thesis, evidence) ────
+    _render_intelligence_panel(o)
 
     # ── 3-column intelligence sections ─────────────────────────────────────────
     col_pain, col_market, col_build = st.columns(3)
