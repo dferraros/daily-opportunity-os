@@ -188,3 +188,15 @@ pain_signal_count 5-7 across top-20, pain_validation_score 76/76.
 - Bridge: opp-os like <id> -> export <id> -> kickoff <id>
 - Dashboard: uv run streamlit run src/opportunity_os/dashboard.py
 - Tests: uv run pytest -q (419) | Rescore: opp-os rescore-all --dry-run
+
+
+## Deep-dive per-variable depth FIXED (2026-06-15) — cebe1b4
+Honest correction: the "Every Variable" breakdown was half-delivered — a markdown table
+truncated each reason to 160 chars mid-word and 4 data-backed dims showed "no narrative",
+so depth was generated then thrown away. Now: per-variable BLOCKS with the FULL reason
+(to 450 chars) + reconstructed basis for data-backed dims (pain_validation<-pain_signal_count,
+market_momentum<-job_posting_count, competitor_weakness<-neg-review-rate+basis,
+distribution_quality<-validation test). Every ~23 vars shows score/weight/contribution/full
+reasoning. Dashboard also got an Analyst Intelligence panel (synthesis+kill-thesis+evidence).
+Daily discovery run: 0 new opps (only HN harvest active; SERPER/EXA/REDDIT keys unset; 6 HN
+signals were meta-noise, correctly rejected). 580 tests, deployed.
