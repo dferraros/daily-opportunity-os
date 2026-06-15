@@ -1,5 +1,6 @@
 """Tab 6: Super Deep Dive — full intelligence brief, kill gate, decision memo."""
 
+import html
 import logging
 import os
 import subprocess
@@ -154,6 +155,94 @@ def _render_intelligence_panel(o: dict) -> None:
   {body}
 </div>
 """)
+
+
+def _render_full_scoring_breakdown(o: dict) -> None:
+    """Every scoring variable with score, weight, contribution, and FULL reasoning.
+
+    Reuses the report's data helpers (_DIM_LABELS, _data_backed_basis, layer field
+    lists) so the dashboard and the markdown deep-dive never drift apart.
+    """
+    from opportunity_os.engines.scoring_engine import (
+        ATTRACTIVENESS_FIELDS, EXECUTABILITY_FIELDS, STRATEGIC_VALUE_FIELDS, load_weights,
+    )
+    from opportunity_os.pipelines.deep_dive import (
+        _DATA_BACKED_DIMS, _DIM_LABELS, _data_backed_basis,
+    )
+
+    weight_map = load_weights().get("weights", {})
+    layers = [
+        ("Attractiveness", "50%", ATTRACTIVENESS_FIELDS, "attractiveness_score"),
+        ("Executability", "30%", EXECUTABILITY_FIELDS, "executability_score"),
+        ("Strategic Value", "20%", STRATEGIC_VALUE_FIELDS, "strategic_value_score"),
+    ]
+
+    st.markdown(subsection("Every Variable — Full Reasoning"), unsafe_allow_html=True)
+
+    for name, pct, fields, score_field in layers:
+        ls = o.get(score_field)
+        ls_str = f"{ls}/10" if ls is not None else "—"
+        parts = [
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#71717A;'
+            f'letter-spacing:0.07em;text-transform:uppercase;font-weight:600;margin:16px 0 8px 0">'
+            f'{name} · {pct} of composite · layer {ls_str}</div>'
+        ]
+        for field in fields:
+            value = o.get(field)
+            weight = weight_map.get(field, 0.0)
+            label = html.escape(_DIM_LABELS.get(field, field))
+
+            if value is not None:
+                v = float(value)
+                sc = "#22C55E" if v >= 8 else "#F59E0B" if v >= 5 else "#EF4444"
+                score_str = f"{value}/10"
+            else:
+                v, sc, score_str = None, "#6B7280", "not scored"
+
+            if weight == 0.0:
+                meta = "weight 0 · consolidated (redundant — folded into speed_to_mvp)"
+            elif v is not None:
+                eff = (10.0 - v) if field == "competition_intensity" else v
+                meta = f"weight {weight:.2f} · contributes {eff * weight:.2f}"
+            else:
+                meta = f"weight {weight:.2f} · no value yet (run the scorer)"
+
+            why = o.get(f"{field}_reason") or ""
+            if not why and field in _DATA_BACKED_DIMS:
+                why = _data_backed_basis(o, field)
+            why = html.escape(str(why).replace("\n", " ").strip()[:450]) or \
+                "<em>No reasoning recorded for this dimension yet.</em>"
+
+            parts.append(
+                f'<div style="border-left:2px solid {sc};background:rgba(255,255,255,0.02);'
+                f'padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0">'
+                f'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">'
+                f'<span style="font-family:Plus Jakarta Sans,sans-serif;font-size:13px;font-weight:600;'
+                f'color:#F4F4F5">{label}</span>'
+                f'<span style="font-family:JetBrains Mono,monospace;font-size:12px;font-weight:600;'
+                f'color:{sc};white-space:nowrap">{score_str}</span></div>'
+                f'<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#52525B;'
+                f'letter-spacing:0.05em;margin:4px 0 6px 0">{meta}</div>'
+                f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:12px;color:#A1A1AA;'
+                f'line-height:1.6">{why}</div></div>'
+            )
+        st.html("".join(parts))
+
+    # Adversarial counterweight
+    kt = o.get("kill_thesis")
+    if kt:
+        strength = o.get("kill_thesis_strength") or 0
+        capped = strength >= 7
+        kc = "#EF4444" if capped else "#F59E0B"
+        st.html(
+            f'<div style="border-left:2px solid {kc};background:rgba(239,68,68,0.05);'
+            f'padding:10px 14px;margin-top:10px;border-radius:0 6px 6px 0">'
+            f'<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:{kc};'
+            f'font-weight:600;margin-bottom:5px">ADVERSARIAL KILL THESIS · {strength}/10'
+            f'{" · CAPS SCORE AT 5.0" if capped else " · watch-item"}</div>'
+            f'<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:12px;color:#C9D1D9;'
+            f'line-height:1.6">{html.escape(str(kt)[:400])}</div></div>'
+        )
 
 
 def tab_deep_dive(opps: list):
@@ -732,6 +821,10 @@ def tab_deep_dive(opps: list):
 
         with st.expander("▸ All raw fields", expanded=False):
             st.json({k: v for k, v in o.items() if k != "score_history"})
+
+    # ── Every Variable — Full Reasoning (per-dimension deep breakdown) ──────────
+    st.divider()
+    _render_full_scoring_breakdown(o)
 
     # ── Decision Memo ──────────────────────────────────────────────────────────
     st.divider()
