@@ -49,7 +49,9 @@ reports/validation/
 exports/
 scripts/notion_matches.json
 
-# User scripts outside project scope
+# User scripts outside project scope (root Scripts/ dir).
+# NOTE: on Windows (core.ignorecase=true) this also matches the lowercase
+# scripts/ dir - new files there must be added with git add -f.
 Scripts/
 
 # Personal documents and unrelated Desktop folders (never commit)
