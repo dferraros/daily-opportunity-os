@@ -62,6 +62,19 @@ MIN_EVIDENCE_COVERAGE: float = 0.50   # less than half the collectable evidence 
 KILL_THESIS_CAP_THRESHOLD: int = 7    # kill_thesis_strength >= this caps the score
 
 # ---------------------------------------------------------------------------
+# Decision filters -- archetypes that compound (software/data/network/distribution)
+# ---------------------------------------------------------------------------
+# Same set the deep-dive dashboard used for display-time inference; centralised
+# here so scoring and display can never disagree.
+COMPOUND_ARCHETYPES = frozenset([
+    "local_clone",
+    "workflow_unbundling",
+    "smb_operating_system",
+    "fragmented_supply_marketplace",
+    "ai_operator_replacement",
+])
+
+# ---------------------------------------------------------------------------
 # Layer field definitions
 # ---------------------------------------------------------------------------
 ATTRACTIVENESS_FIELDS = [
@@ -353,6 +366,7 @@ def normalize_portfolio_scores(
     capped_output_max = min(output_max, max_s + max_inflation)
     output_spread = capped_output_max - output_min
 
+    weights = load_weights()
     result = []
     for opp in opps:
         raw_val = _true_raw_score(opp, raw_field, output_field)
@@ -360,10 +374,16 @@ def normalize_portfolio_scores(
             result.append(opp)
             continue
         normalized = ((float(raw_val) - min_s) / spread) * output_spread + output_min
+        bounded = max(output_min, min(output_max, normalized))
+        # Re-apply hard caps AFTER normalization: a raw score capped at 5.0
+        # (failed decision filters, strong kill thesis) must stay capped —
+        # remapping into the output band was silently lifting capped scores
+        # back above the cap, making the gates decorative (found 2026-07-22).
+        bounded = apply_caps(bounded, opp, weights)
         result.append({
             **opp,
             raw_field: round(float(raw_val), 4),
-            output_field: round(max(output_min, min(output_max, normalized)), 4),
+            output_field: round(bounded, 4),
         })
 
     return result
@@ -423,6 +443,82 @@ def _normalize_data_backed_scores(opp: dict) -> dict:
     return updates
 
 
+def evaluate_decision_filters(opp: dict) -> dict:
+    """Compute the three build-gate filters from evidence fields.
+
+    Unknown (None) answers are neither pass nor fail -- only an explicit False
+    counts toward the 2-failure cap, mirroring the kill gate's benefit-of-doubt
+    stance. Returns a dict shaped like DecisionFilterResults.model_dump() so
+    the stored record and the Pydantic model always agree.
+    """
+    # Filter 1: can I sell this fast? Direct evidence is the validated flag;
+    # without it, only a strong distribution_accessibility signal decides.
+    validated = opp.get("distribution_validated")
+    if validated is not None:
+        can_sell_fast: Optional[bool] = bool(validated)
+    else:
+        da = opp.get("distribution_accessibility")
+        if da is None:
+            can_sell_fast = None
+        elif float(da) >= 7:
+            can_sell_fast = True
+        elif float(da) <= 3:
+            can_sell_fast = False
+        else:
+            can_sell_fast = None
+
+    # Filter 2: can I build this lean? capital_efficiency is the closest proxy.
+    cap_eff = opp.get("capital_efficiency")
+    can_build_lean = None if cap_eff is None else float(cap_eff) >= 6
+
+    # Filter 3: can this compound? Archetype first, moat dimensions as backup.
+    archetype = opp.get("benchmark_archetype") or ""
+    network = opp.get("network_effect_strength")
+    switching = opp.get("switching_cost_score")
+    if archetype in COMPOUND_ARCHETYPES:
+        can_compound: Optional[bool] = True
+    elif (network is not None and float(network) >= 6) or (
+        switching is not None and float(switching) >= 6
+    ):
+        can_compound = True
+    elif archetype and network is not None and switching is not None:
+        can_compound = False
+    else:
+        can_compound = None
+
+    answers = [can_sell_fast, can_build_lean, can_compound]
+    failures = sum(1 for v in answers if v is False)
+    return {
+        "can_sell_fast": can_sell_fast,
+        "can_build_lean": can_build_lean,
+        "can_compound": can_compound,
+        "failures": failures,
+        "should_cap_score": failures >= 2,
+    }
+
+
+def _stamp_score_sources(opp: dict, derived_data_fields: set, derived_heuristic_fields: set) -> dict:
+    """Per-dimension confidence tags: 'data' | 'ai' | 'heuristic'.
+
+    Every scored dimension present on the record gets exactly one tag so a 7
+    backed by collected evidence is visibly different from a 7 an LLM guessed.
+    Derivation wins over origin: a dimension recomputed from raw signals this
+    pass is 'data' even if an AI once guessed it.
+    """
+    default_source = "ai" if opp.get("ai_scored_at") else "heuristic"
+    sources = {}
+    for field in _ALL_SCORED_FIELDS:
+        if opp.get(field) is None:
+            continue
+        if field in derived_data_fields:
+            sources[field] = "data"
+        elif field in derived_heuristic_fields:
+            sources[field] = "heuristic"
+        else:
+            sources[field] = default_source
+    return sources
+
+
 def compute_evidence_coverage(opp: dict, weights: dict) -> float:
     """Fraction of COLLECTABLE evidence weight actually collected for this opp.
 
@@ -460,11 +556,55 @@ def score_opportunity(opp_dict: dict) -> dict:
     opp = dict(opp_dict)  # shallow copy
 
     # Populate data-backed sub-scores from raw signals before any layer scoring.
+    # Track what each derivation produced so score_sources can tag it truthfully.
     data_backed = _normalize_data_backed_scores(opp)
+    derived_data_fields = set(data_backed.keys())
     opp = {**opp, **data_backed}
 
+    if opp.get("distribution_quality") is None and opp.get("distribution_validated") is not None:
+        derived_data_fields.add("distribution_quality")
     opp = _derive_distribution_quality(opp)
-    opp = _apply_pain_signal_fallback(opp)
+
+    # pain_validation_score present BEFORE the fallback means paid research set it.
+    derived_heuristic_fields = set()
+    if opp.get("pain_validation_score") is not None:
+        derived_data_fields.add("pain_validation_score")
+    else:
+        opp = _apply_pain_signal_fallback(opp)
+        if opp.get("pain_validation_score") is not None:
+            derived_heuristic_fields.add("pain_validation_score")
+
+    # Decision filters: computed fresh every pass (pure function of evidence
+    # fields), so the promised 5.0 cap in apply_caps can actually fire.
+    # Provenance rule: results the pipeline inferred are stamped
+    # source="inferred" and recomputed every pass; anything else (a human
+    # verdict from a validation review, or a legacy record) is preserved with
+    # None gaps filled from inference.
+    inferred_filters = evaluate_decision_filters(opp)
+    existing_filters = opp.get("decision_filter_results") or {}
+    if not existing_filters or existing_filters.get("source") == "inferred":
+        merged = {
+            k: inferred_filters[k]
+            for k in ("can_sell_fast", "can_build_lean", "can_compound")
+        }
+    else:
+        merged = {
+            key: existing_filters.get(key)
+            if existing_filters.get(key) is not None
+            else inferred_filters[key]
+            for key in ("can_sell_fast", "can_build_lean", "can_compound")
+        }
+    failures = sum(1 for v in merged.values() if v is False)
+    opp = {
+        **opp,
+        "decision_filter_results": {
+            **merged,
+            "failures": failures,
+            "should_cap_score": failures >= 2,
+            "source": "inferred" if not existing_filters
+            or existing_filters.get("source") == "inferred" else "manual",
+        },
+    }
 
     if opp.get("kill_criteria_passed") is None:
         logger.warning(
@@ -529,6 +669,11 @@ def score_opportunity(opp_dict: dict) -> dict:
         result["scoring_incomplete"] = True
     else:
         result.pop("scoring_incomplete", None)
+
+    # Per-dimension confidence tags: which scores rest on data vs AI vs regex.
+    result["score_sources"] = _stamp_score_sources(
+        opp, derived_data_fields, derived_heuristic_fields
+    )
 
     # Evidence coverage: make guess-built conviction visible. A high score with
     # near-zero coverage is a research-queue signal, not a green light. The flag

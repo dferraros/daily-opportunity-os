@@ -66,6 +66,7 @@ class DecisionFilterResults(BaseModel):
     can_sell_fast: Optional[bool] = None     # reach buyer + real interest in < 2 weeks?
     can_build_lean: Optional[bool] = None    # MVP < $2K, < 2 people, < 6 weeks?
     can_compound: Optional[bool] = None      # software, data, network effects, or repeatable dist?
+    source: Optional[str] = None             # "inferred" = recomputed each pass; else preserved (manual)
 
     @computed_field
     @property
@@ -312,6 +313,8 @@ class Opportunity(BaseModel):
     validation_start_date: Optional[str] = None        # validation pipeline: window start
     validation_deadline: Optional[str] = None          # validation pipeline: window end
     scoring_incomplete: Optional[bool] = None          # True = 0.0 means UNSCORED, not killed
+    score_sources: Optional[Dict] = None               # per-dimension tag: data | ai | heuristic
+    pain_statement_structured: Optional[bool] = None   # problem follows loses/because/workaround schema
 
     # ── Conviction Bridge (build command) ───────────────────────────────────
     kickoff_at: Optional[str] = None                   # ISO timestamp: build command invoked
