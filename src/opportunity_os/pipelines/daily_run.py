@@ -207,6 +207,28 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
         scored_opps, key=lambda x: x.get("final_score", 0), reverse=True
     )
 
+    # Step 9.25: Adversarial kill-thesis pass on today's top scorers (Wave 2.1,
+    # wired into the daily pipeline 2026-07-22 — it previously only ran via CLI,
+    # so the promised score cap never fired on fresh opportunities).
+    # Cost-gated: top 3 only, skips fresh records (30d TTL), needs Tavily +
+    # Anthropic keys, disabled by OPP_OS_KILL_THESIS=0 or dry-run.
+    if not dry_run and os.environ.get("OPP_OS_KILL_THESIS", "1") != "0":
+        try:
+            from opportunity_os.kill_thesis import run_kill_thesis_pass
+            kt_count = 0
+            for i, opp in enumerate(all_opps_sorted[:3]):
+                updated = run_kill_thesis_pass(opp)
+                if updated.get("kill_thesis_at") != opp.get("kill_thesis_at"):
+                    # Re-score so apply_caps sees the fresh thesis strength.
+                    all_opps_sorted[i] = score_opportunity(updated)
+                    kt_count += 1
+            if kt_count:
+                logger.info("Step 9.25: Kill-thesis pass ran on %d top opportunities", kt_count)
+        except ImportError as e:
+            logger.warning("Kill-thesis engine not available: %s", e)
+        except Exception as e:
+            log_failure("kill_thesis_pass", e)
+
     # Step 9.3: Normalize scores across today's portfolio (fixes AI clustering at 7-9)
     # Only activates if >= 3 opps with spread > 0.1. Backs up raw to raw_final_score.
     if len(all_opps_sorted) >= 3:
@@ -346,6 +368,21 @@ def _enrich_fields(opp_dict: dict) -> dict:
         opp.get("trigger_signal", ""),
     ]).lower()
     geo = opp.get("geography", "global")
+
+    # Pain-statement schema flag (standing requirement 2026-07-22):
+    # "[customer] loses [money/time] because [process], solved via [workaround]".
+    # Observational for now — counts feed the weekly review; enforcement waits
+    # until legacy records are migrated so rescores stay comparable.
+    ps = (opp.get("problem_statement") or "").lower()
+    has_loss = bool(_re.search(
+        r"\b(lose|loses|losing|lost|waste|wastes|delay|delays|pierde|pierden|desperdicia|retrasa)\b", ps
+    ))
+    has_cause = bool(_re.search(r"\b(because|porque|due to|debido a)\b", ps))
+    has_workaround = bool(_re.search(
+        r"\b(currently|today|resuelve|actualmente|workaround|manually|spreadsheet|whatsapp|excel|by hand|a mano)\b",
+        ps,
+    ))
+    opp["pain_statement_structured"] = has_loss and has_cause and has_workaround
 
     # Populate daniels_wedge_score (0-6 count)
     if opp.get("daniels_wedge_score") is None:
