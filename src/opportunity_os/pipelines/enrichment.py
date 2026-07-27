@@ -229,6 +229,33 @@ def run_enrichment_steps(all_opps_sorted: list, dry_run: bool) -> tuple:
         except Exception as e:
             log_failure("research_executor", e)
 
+    # Step 11.5.5: Revenue Evidence Engine — top 3 ONLY (API cost ~$0.02-0.05/opp)
+    # Searches for competitor funding/ARR and pricing to validate TAM estimates.
+    logger.info("Step 11.5.5: Running Revenue Evidence Engine on top 3 opportunities...")
+    if dry_run:
+        logger.info("  [dry-run] Skipping revenue evidence engine (API cost ~$0.02-0.05/opp)")
+    else:
+        try:
+            from opportunity_os import revenue_evidence
+            revenue_map: dict = {}
+            for i, opp in enumerate(all_opps_sorted[:3], 1):
+                # No presence check here: run_revenue_evidence owns the 30d TTL
+                # guard. A bare `if revenue_evidence_at: continue` would freeze
+                # records forever after their first research pass.
+                logger.info("  Revenue evidence %d/3: %s", i, opp.get("name", "unknown")[:50])
+                enriched = revenue_evidence.run_revenue_evidence(opp)
+                if enriched and enriched.get("id"):
+                    revenue_map[enriched["id"]] = enriched
+            if revenue_map:
+                all_opps_sorted = [
+                    revenue_map.get(o.get("id"), o) for o in all_opps_sorted
+                ]
+                logger.info("  Revenue evidence merged %d enriched records", len(revenue_map))
+        except ImportError as e:
+            logger.warning("Revenue evidence engine not available: %s", e)
+        except Exception as e:
+            log_failure("revenue_evidence", e)
+
     # Step 11.6: Free Research — Jina + HN + Reddit for opps 4-20 (zero cost)
     logger.info("Step 11.6: Running free research (Jina + HN + Reddit) on top 20...")
     try:

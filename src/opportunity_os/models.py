@@ -315,6 +315,13 @@ class Opportunity(BaseModel):
     scoring_incomplete: Optional[bool] = None          # True = 0.0 means UNSCORED, not killed
     score_sources: Optional[Dict] = None               # per-dimension tag: data | ai | heuristic
     pain_statement_structured: Optional[bool] = None   # problem follows loses/because/workaround schema
+    competitor_funding_raised: Optional[str] = None    # revenue_evidence: announced funding rounds (e.g. "$50M Series B")
+    competitor_arr_usd: Optional[float] = None         # revenue_evidence: annual recurring revenue in USD
+    competitor_pricing_model: Optional[str] = None     # revenue_evidence: pricing strategy (e.g. "SaaS $29-99/mo")
+    tam_annual_price_usd: Optional[float] = None       # revenue_evidence: inferred annual price point for TAM bottom-up
+    revenue_evidence_sources: Optional[List] = None    # revenue_evidence: list of {url, claim, date} dicts
+    revenue_evidence_at: Optional[str] = None          # ISO timestamp: revenue evidence last refreshed
+    tam_validation_note: Optional[str] = None          # revenue_evidence: comparison of competitor ARR to TAM estimate
 
     # ── Conviction Bridge (build command) ───────────────────────────────────
     kickoff_at: Optional[str] = None                   # ISO timestamp: build command invoked

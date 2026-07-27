@@ -250,30 +250,42 @@ def estimate_tam_from_opp(opp: dict) -> dict:
     """
     Pipeline adapter: accepts an opportunity dict and returns TAM enrichment.
 
-    Auto-selects bottom_up if tam_target_customers and tam_annual_price_usd are set,
-    otherwise falls back to top_down using tam_total_market_usd if set,
-    otherwise uses a proxy via geo multiplier on a $10B global baseline.
+    Method selection order (prefer evidence-backed methods):
+    1. Competitor revenue (if competitor_arr_usd from revenue_evidence engine)
+    2. Bottom-up with revenue_evidence pricing (if tam_annual_price_usd from revenue_evidence)
+    3. Bottom-up (if tam_target_customers and tam_annual_price_usd manual inputs set)
+    4. Top-down (if tam_total_market_usd set)
+    5. Proxy fallback (always has a value via geo multiplier on $10B baseline)
 
     Returns a flat dict suitable for opp.update():
       tam, tam_usd_estimate, sam_usd, som_usd, tam_method, tam_confidence, tam_notes
     """
     geography = opp.get("geography", "global")
 
-    # Bottom-up (preferred)
-    target_customers = opp.get("tam_target_customers")
-    annual_price = opp.get("tam_annual_price_usd")
-    if target_customers and annual_price:
+    # Competitor revenue (evidence-backed)
+    competitor_arr = opp.get("competitor_arr_usd")
+    if competitor_arr:
+        result = estimate_tam("competitor_revenue", geography=geography,
+                              competitor_arr_usd=float(competitor_arr),
+                              competitor_market_share_estimate=0.05)
+    # Bottom-up: revenue_evidence pricing and manual inputs both arrive on the
+    # same tam_annual_price_usd field, so one branch covers both.
+    elif opp.get("tam_annual_price_usd") and opp.get("tam_target_customers"):
         result = estimate_tam("bottom_up", geography=geography,
-                              target_customers=int(target_customers),
-                              annual_price_usd=float(annual_price))
+                              target_customers=int(opp.get("tam_target_customers")),
+                              annual_price_usd=float(opp.get("tam_annual_price_usd")))
+    else:
+        result = None
+
     # Top-down
-    elif opp.get("tam_total_market_usd"):
+    if not result and opp.get("tam_total_market_usd"):
         addressable_pct = float(opp.get("tam_addressable_pct", 0.15))
         result = estimate_tam("top_down", geography=geography,
                               total_market_usd=float(opp["tam_total_market_usd"]),
                               addressable_pct=addressable_pct)
+
     # Proxy fallback: $10B global baseline × geo multiplier
-    else:
+    if not result:
         geo_mult = GEO_TAM_MULTIPLIERS.get(geography.lower(), 1.0)
         result = estimate_tam("proxy", geography=geography,
                               analog_tam_usd=10_000_000_000,
