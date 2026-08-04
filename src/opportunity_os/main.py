@@ -287,6 +287,37 @@ def kickoff(opp_id, out_dir):
     click.echo(f"and paste the contents of {result['files'][-1]}.")
 
 
+@cli.command("build-spec")
+@click.argument("opp_id")
+@click.option("--to", "out_dir", default=None, help="Output directory. Default: reports/deep-dives/YYYY-MM-DD/")
+def build_spec(opp_id, out_dir):
+    """Generate a detailed 4-week MVP build specification.
+
+    Writes YYYY-MM-DD-{id}-mvp-build-spec.md (7-section build contract) and
+    YYYY-MM-DD-{id}-build-prompt.md (paste into Claude Code: /spec -> /plan -> /build).
+
+    Sections: A) Feature scope, B) Tech architecture, C) 4-week sprint plan,
+    D) Resource plan, E) Unit economics (3 scenarios), F) Metrics + kill conditions,
+    G) Week-4 go/no-go criteria.
+    """
+    from opportunity_os.storage import get_opportunity_by_id
+    from opportunity_os.mvp_build_spec import write_build_package
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    result = write_build_package(opp, out_dir=out_dir)
+    if "error" in result:
+        click.echo(f"Error: {result['error']}", err=True)
+        sys.exit(1)
+    click.echo("MVP build specification written:")
+    click.echo(f"  Spec:   {result['spec_path']}")
+    click.echo(f"  Prompt: {result['prompt_path']}")
+    click.echo("\nStart building: open a new Claude Code session and paste the prompt.")
+
+
 @cli.command()
 @click.argument("query")
 @click.option("--min-score", default=0.0, help="Minimum score filter.")
