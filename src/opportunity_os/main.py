@@ -373,7 +373,7 @@ def search(query, min_score, geo):
         and o.get("final_score", 0) >= min_score
         and (geo is None or o.get("geography") == geo)
     ]
-    results = sorted(results, key=lambda x: x.get("final_score", 0), reverse=True)
+    results = sorted(results, key=lambda x: x.get("final_score") or 0, reverse=True)
     if not results:
         click.echo(f"No results for '{query}'")
         return
@@ -401,7 +401,7 @@ def stats():
     killed = [o for o in all_opps if o.get("kill_decision")]
 
     top = (
-        max(scored, key=lambda x: x.get("final_score", 0), default=None)
+        max(scored, key=lambda x: x.get("final_score") or 0, default=None)
         if scored
         else None
     )

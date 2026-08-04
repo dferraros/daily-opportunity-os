@@ -204,7 +204,7 @@ def run_daily(date: str = None, geo: str = "global", dry_run: bool = False) -> d
 
     # Step 9: Rank scored opportunities
     all_opps_sorted = sorted(
-        scored_opps, key=lambda x: x.get("final_score", 0), reverse=True
+        scored_opps, key=lambda x: x.get("final_score") or 0, reverse=True
     )
 
     # Step 9.25: Adversarial kill-thesis pass on today's top scorers (Wave 2.1,

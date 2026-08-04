@@ -41,8 +41,8 @@
   <Actions Context="Author">
     <Exec>
       <Command>C:\Program Files\Git\usr\bin\bash.exe</Command>
-      <Arguments>-c "cd '/c/Users/ferra/OneDrive/Desktop/Projects/.worktrees/daily-opportunity-os' &amp;&amp; bash scripts/run_daily.sh >> data/automation_runs.log 2>&amp;1"</Arguments>
-      <WorkingDirectory>C:\Users\ferra\OneDrive\Desktop\Projects\.worktrees\daily-opportunity-os</WorkingDirectory>
+      <Arguments>-c "cd '/c/Users/ferra/OneDrive/Desktop/Projects/opportunity-os' &amp;&amp; bash scripts/run_daily.sh >> data/automation_runs.log 2>&amp;1"</Arguments>
+      <WorkingDirectory>C:\Users\ferra\OneDrive\Desktop\Projects\opportunity-os</WorkingDirectory>
     </Exec>
   </Actions>
 </Task>

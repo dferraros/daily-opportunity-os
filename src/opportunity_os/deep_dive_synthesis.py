@@ -21,7 +21,15 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-SYNTHESIS_MODEL = os.environ.get("ANTHROPIC_SYNTHESIS_MODEL", "claude-sonnet-4-6")
+# OPP_OS_SYNTHESIS_MODEL is the canonical env var (hypothesis_mode uses it too);
+# ANTHROPIC_SYNTHESIS_MODEL kept as legacy fallback. Default fixed 2026-08-04:
+# was "claude-sonnet-4-6", an invalid model id -- synthesis 404'd whenever the
+# env var was unset.
+SYNTHESIS_MODEL = (
+    os.environ.get("OPP_OS_SYNTHESIS_MODEL")
+    or os.environ.get("ANTHROPIC_SYNTHESIS_MODEL")
+    or "claude-sonnet-5"
+)
 MAX_TOKENS = 1200
 
 SYNTHESIS_SYSTEM_PROMPT = (
