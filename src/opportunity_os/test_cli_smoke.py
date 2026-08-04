@@ -15,7 +15,7 @@ from opportunity_os.main import cli
 # adding/removing a command -- a diff here should be a conscious decision.
 EXPECTED_COMMANDS = frozenset({
     "apify-research", "audit", "backup", "backups", "build", "build-spec", "calibrate",
-    "daily", "deep-dive", "export", "free-research", "harvest", "kickoff",
+    "daily", "deep-dive", "export", "free-research", "harvest", "hypothesize", "kickoff",
     "kill-thesis", "like", "liked", "outcome", "rescore-all", "research",
     "restore", "search", "stats", "validate", "weekly",
 })

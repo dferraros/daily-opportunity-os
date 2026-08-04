@@ -244,7 +244,7 @@ class Opportunity(BaseModel):
     path_to_10m_arr: Optional[str] = None
 
     # ── Pipeline Stage ───────────────────────────────────────────────────────
-    stage: Literal["scout", "validation", "validated", "killed"] = "scout"
+    stage: Literal["scout", "validation", "validated", "killed", "hypothesis"] = "scout"
     source: Optional[str] = None             # normalization.fill_defaults: "manual", "web", etc.
     validation_status: Optional[Literal["pending", "in_progress", "passed", "failed"]] = None
     validation_notes: Optional[str] = None
@@ -315,6 +315,18 @@ class Opportunity(BaseModel):
     scoring_incomplete: Optional[bool] = None          # True = 0.0 means UNSCORED, not killed
     score_sources: Optional[Dict] = None               # per-dimension tag: data | ai | heuristic
     pain_statement_structured: Optional[bool] = None   # problem follows loses/because/workaround schema
+
+    # ── Hypothesis mode (2026-08-04) ─────────────────────────────────────────
+    hypothesis_at: Optional[str] = None                # ISO timestamp: hypothesis run
+    hypothesis_verdict: Optional[str] = None           # build|validate|pivot_to_neighbor|drop_but_run_neighbor|absorb_into_asset
+    hypothesis_rationale: Optional[str] = None         # verdict reasoning (Sonnet + code-enforced downgrades)
+    hypothesis_key_unknowns: Optional[List] = None     # questions that cannot yet be answered
+    best_neighbor: Optional[str] = None                # winning adjacent play, if any
+    neighborhood: Optional[List] = None                # 6-axis adjacent plays with mini-scores
+    feasibility_answers: Optional[Dict] = None         # 12-question component interrogation
+    feasibility_skipped: Optional[str] = None          # reason feasibility did not run
+    legal_flags: Optional[List] = None                 # specific legal/sanctions/licensing risks
+    legal_opinion_required: Optional[bool] = None      # True blocks build promotion (standing rule e)
     competitor_funding_raised: Optional[str] = None    # revenue_evidence: announced funding rounds (e.g. "$50M Series B")
     competitor_arr_usd: Optional[float] = None         # revenue_evidence: annual recurring revenue in USD
     competitor_pricing_model: Optional[str] = None     # revenue_evidence: pricing strategy (e.g. "SaaS $29-99/mo")

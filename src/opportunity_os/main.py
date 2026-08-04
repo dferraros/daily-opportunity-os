@@ -56,6 +56,40 @@ def weekly(dry_run):
     )
 
 
+@cli.command("hypothesize")
+@click.argument("idea_text")
+@click.option("--skip-research", is_flag=True,
+              help="Skip the revenue-evidence search (saves ~$0.05; verdict is less grounded).")
+def hypothesize(idea_text, skip_research):
+    """Validate YOUR OWN idea, adversarial-first.
+
+    Structures the idea, maps its 6-axis neighborhood (incl. absorb-into-asset),
+    runs the kill thesis + feasibility interrogation BEFORE scoring, gathers
+    revenue evidence, then returns a verdict: build | validate |
+    pivot_to_neighbor | drop_but_run_neighbor | absorb_into_asset.
+    A required legal opinion or a kill thesis >= 7 blocks "build" in code.
+    """
+    from opportunity_os.hypothesis_mode import run_hypothesis
+
+    try:
+        result = run_hypothesis(idea_text, skip_research=skip_research)
+    except (RuntimeError, ValueError) as exc:
+        click.echo(f"ERROR: {exc}", err=True)
+        sys.exit(1)
+
+    click.echo(f"\nVERDICT: {result['verdict'].upper()}")
+    click.echo(f"  {result['rationale']}")
+    if result["best_neighbor"]:
+        click.echo(f"  Best neighbor: {result['best_neighbor']}")
+    if result["key_unknowns"]:
+        click.echo("  Key unknowns:")
+        for u in result["key_unknowns"]:
+            click.echo(f"    - {u}")
+    click.echo(f"\nReport: {result['report_path']}")
+    for label, path in (result.get("build_paths") or {}).items():
+        click.echo(f"{label}: {path}")
+
+
 @cli.command("deep-dive")
 @click.argument("opp_id")
 @click.option("--dry-run", is_flag=True)

@@ -108,8 +108,8 @@ def _estimate_price(opp: dict) -> int:
         except (ValueError, IndexError):
             pass
 
-    wtp = opp.get("willingness_to_pay", 5)
-    geo = opp.get("geography", "global")
+    wtp = opp.get("willingness_to_pay") or 5
+    geo = opp.get("geography") or "global"
     geo_multiplier = {"venezuela": 0.3, "latam": 0.6, "colombia": 0.7, "mexico": 0.7, "spain": 1.2, "global": 1.0}
     base = max(9, int(wtp * 8 * geo_multiplier.get(geo, 1.0)))
     for clean in [9, 19, 29, 49, 79, 99, 149, 199]:
@@ -136,7 +136,7 @@ def _render_section_a_feature_scope(opp: dict) -> str:
         opp.get("path_to_first_revenue", "[NEEDS INPUT: first_revenue_path]")
     )
 
-    vertical = opp.get("vertical", "").lower()
+    vertical = (opp.get("vertical") or "").lower()
     is_fintech = "fintech" in vertical or "payment" in vertical
 
     # OUT-OF-SCOPE rules for fintech
@@ -271,7 +271,7 @@ def _render_section_e_unit_economics(opp: dict) -> str:
     currency = _currency_symbol(opp)
     setup_fee = max(0, mid_price // 3)  # Default: ~1 month MRR
 
-    geo = opp.get("geography", "global").lower()
+    geo = (opp.get("geography") or "global").lower()
     monthly_burn = 300 if geo == "venezuela" else (200 if geo in ("latam", "colombia") else 400)
     break_even_customers = max(1, int(8000 / mid_price))
 
@@ -403,8 +403,8 @@ def build_mvp_spec(opp: dict) -> str:
 
 **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}
 **Opportunity ID:** {opp.get('id', 'unknown')}
-**Score:** {score_str} | **Lane:** {opp.get('portfolio_lane', 'unknown').upper()}
-**Geography:** {opp.get('geography', 'global').upper()}
+**Score:** {score_str} | **Lane:** {(opp.get('portfolio_lane') or 'unknown').upper()}
+**Geography:** {(opp.get('geography') or 'global').upper()}
 
 ---
 
