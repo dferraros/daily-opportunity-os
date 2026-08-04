@@ -28,6 +28,7 @@ from opportunity_os.dashboard_tabs.tab_pipeline_health import tab_pipeline_healt
 from opportunity_os.dashboard_tabs.tab_venezuela_focus import tab_venezuela_focus  # noqa: E402
 from opportunity_os.dashboard_tabs.tab_weekly_ritual import tab_weekly_ritual  # noqa: E402
 from opportunity_os.dashboard_tabs.tab_deep_dive import tab_deep_dive  # noqa: E402
+from opportunity_os.dashboard_tabs.tab_hypothesis_lab import tab_hypothesis_lab  # noqa: E402
 
 
 def main():
@@ -47,6 +48,7 @@ def main():
         "Venezuela Focus",
         "Weekly Ritual",
         "Deep Dive",
+        "Hypothesis Lab",
     ])
 
     with tabs[0]:
@@ -71,6 +73,9 @@ def main():
 
     with tabs[5]:
         tab_deep_dive(all_opps)
+
+    with tabs[6]:
+        tab_hypothesis_lab(all_opps)
 
 
 main()

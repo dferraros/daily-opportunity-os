@@ -563,3 +563,49 @@ def validation_status_label(status: Optional[str]) -> str:
         "failed": "❌ Failed",
         None: "⬜ Not Started",
     }.get(status, "⬜ Not Started")
+
+
+# ── Minimum-signal promotion gate (standing rule 2026-07-22b, wired 2026-08-04) ──
+# Clicks and interview counts are inputs, never promotion criteria. Promotion to
+# build requires ONE of these hard commercial signals.
+
+MIN_PAID_PILOTS = 3
+MIN_SIGNED_LOIS = 5
+MIN_DATA_SHARING_COMPANIES = 10
+
+
+def evaluate_minimum_signal_gate(opp: dict) -> dict:
+    """Evaluate the minimum-signal bar. Returns a NEW partial dict to merge.
+
+    Passes when ANY of: >= 3 paid pilots | >= 5 LOIs with agreed price |
+    >= 10 companies sharing real data | 1 anchor client funding development.
+    Unknown (None) counts are treated as zero — the gate demands positive
+    evidence, never benefit of the doubt.
+    """
+    pilots = int(opp.get("paid_pilots_count") or 0)
+    lois = int(opp.get("signed_lois_count") or 0)
+    data_shares = int(opp.get("data_sharing_companies_count") or 0)
+    anchor = bool(opp.get("anchor_client_funded"))
+
+    reasons = []
+    if pilots >= MIN_PAID_PILOTS:
+        reasons.append(f"{pilots} paid pilots (>= {MIN_PAID_PILOTS})")
+    if lois >= MIN_SIGNED_LOIS:
+        reasons.append(f"{lois} signed LOIs with price (>= {MIN_SIGNED_LOIS})")
+    if data_shares >= MIN_DATA_SHARING_COMPANIES:
+        reasons.append(f"{data_shares} companies sharing real data (>= {MIN_DATA_SHARING_COMPANIES})")
+    if anchor:
+        reasons.append("anchor client funding development")
+
+    passed = bool(reasons)
+    if passed:
+        evidence = "PASSED: " + "; ".join(reasons)
+    else:
+        evidence = (
+            f"NOT MET: pilots {pilots}/{MIN_PAID_PILOTS}, LOIs {lois}/{MIN_SIGNED_LOIS}, "
+            f"data-sharing {data_shares}/{MIN_DATA_SHARING_COMPANIES}, anchor client: no"
+        )
+    return {
+        "validation_gate_passed": passed,
+        "validation_gate_evidence": evidence,
+    }

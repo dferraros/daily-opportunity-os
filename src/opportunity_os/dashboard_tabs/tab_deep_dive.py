@@ -196,6 +196,15 @@ def _render_full_scoring_breakdown(o: dict) -> None:
                 v = float(value)
                 sc = "#22C55E" if v >= 8 else "#F59E0B" if v >= 5 else "#EF4444"
                 score_str = f"{value}/10"
+                # Confidence tag (2026-08-04 audit): a 7 backed by data must not
+                # look like a 7 an LLM guessed.
+                _src = (o.get("score_sources") or {}).get(field)
+                if _src:
+                    _src_color = {"data": "#22C55E", "ai": "#3B82F6", "heuristic": "#6B7280"}.get(_src, "#6B7280")
+                    score_str += (
+                        f' <span style="color:{_src_color};font-size:9px;'
+                        f'font-weight:700">[{_src.upper()}]</span>'
+                    )
             else:
                 v, sc, score_str = None, "#6B7280", "not scored"
 
@@ -818,6 +827,40 @@ def tab_deep_dive(opps: list):
             f'{_filter_html}</div>',
             unsafe_allow_html=True,
         )
+
+        # ── Legal gate (2026-08-04 audit: was invisible; a build could be
+        # recommended while legal_opinion_required silently blocked it) ──────
+        if o.get("legal_opinion_required"):
+            st.markdown(
+                '<div style="background:#EF444418;border:1px solid #EF444455;border-radius:6px;'
+                'padding:10px 12px;margin-top:8px;color:#EF4444;font-weight:700;font-size:12px">'
+                '⚠ LEGAL OPINION REQUIRED — build promotion blocked</div>',
+                unsafe_allow_html=True,
+            )
+            for _lf in (o.get("legal_flags") or [])[:5]:
+                st.caption(f"· {_lf}")
+
+        # ── Revenue evidence (2026-08-04 audit: collected but never surfaced) ─
+        if any(o.get(k) for k in ("competitor_arr_usd", "competitor_pricing_model",
+                                  "competitor_funding_raised", "tam_validation_note")):
+            st.markdown(_kl("REVENUE EVIDENCE"), unsafe_allow_html=True)
+            _rev_rows = []
+            if o.get("competitor_funding_raised"):
+                _rev_rows.append(("Funding", o["competitor_funding_raised"]))
+            if o.get("competitor_arr_usd"):
+                _rev_rows.append(("Competitor ARR", f"${float(o['competitor_arr_usd']):,.0f}"))
+            if o.get("competitor_pricing_model"):
+                _rev_rows.append(("Pricing", o["competitor_pricing_model"]))
+            if o.get("tam_validation_note"):
+                _rev_rows.append(("TAM check", o["tam_validation_note"]))
+            for _label, _val in _rev_rows:
+                st.caption(f"**{_label}:** {_val}")
+            _srcs = o.get("revenue_evidence_sources") or []
+            if _srcs:
+                with st.expander(f"▸ {len(_srcs)} citations", expanded=False):
+                    for _s in _srcs:
+                        if isinstance(_s, dict):
+                            st.caption(f"- {_s.get('url')} ({_s.get('claim')})")
 
         with st.expander("▸ All raw fields", expanded=False):
             st.json({k: v for k, v in o.items() if k != "score_history"})

@@ -14,9 +14,9 @@ from opportunity_os.main import cli
 # Frozen snapshot of the command surface (2026-06-12). Update deliberately when
 # adding/removing a command -- a diff here should be a conscious decision.
 EXPECTED_COMMANDS = frozenset({
-    "apify-research", "audit", "backup", "backups", "build", "build-spec", "calibrate",
+    "apify-research", "audit", "audit-report", "backup", "backups", "build", "build-spec", "calibrate",
     "daily", "deep-dive", "export", "free-research", "harvest", "hypothesize", "kickoff",
-    "kill-thesis", "like", "liked", "outcome", "rescore-all", "research",
+    "kill-thesis", "like", "liked", "outcome", "rescore-all", "research", "signal",
     "restore", "search", "stats", "validate", "weekly",
 })
 

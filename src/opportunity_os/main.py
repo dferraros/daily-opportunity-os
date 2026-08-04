@@ -90,6 +90,100 @@ def hypothesize(idea_text, skip_research):
         click.echo(f"{label}: {path}")
 
 
+@cli.command("signal")
+@click.argument("opp_id")
+@click.option("--pilots", type=int, default=None, help="Paid pilots count (money changed hands).")
+@click.option("--lois", type=int, default=None, help="Signed LOIs with an agreed price.")
+@click.option("--data-shares", type=int, default=None, help="Companies that handed over real data.")
+@click.option("--anchor/--no-anchor", default=None, help="Anchor client funding development.")
+def signal(opp_id, pilots, lois, data_shares, anchor):
+    """Record hard commercial signals and evaluate the minimum-signal gate.
+
+    Promotion to build requires ONE of: 3 paid pilots | 5 priced LOIs |
+    10 data-sharing companies | 1 anchor client. Clicks and interview counts
+    are inputs, never promotion criteria.
+    """
+    from opportunity_os.storage import get_opportunity_by_id, update_opportunity
+    from opportunity_os.validation_engine import evaluate_minimum_signal_gate
+
+    opp = get_opportunity_by_id(opp_id)
+    if opp is None:
+        click.echo(f"Error: Opportunity '{opp_id}' not found.", err=True)
+        sys.exit(1)
+
+    updates = {}
+    if pilots is not None:
+        updates["paid_pilots_count"] = pilots
+    if lois is not None:
+        updates["signed_lois_count"] = lois
+    if data_shares is not None:
+        updates["data_sharing_companies_count"] = data_shares
+    if anchor is not None:
+        updates["anchor_client_funded"] = anchor
+
+    merged = {**opp, **updates}
+    gate = evaluate_minimum_signal_gate(merged)
+    update_opportunity(opp_id, {**updates, **gate})
+    click.echo(f"{opp.get('name', opp_id)[:60]}")
+    click.echo(f"  Gate: {'PASSED' if gate['validation_gate_passed'] else 'not met'}")
+    click.echo(f"  {gate['validation_gate_evidence']}")
+
+
+@cli.command("audit-report")
+@click.option("--days", default=7, show_default=True, type=int, help="Failure window in days.")
+def audit_report(days):
+    """Operational health: data freshness + pipeline failure summary.
+
+    Exit code 1 when data is stale (>3 days) — silence must never look like
+    success (2026-08-04 ghost-automation audit).
+    """
+    import json as _json
+    from collections import Counter
+    from datetime import datetime as _dt, timedelta as _td
+    from opportunity_os.storage import get_project_root
+
+    root = get_project_root()
+    red = False
+
+    click.echo("── Data freshness ──")
+    for rel in ("data/opportunities/opportunities.jsonl", "data/machine_metrics.jsonl"):
+        path = os.path.join(root, rel)
+        if not os.path.exists(path):
+            click.echo(f"  MISSING  {rel}")
+            red = True
+            continue
+        age = ( _dt.now() - _dt.fromtimestamp(os.path.getmtime(path)) ).total_seconds() / 86400
+        flag = "STALE" if age > 3 else "ok"
+        if age > 3:
+            red = True
+        click.echo(f"  {flag:<8} {rel}  ({age:.1f}d since last write)")
+
+    click.echo(f"── Pipeline failures (last {days}d) ──")
+    fail_path = os.path.join(root, "data", "pipeline_failures.jsonl")
+    counts: Counter = Counter()
+    if os.path.exists(fail_path):
+        cutoff = _dt.now() - _td(days=days)
+        with open(fail_path, encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    rec = _json.loads(line)
+                    ts = _dt.fromisoformat(str(rec.get("timestamp", ""))[:19])
+                    if ts >= cutoff:
+                        counts[rec.get("step", "?")] += 1
+                except (ValueError, TypeError):
+                    continue
+    if counts:
+        for step, n in counts.most_common(10):
+            click.echo(f"  {n:>3}x  {step}")
+    else:
+        click.echo("  none recorded in window")
+
+    if red:
+        click.echo("\nRED: pipeline data is stale — check the scheduled task.", err=True)
+        sys.exit(1)
+    click.echo("\nOK")
+
+
 @cli.command("deep-dive")
 @click.argument("opp_id")
 @click.option("--dry-run", is_flag=True)

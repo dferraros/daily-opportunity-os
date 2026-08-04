@@ -120,15 +120,24 @@ def scrape_structured(url: str, schema_dict: dict) -> Optional[dict]:
     if not api_key:
         return None
     try:
-        resp = httpx.post(
-            f"{BASE_URL}/v1/scrape",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={
-                "url": url,
-                "formats": ["extract"],
-                "extract": {"schema": schema_dict},
-            },
-            timeout=30.0,
+        from opportunity_os.retry import call_with_retry
+
+        def _post():
+            return httpx.post(
+                f"{BASE_URL}/v1/scrape",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={
+                    "url": url,
+                    "formats": ["extract"],
+                    "extract": {"schema": schema_dict},
+                },
+                timeout=30.0,
+            )
+
+        resp = call_with_retry(
+            _post,
+            retry_on=(httpx.TimeoutException, httpx.TransportError),
+            label=f"firecrawl.scrape_structured({url[:50]!r})",
         )
         resp.raise_for_status()
         data = resp.json()

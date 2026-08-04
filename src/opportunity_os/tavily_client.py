@@ -131,18 +131,27 @@ def search_news(query: str, time_range: str = "month") -> int:
     if not api_key:
         return 0
     try:
-        resp = httpx.post(
-            "https://api.tavily.com/search",
-            json={
-                "api_key": api_key,
-                "query": query,
-                "max_results": NEWS_MAX_RESULTS,
-                "topic": "news",
-                "time_range": time_range,
-                "include_answer": False,
-                "include_raw_content": False,
-            },
-            timeout=20.0,
+        from opportunity_os.retry import call_with_retry
+
+        def _post():
+            return httpx.post(
+                "https://api.tavily.com/search",
+                json={
+                    "api_key": api_key,
+                    "query": query,
+                    "max_results": NEWS_MAX_RESULTS,
+                    "topic": "news",
+                    "time_range": time_range,
+                    "include_answer": False,
+                    "include_raw_content": False,
+                },
+                timeout=20.0,
+            )
+
+        resp = call_with_retry(
+            _post,
+            retry_on=(httpx.TimeoutException, httpx.TransportError),
+            label=f"tavily.search_news({query[:40]!r})",
         )
         resp.raise_for_status()
         results = resp.json().get("results") or []
@@ -161,17 +170,26 @@ def search_with_content(query: str, max_results: int = 5) -> Optional[list[dict]
     if not api_key:
         return None
     try:
-        resp = httpx.post(
-            "https://api.tavily.com/search",
-            json={
-                "api_key": api_key,
-                "query": query,
-                "max_results": max_results,
-                "search_depth": "advanced",
-                "include_answer": False,
-                "include_raw_content": True,
-            },
-            timeout=30.0,
+        from opportunity_os.retry import call_with_retry
+
+        def _post():
+            return httpx.post(
+                "https://api.tavily.com/search",
+                json={
+                    "api_key": api_key,
+                    "query": query,
+                    "max_results": max_results,
+                    "search_depth": "advanced",
+                    "include_answer": False,
+                    "include_raw_content": True,
+                },
+                timeout=30.0,
+            )
+
+        resp = call_with_retry(
+            _post,
+            retry_on=(httpx.TimeoutException, httpx.TransportError),
+            label=f"tavily.search_with_content({query[:40]!r})",
         )
         resp.raise_for_status()
         return resp.json().get("results") or []

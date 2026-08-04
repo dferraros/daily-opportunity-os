@@ -150,6 +150,15 @@
             }
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/ferra/.local/bin/uv.exe run --no-sync python hooks/check_data_freshness.py"
+          }
+        ]
       }
     ],
     "SessionEnd": [

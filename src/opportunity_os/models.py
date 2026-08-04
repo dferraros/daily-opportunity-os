@@ -327,6 +327,14 @@ class Opportunity(BaseModel):
     feasibility_skipped: Optional[str] = None          # reason feasibility did not run
     legal_flags: Optional[List] = None                 # specific legal/sanctions/licensing risks
     legal_opinion_required: Optional[bool] = None      # True blocks build promotion (standing rule e)
+
+    # ── Minimum-signal validation gate (standing rule b, wired 2026-08-04) ───
+    paid_pilots_count: Optional[int] = None            # pilots with money changed hands
+    signed_lois_count: Optional[int] = None            # LOIs with an agreed price
+    data_sharing_companies_count: Optional[int] = None # companies that handed over real data
+    anchor_client_funded: Optional[bool] = None        # one client funding development
+    validation_gate_passed: Optional[bool] = None      # evaluate_minimum_signal_gate verdict
+    validation_gate_evidence: Optional[str] = None     # which criterion passed / what's missing
     competitor_funding_raised: Optional[str] = None    # revenue_evidence: announced funding rounds (e.g. "$50M Series B")
     competitor_arr_usd: Optional[float] = None         # revenue_evidence: annual recurring revenue in USD
     competitor_pricing_model: Optional[str] = None     # revenue_evidence: pricing strategy (e.g. "SaaS $29-99/mo")
